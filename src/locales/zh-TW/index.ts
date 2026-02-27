@@ -901,6 +901,7 @@ export const zhTW = {
 
   shortcutFocusInput: "聚焦輸入框",
   shortcutStopGeneration: "停止生成",
+  shortcutTogglePromptQueue: "顯示/隱藏提示詞隊列",
   shortcutShowShortcuts: "快捷鍵一覽",
   shortcutShowModelSelector: "模型選擇選單",
   shortcutCategoryHelp: "說明",
@@ -1161,4 +1162,23 @@ export const zhTW = {
   globalSearchSyntaxHelpTitle: "搜尋語法示例",
   globalSearchSyntaxHelpDesc: "點擊可直接插入，關鍵詞僅支援英文",
   globalSearchSyntaxHelpTriggerAria: "開啟搜尋語法說明",
+
+  // ==================== Prompt Queue ====================
+  queueTitle: "提示詞隊列",
+  queueQuickAsk: "提示詞隊列",
+  queueInQueue: "隊列中 ({count})",
+  queueEmpty: "隊列為空，輸入內容後按 Enter 發送或排隊",
+  queueClearAll: "清空隊列",
+  queueRemove: "移除",
+  queuePlaceholderIdle: "輸入提示詞，Enter 直接發送...",
+  queuePlaceholderBusy: "AI 生成中，Enter 加入隊列...",
+  queueStatusIdle: "AI 空閒",
+  queueStatusBusy: "AI 生成中",
+  queueSettingLabel: "提示詞隊列",
+  queueSettingDesc: "開啟後在輸入框上方顯示隊列浮層，支援 AI 生成時排隊發送提示詞",
+  queueDisableHint: "你可以前往設定中關閉此功能",
+  queueEdit: "編輯",
+  queueEditSave: "儲存",
+  queueEditCancel: "取消",
+  queueForceSend: "強制發送",
 }

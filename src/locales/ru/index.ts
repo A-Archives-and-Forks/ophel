@@ -868,6 +868,7 @@ export const ru = {
   shortcutToggleScrollLock: "Предотвратить автопрокрутку вниз",
   shortcutFocusInput: "В поле ввода",
   shortcutStopGeneration: "Стоп ИИ",
+  shortcutTogglePromptQueue: "Переключить очередь запросов",
   shortcutShowShortcuts: "Список кнопок",
   shortcutShowModelSelector: "Выбор модели",
   shortcutCategoryHelp: "Помощь",
@@ -1166,4 +1167,23 @@ export const ru = {
   exportIncludeThoughtsLabel: "Включать рассуждения при экспорте",
   exportIncludeThoughtsDesc:
     "Включать и автоматически разворачивать рассуждения при экспорте (в виде цитатных блоков)",
+
+  // ==================== Prompt Queue ====================
+  queueTitle: "Очередь промптов",
+  queueQuickAsk: "Очередь промптов",
+  queueInQueue: "В очереди ({count})",
+  queueEmpty: "Очередь пуста. Введите и нажмите Enter для отправки или добавления",
+  queueClearAll: "Очистить всё",
+  queueRemove: "Удалить",
+  queuePlaceholderIdle: "Введите промпт, Enter для отправки...",
+  queuePlaceholderBusy: "ИИ генерирует, Enter для добавления в очередь...",
+  queueStatusIdle: "ИИ свободен",
+  queueStatusBusy: "ИИ генерирует",
+  queueSettingLabel: "Очередь промптов",
+  queueSettingDesc: "Отображать очередь над полем ввода для добавления промптов, пока ИИ пишет",
+  queueDisableHint: "Вы можете отключить эту функцию в настройках",
+  queueEdit: "Редактировать",
+  queueEditSave: "Сохранить",
+  queueEditCancel: "Отмена",
+  queueForceSend: "Принудительная отправка",
 }

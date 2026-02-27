@@ -13,6 +13,7 @@ import { ConversationManager } from "~core/conversation-manager"
 import { InlineBookmarkManager } from "~core/inline-bookmark-manager"
 import { OutlineManager, type OutlineNode } from "~core/outline-manager"
 import { AI_STUDIO_SHORTCUT_SYNC_EVENT, PromptManager } from "~core/prompt-manager"
+import { QueueDispatcher } from "~core/queue-dispatcher"
 import { ThemeManager } from "~core/theme-manager"
 import { useShortcuts } from "~hooks/useShortcuts"
 import { useSettingsHydrated, useSettingsStore } from "~stores/settings-store"
@@ -30,6 +31,7 @@ import { initCopyButtons, showCopySuccess } from "~utils/icons"
 import { ConfirmDialog, FolderSelectDialog, TagManagerDialog } from "./ConversationDialogs"
 import { DisclaimerModal } from "./DisclaimerModal"
 import { MainPanel } from "./MainPanel"
+import { QueueOverlay } from "./QueueOverlay"
 import { QuickButtons } from "./QuickButtons"
 import { SelectedPromptBar } from "./SelectedPromptBar"
 import { SettingsModal } from "./SettingsModal"
@@ -268,6 +270,7 @@ const SETTING_SEARCH_TITLE_KEY_MAP: Record<string, string> = {
   "panel-height": "panelHeightLabel",
   "panel-width": "panelWidthLabel",
   "prompt-double-click-send": "promptDoubleClickSendLabel",
+  "prompt-queue": "queueSettingLabel",
   "quick-buttons-opacity": "quickButtonsOpacityLabel",
   "reading-history-auto-restore": "readingHistoryAutoRestoreLabel",
   "reading-history-cleanup-days": "readingHistoryCleanup",
@@ -665,6 +668,22 @@ export const App = () => {
   const promptManager = useMemo(() => {
     return adapter ? new PromptManager(adapter) : null
   }, [adapter])
+
+  const queueDispatcher = useMemo(() => {
+    return adapter && promptManager ? new QueueDispatcher(adapter, promptManager) : null
+  }, [adapter, promptManager])
+
+  // QueueDispatcher lifecycle
+  useEffect(() => {
+    if (!queueDispatcher) return
+    const isQueueEnabled = settings?.features?.prompts?.promptQueue ?? true
+    if (isQueueEnabled) {
+      queueDispatcher.start()
+    } else {
+      queueDispatcher.stop()
+    }
+    return () => queueDispatcher.stop()
+  }, [queueDispatcher, settings?.features?.prompts?.promptQueue])
 
   const conversationManager = useMemo(() => {
     return adapter ? new ConversationManager(adapter) : null
@@ -3154,6 +3173,9 @@ export const App = () => {
           }}
           onCancel={() => setIsFloatingToolbarClearOpen(false)}
         />
+      )}
+      {adapter && queueDispatcher && (settings?.features?.prompts?.promptQueue ?? true) && (
+        <QueueOverlay adapter={adapter} dispatcher={queueDispatcher} />
       )}
       <DisclaimerModal />
     </div>

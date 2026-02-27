@@ -920,8 +920,9 @@ export const ja = {
   shortcutCopyLatestReply: "最新の回答をコピー",
   shortcutCopyLastCodeBlock: "最後のコードブロックをコピー",
 
-  shortcutFocusInput: "入力欄にフォーカス",
-  shortcutStopGeneration: "生成を停止",
+  shortcutFocusInput: "入力枠にフォーカス",
+  shortcutStopGeneration: "生成を停止する",
+  shortcutTogglePromptQueue: "プロンプトキューを切り替え",
   shortcutShowShortcuts: "ショートカット一覧を表示",
   shortcutShowModelSelector: "モデル選択を表示",
   shortcutCategoryHelp: "ヘルプ",
@@ -1184,4 +1185,24 @@ export const ja = {
   globalSearchSyntaxHelpTitle: "検索構文の例",
   globalSearchSyntaxHelpDesc: "クリックで挿入できます。キーワードは英語のみ対応です。",
   globalSearchSyntaxHelpTriggerAria: "検索構文ヘルプを開く",
+
+  // ==================== Prompt Queue ====================
+  queueTitle: "プロンプトキュー",
+  queueQuickAsk: "プロンプトキュー",
+  queueInQueue: "待機中 ({count})",
+  queueEmpty: "キューは空です。入力してEnterで送信または追加",
+  queueClearAll: "すべてクリア",
+  queueRemove: "削除",
+  queuePlaceholderIdle: "プロンプトを入力し、Enterで直接送信...",
+  queuePlaceholderBusy: "AI生成中、Enterでキューに追加...",
+  queueStatusIdle: "AI待機中",
+  queueStatusBusy: "AI生成中",
+  queueSettingLabel: "プロンプトキュー",
+  queueDisableHint: "設定でこの機能をオフにできます",
+  queueSettingDesc:
+    "有効にすると入力欄上部にキューフロートを表示し、生成中のプロンプト追加をサポートします",
+  queueEdit: "編集",
+  queueEditSave: "保存",
+  queueEditCancel: "キャンセル",
+  queueForceSend: "強制送信",
 }
