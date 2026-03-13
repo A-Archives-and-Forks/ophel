@@ -575,11 +575,10 @@ export const es = {
     "No se detectaron conversaciones en la barra lateral. Ábrela y vuelve a intentarlo.",
   conversationsSyncResult:
     "Sincronización completa: {scanned} revisadas, {added} añadidas, {updated} actualizadas",
-  chatglmConversationsUnsupportedTitle: "Conversaciones de ChatGLM no compatibles",
-  chatglmConversationsUnsupportedDesc:
+  conversationsUnsupportedTitle: "Conversaciones de {site} no compatibles",
+  conversationsUnsupportedDesc:
     "Las restricciones del sitio impiden obtener la lista de conversaciones de forma estable.",
-  chatglmConversationsUnsupportedSync:
-    "La sincronización de conversaciones de ChatGLM no está compatible.",
+  conversationsUnsupportedSync: "La sincronización de conversaciones de {site} no está compatible.",
   conversationsLocate: "Ubicar actual",
   conversationsLocateSuccess: "Hallado",
   conversationsLocateNotFound: "No hallado, sincronizando...",
@@ -1075,6 +1074,7 @@ Dame el código y luego un resumen de mejoras.`,
   globalSearchSiteChatGPT: "ChatGPT",
   globalSearchSiteClaude: "Claude",
   globalSearchSiteGrok: "Grok",
+  globalSearchSiteZai: "Z.ai",
   globalSearchPlaceholderAll: "Buscar en todo",
   globalSearchPlaceholderOutline: "Buscar en esquema",
   globalSearchPlaceholderSettings: "Buscar en configuración",

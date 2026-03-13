@@ -572,10 +572,10 @@ export const ru = {
     "В боковой панели не найдено разговоров. Откройте боковую панель и повторите попытку.",
   conversationsSyncResult:
     "Синхронизация завершена: проверено {scanned}, добавлено {added}, обновлено {updated}",
-  chatglmConversationsUnsupportedTitle: "Диалоги ChatGLM не поддерживаются",
-  chatglmConversationsUnsupportedDesc:
+  conversationsUnsupportedTitle: "Диалоги {site} не поддерживаются",
+  conversationsUnsupportedDesc:
     "Ограничения сайта не позволяют стабильно получать список диалогов.",
-  chatglmConversationsUnsupportedSync: "Синхронизация диалогов ChatGLM не поддерживается.",
+  conversationsUnsupportedSync: "Синхронизация диалогов {site} не поддерживается.",
   conversationsLocate: "Найти текущий",
   conversationsLocateSuccess: "Найдено",
   conversationsLocateNotFound: "Нет в списке, синхро...",
@@ -1064,6 +1064,7 @@ export const ru = {
   globalSearchSiteChatGPT: "ChatGPT",
   globalSearchSiteClaude: "Claude",
   globalSearchSiteGrok: "Grok",
+  globalSearchSiteZai: "Z.ai",
   globalSearchPlaceholderAll: "Искать везде",
   globalSearchPlaceholderOutline: "Искать в оглавлении",
   globalSearchPlaceholderSettings: "Искать в настройках",

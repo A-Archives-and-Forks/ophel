@@ -623,10 +623,10 @@ export const en = {
   conversationsSyncNoSidebarItems:
     "No conversations detected in sidebar. Expand/open the sidebar and try again.",
   conversationsSyncResult: "Sync complete: {scanned} scanned, {added} added, {updated} updated",
-  chatglmConversationsUnsupportedTitle: "ChatGLM conversations not supported",
-  chatglmConversationsUnsupportedDesc:
+  conversationsUnsupportedTitle: "{site} conversations not supported",
+  conversationsUnsupportedDesc:
     "Current site restrictions prevent reliably fetching the conversation list.",
-  chatglmConversationsUnsupportedSync: "ChatGLM conversations are not supported for sync.",
+  conversationsUnsupportedSync: "{site} conversations are not supported for sync.",
   conversationsLocate: "Locate current conversation",
   conversationsLocateSuccess: "Located current conversation",
   conversationsLocateNotFound: "Current conversation not tracked, syncing...",
@@ -1123,6 +1123,7 @@ Please output the optimized code block directly, followed by a brief summary of 
   globalSearchSiteChatGPT: "ChatGPT",
   globalSearchSiteClaude: "Claude",
   globalSearchSiteGrok: "Grok",
+  globalSearchSiteZai: "Z.ai",
   globalSearchPlaceholderAll: "Search all",
   globalSearchPlaceholderOutline: "Search outline",
   globalSearchPlaceholderSettings: "Search settings",
