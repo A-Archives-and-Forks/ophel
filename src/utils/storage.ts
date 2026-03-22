@@ -118,6 +118,12 @@ export interface ChatGPTSettings {
   markdownFix?: boolean // 修复响应中未渲染的加粗文本
 }
 
+export interface UsageMonitorSettings {
+  enabled: boolean
+  dailyLimit: number
+  autoResetEnabled: boolean
+}
+
 export interface Settings {
   language: string
   hasAgreedToTerms: boolean // 用户是否同意免责声明
@@ -179,6 +185,9 @@ export interface Settings {
     enableFuzzySearch: boolean
     doubleShift: boolean
   }
+
+  // 高级模型本地计数与额度预估
+  usageMonitor: UsageMonitorSettings
 
   // 功能模块配置
   features: {
@@ -394,6 +403,12 @@ export const DEFAULT_SETTINGS: Settings = {
     promptEnterBehavior: "smart",
     enableFuzzySearch: false,
     doubleShift: false,
+  },
+
+  usageMonitor: {
+    enabled: false,
+    dailyLimit: 100,
+    autoResetEnabled: false,
   },
 
   features: {

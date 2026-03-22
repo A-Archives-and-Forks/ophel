@@ -103,6 +103,8 @@ export default defineConfig({
           "unsafeWindow",
           "window.focus",
         ],
+        // WebDAV sync in userscript mode relies on GM_xmlhttpRequest against
+        // user-configured arbitrary hosts, so @connect must stay open-ended.
         connect: ["*"],
         "run-at": "document-idle",
         noframes: true,
@@ -149,6 +151,8 @@ export default defineConfig({
   },
   build: {
     outDir: "build/userscript",
+    cssCodeSplit: false,
+    modulePreload: false,
     minify: "terser",
     terserOptions: {
       format: {
@@ -157,6 +161,12 @@ export default defineConfig({
       },
     },
     rollupOptions: {
+      output: {
+        // Userscript 版本必须产出真正的单文件脚本，避免运行时通过 <script>
+        // 动态加载 chunk，进而被 Gemini / Claude 等站点的 CSP 直接拦截。
+        inlineDynamicImports: true,
+        manualChunks: undefined,
+      },
       // 构建警告抑制
       onwarn(warning, warn) {
         if (warning.message.includes("dynamic import will not move module into another chunk"))
