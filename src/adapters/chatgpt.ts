@@ -41,9 +41,35 @@ const DELETE_REASON = {
   API_NOT_FOUND_BUT_VISIBLE: "delete_api_not_found_but_visible",
 } as const
 
+const CHATGPT_MODEL_SELECTOR_BUTTON_SELECTORS = [
+  'button[data-testid="model-switcher-dropdown-button"][aria-label="模型选择器"]',
+  'button[data-testid="model-switcher-dropdown-button"][aria-label*="model"]',
+  'button[data-testid="model-switcher-dropdown-button"][aria-haspopup="menu"]',
+  'button[id^="radix-"][data-testid="model-switcher-dropdown-button"]',
+  'header button[data-testid="model-switcher-dropdown-button"]',
+  'button[data-testid="model-switcher-dropdown-button"]',
+  '[aria-haspopup="menu"][aria-label*="模型"]',
+  '[aria-haspopup="menu"][aria-label*="model"]',
+] as const
+
+const CHATGPT_SELECTED_MODEL_CACHE_TTL_MS = 30_000
+const CHATGPT_MODEL_LOCK_CHECK_SELECTED_MODEL_MAX_AGE_MS = 3_500
+const CHATGPT_MODEL_LOCK_REENTRY_COOLDOWN_MS = 1_200
+const CHATGPT_MODEL_MENU_SELECTOR =
+  '[data-radix-popper-content-wrapper] [role="menu"][data-radix-menu-content]'
+const CHATGPT_MODEL_MENU_ITEM_SELECTOR = `${CHATGPT_MODEL_MENU_SELECTOR} [role="menuitem"][data-testid^="model-switcher-"]`
+
 export class ChatGPTAdapter extends SiteAdapter {
   private sessionAccessToken: string | null = null
   private sessionAccessTokenExpiresAt = 0
+  private lastModelLockAttemptAt = 0
+  private lastModelLockAttemptKeyword = ""
+  private cachedSelectedModelName: string | null = null
+  private cachedSelectedModelSlug: string | null = null
+  private cachedSelectedModelExpiresAt = 0
+  private cachedSelectedModelContextKey = ""
+  private cachedSelectedModelObservedAt = 0
+  private cachedModelDisplayNamesBySlug = new Map<string, string>()
 
   match(): boolean {
     return window.location.hostname.includes("chatgpt.com")
@@ -1295,26 +1321,171 @@ export class ChatGPTAdapter extends SiteAdapter {
     return stopBtn !== null && (stopBtn as HTMLElement).offsetParent !== null
   }
 
-  getModelName(): string | null {
-    // 从模型选择器按钮获取
-    const modelBtn = document.querySelector('[data-testid="model-switcher-dropdown-button"]')
-    if (modelBtn) {
-      // 优先从 aria-label 提取（格式："模型选择器，当前模型为 5.2"）
-      const ariaLabel = modelBtn.getAttribute("aria-label")
-      if (ariaLabel) {
-        const match = ariaLabel.match(/(?:模型为|model is)\s*(.+)/i)
-        if (match) return match[1].trim()
+  private findModelSelectorButton(): HTMLElement | null {
+    return this.findElementBySelectors([...CHATGPT_MODEL_SELECTOR_BUTTON_SELECTORS])
+  }
+
+  private getModelStateContextKey(): string {
+    const cid = this.getCurrentCid() || "default"
+    const sessionId = this.getSessionId() || window.location.pathname || "root"
+    return `${cid}::${sessionId}`
+  }
+
+  private rememberSelectedModelState(name: string | null, slug: string | null) {
+    const normalizedName = name?.trim() || null
+    const normalizedSlug = slug?.trim() || null
+    if (!normalizedName && !normalizedSlug) return
+
+    this.cachedSelectedModelName = normalizedName
+    this.cachedSelectedModelSlug = normalizedSlug
+    this.cachedSelectedModelContextKey = this.getModelStateContextKey()
+    this.cachedSelectedModelObservedAt = Date.now()
+    this.cachedSelectedModelExpiresAt = Date.now() + CHATGPT_SELECTED_MODEL_CACHE_TTL_MS
+  }
+
+  private getRememberedSelectedModelState(): { name: string | null; slug: string | null } | null {
+    if (
+      this.cachedSelectedModelContextKey === this.getModelStateContextKey() &&
+      this.cachedSelectedModelExpiresAt > Date.now() &&
+      (this.cachedSelectedModelName || this.cachedSelectedModelSlug)
+    ) {
+      return {
+        name: this.cachedSelectedModelName,
+        slug: this.cachedSelectedModelSlug,
       }
-      // 回退：获取内部文本
-      const versionSpan = modelBtn.querySelector(".text-token-text-tertiary")
-      if (versionSpan) return versionSpan.textContent?.trim() || null
-      return modelBtn.textContent?.trim() || null
     }
-    // 回退：从最新消息的 data-message-model-slug 获取
-    const lastMsg = document.querySelector("[data-message-model-slug]")
-    if (lastMsg) {
-      return lastMsg.getAttribute("data-message-model-slug")
+
+    this.cachedSelectedModelName = null
+    this.cachedSelectedModelSlug = null
+    this.cachedSelectedModelContextKey = ""
+    this.cachedSelectedModelObservedAt = 0
+    this.cachedSelectedModelExpiresAt = 0
+    return null
+  }
+
+  private getRecentSelectedModelState(): { name: string | null; slug: string | null } | null {
+    const rememberedState = this.getRememberedSelectedModelState()
+    if (!rememberedState) return null
+
+    if (
+      Date.now() - this.cachedSelectedModelObservedAt >
+      CHATGPT_MODEL_LOCK_CHECK_SELECTED_MODEL_MAX_AGE_MS
+    ) {
+      return null
     }
+
+    return rememberedState
+  }
+
+  private getLatestMessageModelSlug(): string | null {
+    const lastMsg = Array.from(document.querySelectorAll("[data-message-model-slug]")).at(-1)
+    return lastMsg?.getAttribute("data-message-model-slug")?.trim() || null
+  }
+
+  private readModelStateFromOpenMenu(): { name: string | null; slug: string | null } | null {
+    const menu = document.querySelector(CHATGPT_MODEL_MENU_SELECTOR)
+    if (!this.isVisible(menu)) return null
+
+    const items = Array.from(document.querySelectorAll(CHATGPT_MODEL_MENU_ITEM_SELECTOR))
+    if (items.length === 0) return null
+
+    let selectedName: string | null = null
+    let selectedSlug: string | null = null
+
+    for (const item of items) {
+      const dataTestId = item.getAttribute("data-testid") || ""
+      const slug = dataTestId.startsWith("model-switcher-")
+        ? dataTestId.replace(/^model-switcher-/, "").trim()
+        : ""
+
+      const name =
+        item.querySelector(".min-w-0 > span")?.textContent?.replace(/\s+/g, " ").trim() || ""
+
+      if (slug && name) {
+        this.cachedModelDisplayNamesBySlug.set(slug, name)
+      }
+
+      const isSelected = Boolean(item.querySelector(".trailing svg, .trailing use"))
+      if (isSelected) {
+        selectedName = name || null
+        selectedSlug = slug || null
+      }
+    }
+
+    this.rememberSelectedModelState(selectedName, selectedSlug)
+
+    return {
+      name: selectedName,
+      slug: selectedSlug,
+    }
+  }
+
+  private extractModelNameFromSelectorButton(modelBtn: HTMLElement): string | null {
+    const ariaLabel = modelBtn.getAttribute("aria-label")
+    if (ariaLabel) {
+      const match = ariaLabel.match(/(?:模型为|model is)\s*(.+)/i)
+      if (match) return match[1].trim()
+    }
+
+    const versionSpanText = modelBtn.querySelector(".text-token-text-tertiary")?.textContent?.trim()
+    if (versionSpanText) {
+      return versionSpanText
+    }
+
+    return null
+  }
+
+  private getReliableCurrentModelSignals(): string[] {
+    const selectedModelFromMenu = this.readModelStateFromOpenMenu()
+    const selectorBtn = this.findModelSelectorButton()
+    const signals = [
+      selectedModelFromMenu?.name,
+      selectedModelFromMenu?.slug,
+      selectorBtn ? this.extractModelNameFromSelectorButton(selectorBtn) : null,
+    ]
+
+    return signals.filter((value): value is string => Boolean(value && value.trim()))
+  }
+
+  private getCurrentModelSignalsForLockCheck(): string[] {
+    const selectedModelFromMenu = this.readModelStateFromOpenMenu()
+    const recentSelectedModel = this.getRecentSelectedModelState()
+    const selectorBtn = this.findModelSelectorButton()
+    const signals = [
+      selectedModelFromMenu?.name,
+      selectedModelFromMenu?.slug,
+      recentSelectedModel?.name,
+      recentSelectedModel?.slug,
+      selectorBtn ? this.extractModelNameFromSelectorButton(selectorBtn) : null,
+    ]
+
+    return signals.filter((value): value is string => Boolean(value && value.trim()))
+  }
+
+  getModelName(): string | null {
+    const selectedModelFromMenu = this.readModelStateFromOpenMenu()
+    if (selectedModelFromMenu?.name) {
+      return selectedModelFromMenu.name
+    }
+
+    const messageModel = this.getLatestMessageModelSlug()
+    if (messageModel) {
+      return this.cachedModelDisplayNamesBySlug.get(messageModel) || messageModel
+    }
+
+    const rememberedSelectedModel = this.getRememberedSelectedModelState()
+    if (rememberedSelectedModel?.name) {
+      return rememberedSelectedModel.name
+    }
+
+    const modelBtn = this.findModelSelectorButton()
+    if (modelBtn) {
+      const selectorModel = this.extractModelNameFromSelectorButton(modelBtn)
+      if (selectorModel) {
+        return selectorModel
+      }
+    }
+
     return null
   }
 
@@ -1332,43 +1503,112 @@ export class ChatGPTAdapter extends SiteAdapter {
     return { enabled: false, keyword: "" }
   }
 
+  getModelLockCheckText(_selectorBtn?: HTMLElement | null): string {
+    return this.getCurrentModelSignalsForLockCheck().join(" ")
+  }
+
+  findElementBySelectors(selectors: string[]): HTMLElement | null {
+    for (const selector of selectors) {
+      const candidates = Array.from(document.querySelectorAll(selector))
+      for (const candidate of candidates) {
+        if (this.isVisible(candidate)) {
+          return candidate
+        }
+      }
+    }
+    return super.findElementBySelectors(selectors)
+  }
+
+  lockModel(keyword: string, onSuccess?: () => void): void {
+    const normalizedKeyword = keyword.trim()
+    if (!normalizedKeyword) return
+
+    const normalizedTarget = normalizedKeyword.toLowerCase()
+    const currentModelSignals = this.getReliableCurrentModelSignals().join(" ").toLowerCase().trim()
+
+    if (currentModelSignals.includes(normalizedTarget)) {
+      onSuccess?.()
+      return
+    }
+
+    const selectorBtn = this.findModelSelectorButton()
+    const isMenuOpen =
+      selectorBtn?.getAttribute("aria-expanded") === "true" ||
+      Boolean(this.readModelStateFromOpenMenu())
+    const isRapidRepeat =
+      this.lastModelLockAttemptKeyword === normalizedKeyword &&
+      Date.now() - this.lastModelLockAttemptAt < CHATGPT_MODEL_LOCK_REENTRY_COOLDOWN_MS
+
+    if (isMenuOpen || isRapidRepeat) {
+      return
+    }
+
+    this.lastModelLockAttemptKeyword = normalizedKeyword
+    this.lastModelLockAttemptAt = Date.now()
+
+    super.lockModel(normalizedKeyword, () => {
+      this.lastModelLockAttemptAt = 0
+      onSuccess?.()
+    })
+  }
+
+  clickModelSelector(): boolean {
+    const button = this.findModelSelectorButton()
+    if (!button) {
+      return false
+    }
+    this.simulateClick(button)
+    return true
+  }
+
   getModelSwitcherConfig(keyword: string): ModelSwitcherConfig {
     return {
       targetModelKeyword: keyword,
-      selectorButtonSelectors: [
-        '[data-testid="model-switcher-dropdown-button"]',
-        '[aria-haspopup="menu"][aria-label*="模型"]',
-        '[aria-haspopup="menu"][aria-label*="model"]',
-      ],
+      selectorButtonSelectors: [...CHATGPT_MODEL_SELECTOR_BUTTON_SELECTORS],
       // ChatGPT 使用 Radix UI，菜单项带有 data-radix-collection-item 属性
       menuItemSelector:
         '[data-radix-collection-item][role="menuitem"], [role="menuitem"], [role="option"]',
       checkInterval: 1000,
       maxAttempts: 15,
       menuRenderDelay: 500, // ChatGPT 菜单渲染较慢，增加延迟
-      // 语言无关：通过 aria-haspopup 检测子菜单触发器
-      subMenuSelector: '[aria-haspopup="menu"]',
-      // 文字备选（多语言）
-      subMenuTriggers: ["传统", "legacy", "more"],
     }
   }
 
   /**
    * 覆盖点击模拟方法
-   * ChatGPT 使用 Radix UI，需要完整的 PointerEvent 序列才能触发菜单
+   * ChatGPT 新版模型菜单对重复事件较敏感。
+   * 优先使用原生 click，必要时再补 pointerdown，避免一次调用里把菜单打开又关闭。
    */
   protected simulateClick(element: HTMLElement): void {
-    const eventTypes = ["pointerdown", "mousedown", "pointerup", "mouseup", "click"]
-    for (const type of eventTypes) {
+    const isModelSelectorTrigger = element.matches(
+      'button[data-testid="model-switcher-dropdown-button"][aria-haspopup="menu"]',
+    )
+
+    if (isModelSelectorTrigger) {
+      const expandedBeforeClick = element.getAttribute("aria-expanded")
+      element.click()
+
+      const expandedAfterClick = element.getAttribute("aria-expanded")
+      if (expandedAfterClick === "true" || expandedAfterClick !== expandedBeforeClick) {
+        return
+      }
+
       element.dispatchEvent(
-        new PointerEvent(type, {
+        new PointerEvent("pointerdown", {
           bubbles: true,
           cancelable: true,
           view: window,
           pointerId: 1,
+          button: 0,
+          buttons: 1,
+          pointerType: "mouse",
+          isPrimary: true,
         }),
       )
+      return
     }
+
+    element.click()
   }
 
   // ==================== 主题切换 ====================
