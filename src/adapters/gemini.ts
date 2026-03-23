@@ -1,11 +1,13 @@
 /**
  * Gemini 标准版适配器 (gemini.google.com)
  */
+import { bindDomTooltip, type DomTooltipBinding } from "~components/ui/Tooltip"
 import { SITE_IDS } from "~constants"
 import { platform } from "~platform"
 import { DOMToolkit } from "~utils/dom-toolkit"
 import { htmlToMarkdown } from "~utils/exporter"
 import { t } from "~utils/i18n"
+import { createOpenInNewTabIcon } from "~utils/icons"
 import {
   EVENT_GEMINI_MYSTUFF_CACHE_SYNC,
   EVENT_GEMINI_MYSTUFF_SYNC_REQUEST,
@@ -15,6 +17,7 @@ import {
 } from "~utils/messaging"
 import { SKIP_READING_HISTORY_RESTORE_PARAM } from "~utils/storage"
 import { showToast } from "~utils/toast"
+import { setSafeHTML } from "~utils/trusted-types"
 
 import {
   SiteAdapter,
@@ -85,14 +88,11 @@ interface GeminiMyStuffEnhancerOptions {
   getUserPathPrefix: () => string
 }
 
-interface GeminiMyStuffTooltipBinding {
-  destroy: () => void
-}
-
 const GEMINI_MYSTUFF_ACTIVE_CLASS = "ophel-gemini-mystuff-active"
 const GEMINI_MYSTUFF_STYLE_ID = "ophel-gemini-mystuff-style"
 const GEMINI_MYSTUFF_OPEN_BUTTON_CLASS = "ophel-mystuff-open-btn"
 const GEMINI_MYSTUFF_OPEN_BUTTON_ATTR = "data-ophel-mystuff-open"
+const GEMINI_MYSTUFF_OPEN_BUTTON_SUPPRESS_ATTR = "data-ophel-mystuff-open-suppress"
 const GEMINI_MYSTUFF_SYNC_TIMEOUT_MS = 12000
 const GEMINI_MYSTUFF_ROUTE_EVENT = "gh-url-change"
 const GEMINI_GOOGLEUSERCONTENT_HOST_REGEX = /^https:\/\/lh\d+\.googleusercontent\.com\//i
@@ -101,7 +101,7 @@ const GEMINI_MYSTUFF_TOOLTIP_DELAY_MS = 300
 class GeminiMyStuffEnhancer {
   private started = false
   private mediaWatchStop: (() => void) | null = null
-  private tooltipBindings = new WeakMap<HTMLElement, GeminiMyStuffTooltipBinding>()
+  private tooltipBindings = new WeakMap<HTMLElement, DomTooltipBinding>()
   private pendingRequests = new Map<
     string,
     {
@@ -171,6 +171,7 @@ class GeminiMyStuffEnhancer {
       const mediaHost = actionButton.closest("library-item-card")
       if (!mediaHost) return
       this.preventNativeNavigation(event)
+      this.dismissActionButtonVisualState(actionButton)
       void this.openHostInNewTab(mediaHost, "media", this.preparePendingTab())
       return
     }
@@ -260,6 +261,12 @@ class GeminiMyStuffEnhancer {
         color: #ffffff;
       }
 
+      .${GEMINI_MYSTUFF_ACTIVE_CLASS} .${GEMINI_MYSTUFF_OPEN_BUTTON_CLASS}[${GEMINI_MYSTUFF_OPEN_BUTTON_SUPPRESS_ATTR}="1"] {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transform: translateY(-2px) !important;
+      }
+
       .${GEMINI_MYSTUFF_ACTIVE_CLASS} .${GEMINI_MYSTUFF_OPEN_BUTTON_CLASS} svg {
         width: 16px;
         height: 16px;
@@ -285,33 +292,6 @@ class GeminiMyStuffEnhancer {
         color: #ffffff;
       }
 
-      .ophel-tooltip {
-        background-color: rgba(30, 30, 35, 0.95);
-        color: #ffffff;
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 13px;
-        line-height: 1.5;
-        z-index: 2147483647;
-        pointer-events: none;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(4px);
-        animation: ophel-mystuff-tooltip-fade-in 0.15s ease-out;
-      }
-
-      @keyframes ophel-mystuff-tooltip-fade-in {
-        from {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
     `
     document.head.appendChild(style)
   }
@@ -341,11 +321,18 @@ class GeminiMyStuffEnhancer {
     button.className = `${GEMINI_MYSTUFF_OPEN_BUTTON_CLASS} ophel-tooltip-trigger`
     button.setAttribute(GEMINI_MYSTUFF_OPEN_BUTTON_ATTR, "1")
     button.setAttribute("aria-label", this.getOpenInNewTabLabel())
-    button.innerHTML =
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5"/><path d="M10 14 19 5"/><path d="M19 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4"/></svg>'
+    button.appendChild(createOpenInNewTabIcon())
 
     card.appendChild(button)
-    this.bindTooltip(button, () => this.getOpenInNewTabLabel())
+    this.tooltipBindings.set(
+      button,
+      bindDomTooltip(button, {
+        getContent: () => this.getOpenInNewTabLabel(),
+        delay: GEMINI_MYSTUFF_TOOLTIP_DELAY_MS,
+        maxWidth: 260,
+        preferredPlacement: "top",
+      }),
+    )
   }
 
   private isMyStuffPath(): boolean {
@@ -687,104 +674,27 @@ class GeminiMyStuffEnhancer {
     return t("geminiMystuffOpenInNewTab") || "在新标签页中打开"
   }
 
-  private bindTooltip(button: HTMLElement, contentProvider: () => string): void {
-    if (this.tooltipBindings.has(button)) return
+  private dismissActionButtonVisualState(button: HTMLElement): void {
+    this.tooltipBindings.get(button)?.hide()
+    button.blur()
+    button.setAttribute(GEMINI_MYSTUFF_OPEN_BUTTON_SUPPRESS_ATTR, "1")
 
-    let tooltipEl: HTMLDivElement | null = null
-    let timerId: ReturnType<typeof setTimeout> | null = null
-
-    const cleanupTimer = () => {
-      if (timerId) {
-        clearTimeout(timerId)
-        timerId = null
-      }
+    const release = () => {
+      button.removeAttribute(GEMINI_MYSTUFF_OPEN_BUTTON_SUPPRESS_ATTR)
+      window.removeEventListener("pointermove", release, true)
+      window.removeEventListener("pointerdown", release, true)
+      window.removeEventListener("keydown", release, true)
+      window.removeEventListener("wheel", release, true)
+      window.removeEventListener("touchstart", release, true)
+      button.removeEventListener("focus", release, true)
     }
 
-    const removeTooltip = () => {
-      cleanupTimer()
-      if (tooltipEl?.parentNode) {
-        tooltipEl.parentNode.removeChild(tooltipEl)
-      }
-      tooltipEl = null
-      button.removeAttribute("aria-describedby")
-    }
-
-    const positionTooltip = () => {
-      if (!tooltipEl) return
-
-      const triggerRect = button.getBoundingClientRect()
-      let top = triggerRect.top - tooltipEl.offsetHeight - 10
-      let left = triggerRect.left + triggerRect.width / 2
-
-      const tooltipRect = tooltipEl.getBoundingClientRect()
-      if (top < 10) {
-        top = triggerRect.bottom + 10
-      }
-
-      left -= tooltipRect.width / 2
-      if (left < 10) left = 10
-      if (left + tooltipRect.width > window.innerWidth - 10) {
-        left = window.innerWidth - tooltipRect.width - 10
-      }
-
-      tooltipEl.style.top = `${top}px`
-      tooltipEl.style.left = `${left}px`
-      tooltipEl.style.opacity = "1"
-    }
-
-    const showTooltip = () => {
-      cleanupTimer()
-      if (tooltipEl) {
-        positionTooltip()
-        return
-      }
-
-      timerId = setTimeout(() => {
-        const content = contentProvider()
-        tooltipEl = document.createElement("div")
-        tooltipEl.className = "ophel-tooltip"
-        tooltipEl.textContent = content
-        tooltipEl.style.position = "fixed"
-        tooltipEl.style.top = "0"
-        tooltipEl.style.left = "0"
-        tooltipEl.style.opacity = "0"
-        tooltipEl.style.zIndex = "2147483647"
-        tooltipEl.style.pointerEvents = "none"
-        tooltipEl.style.maxWidth = "260px"
-        tooltipEl.id = `ophel-mystuff-tooltip-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-        document.body.appendChild(tooltipEl)
-        button.setAttribute("aria-label", content)
-        button.setAttribute("aria-describedby", tooltipEl.id)
-        positionTooltip()
-      }, GEMINI_MYSTUFF_TOOLTIP_DELAY_MS)
-    }
-
-    const hideTooltip = () => {
-      removeTooltip()
-    }
-
-    const onWindowChange = () => {
-      if (tooltipEl) positionTooltip()
-    }
-
-    button.addEventListener("mouseenter", showTooltip)
-    button.addEventListener("mouseleave", hideTooltip)
-    button.addEventListener("focus", showTooltip)
-    button.addEventListener("blur", hideTooltip)
-    window.addEventListener("scroll", onWindowChange, true)
-    window.addEventListener("resize", onWindowChange)
-
-    this.tooltipBindings.set(button, {
-      destroy: () => {
-        button.removeEventListener("mouseenter", showTooltip)
-        button.removeEventListener("mouseleave", hideTooltip)
-        button.removeEventListener("focus", showTooltip)
-        button.removeEventListener("blur", hideTooltip)
-        window.removeEventListener("scroll", onWindowChange, true)
-        window.removeEventListener("resize", onWindowChange)
-        removeTooltip()
-      },
-    })
+    window.addEventListener("pointermove", release, true)
+    window.addEventListener("pointerdown", release, true)
+    window.addEventListener("keydown", release, true)
+    window.addEventListener("wheel", release, true)
+    window.addEventListener("touchstart", release, true)
+    button.addEventListener("focus", release, true)
   }
 }
 
@@ -2119,13 +2029,15 @@ export class GeminiAdapter extends SiteAdapter {
       return false
     }
 
-    // 隐藏原内容
-    ;(textContainer as HTMLElement).style.display = "none"
-
     // 创建渲染容器
     const rendered = document.createElement("div")
     rendered.className = "gh-user-query-markdown gh-markdown-preview"
-    rendered.innerHTML = html
+    if (!setSafeHTML(rendered, html)) {
+      return false
+    }
+
+    // 隐藏原内容
+    ;(textContainer as HTMLElement).style.display = "none"
 
     // 插入到原容器后面
     textContainer.after(rendered)
