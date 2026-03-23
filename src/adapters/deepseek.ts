@@ -24,14 +24,16 @@ import {
 } from "./base"
 
 const CHAT_PATH_PATTERN = /\/a\/chat\/s\/([a-z0-9-]+)/i
+const SHARE_PATH_PATTERN = /\/share\/([a-z0-9-]+)/i
 const TOKEN_STORAGE_PREFIX = "__tea_cache_tokens_"
 const THEME_STORAGE_KEY = "__appKit_@deepseek/chat_themePreference"
 const USER_TOKEN_STORAGE_KEY = "userToken"
 const CONVERSATION_LINK_SELECTOR = 'a[href*="/a/chat/s/"]'
 const MESSAGE_SELECTOR = ".ds-message"
+const ASSISTANT_MESSAGE_SELECTOR = `${MESSAGE_SELECTOR}:has(.ds-markdown)`
 const OUTLINE_HEADING_SELECTOR = "h1, h2, h3, h4, h5, h6"
-const ASSISTANT_MARKDOWN_SELECTOR = ".ds-message:has(.ds-markdown) .ds-markdown"
 const USER_MESSAGE_SELECTOR = ".ds-message:not(:has(.ds-markdown))"
+const THOUGHT_CONTAINER_SELECTOR = ".ds-think-content"
 const RESPONSE_CONTAINER_SELECTOR =
   'main .ds-scroll-area:has(.ds-message), [role="main"] .ds-scroll-area:has(.ds-message), .ds-scroll-area:has(.ds-message)'
 const CHAT_COMPLETION_API_PATTERN = "/api/v0/chat/completion"
@@ -76,6 +78,7 @@ export class DeepSeekAdapter extends SiteAdapter {
   private nativeOutlineCache: DeepSeekNativeOutlineCache | null = null
   private exportSnapshotRoot: HTMLElement | null = null
   private exportSnapshotActive = false
+  private exportIncludeThoughtsOverride: boolean | null = null
 
   match(): boolean {
     const isMatch = window.location.hostname === "chat.deepseek.com"
@@ -142,12 +145,20 @@ export class DeepSeekAdapter extends SiteAdapter {
   }
 
   getSessionId(): string {
-    const match = window.location.pathname.match(CHAT_PATH_PATTERN)
-    return match ? match[1] : ""
+    const path = window.location.pathname
+    const chatMatch = path.match(CHAT_PATH_PATTERN)
+    if (chatMatch?.[1]) {
+      return chatMatch[1]
+    }
+
+    const shareMatch = path.match(SHARE_PATH_PATTERN)
+    return shareMatch?.[1] || ""
   }
 
   isNewConversation(): boolean {
     const path = window.location.pathname
+    if (this.isSharePage()) return false
+
     return (
       path === "/" || path === "/a/chat" || path === "/a/chat/" || !CHAT_PATH_PATTERN.test(path)
     )
@@ -283,6 +294,10 @@ export class DeepSeekAdapter extends SiteAdapter {
   }
 
   getConversationTitle(): string | null {
+    if (this.isSharePage()) {
+      return this.getShareConversationTitle()
+    }
+
     const sessionId = this.getSessionId()
     const activeLink =
       (sessionId
@@ -321,7 +336,7 @@ export class DeepSeekAdapter extends SiteAdapter {
     }
 
     const fallbackRoots = Array.from(
-      document.querySelectorAll(`${ASSISTANT_MARKDOWN_SELECTOR}, ${USER_MESSAGE_SELECTOR}`),
+      document.querySelectorAll(`${ASSISTANT_MESSAGE_SELECTOR}, ${USER_MESSAGE_SELECTOR}`),
     ).filter((element) => !element.closest(".gh-root, .gh-table-container"))
     return this.pickBestScrollableAncestor(fallbackRoots)
   }
@@ -335,7 +350,7 @@ export class DeepSeekAdapter extends SiteAdapter {
   }
 
   getChatContentSelectors(): string[] {
-    return [ASSISTANT_MARKDOWN_SELECTOR, USER_MESSAGE_SELECTOR]
+    return [ASSISTANT_MESSAGE_SELECTOR, USER_MESSAGE_SELECTOR]
   }
 
   extractUserQueryText(element: Element): string {
@@ -398,15 +413,20 @@ export class DeepSeekAdapter extends SiteAdapter {
       return element.textContent?.trim() || ""
     }
 
-    const markdown = element.matches(".ds-markdown")
-      ? element
-      : element.querySelector(".ds-markdown")
-    if (!markdown) return ""
+    const includeThoughts = this.shouldIncludeThoughtsInExport()
+    const assistantMessage = this.resolveAssistantMessageElement(element)
+    const bodyMarkdown = this.resolveAssistantBodyMarkdownElement(element)
+    const thoughtBlocks =
+      includeThoughts && assistantMessage
+        ? this.extractThoughtBlockquotesFromMessage(assistantMessage)
+        : []
 
-    const content = htmlToMarkdown(markdown).trim()
-    if (content) return content
+    const content = bodyMarkdown ? this.extractMarkdownText(bodyMarkdown) : ""
+    if (includeThoughts && thoughtBlocks.length > 0) {
+      return content ? `${thoughtBlocks.join("\n\n")}\n\n${content}` : thoughtBlocks.join("\n\n")
+    }
 
-    return this.extractTextWithLineBreaks(markdown).trim()
+    return content
   }
 
   extractOutline(maxLevel = 6, includeUserQueries = false, showWordCount = false): OutlineItem[] {
@@ -421,7 +441,7 @@ export class DeepSeekAdapter extends SiteAdapter {
     )
 
     messages.forEach((message, index) => {
-      const markdown = message.querySelector(".ds-markdown")
+      const markdown = this.getAssistantBodyMarkdown(message)
 
       if (!markdown) {
         if (!includeUserQueries) return
@@ -535,13 +555,14 @@ export class DeepSeekAdapter extends SiteAdapter {
 
     return {
       userQuerySelector: USER_MESSAGE_SELECTOR,
-      assistantResponseSelector: ASSISTANT_MARKDOWN_SELECTOR,
+      assistantResponseSelector: ASSISTANT_MESSAGE_SELECTOR,
       turnSelector: null,
       useShadowDOM: false,
     }
   }
 
-  async prepareConversationExport(_context: ExportLifecycleContext): Promise<unknown> {
+  async prepareConversationExport(context: ExportLifecycleContext): Promise<unknown> {
+    this.exportIncludeThoughtsOverride = context.includeThoughts
     this.clearExportSnapshot()
 
     const scrollContainer =
@@ -564,66 +585,77 @@ export class DeepSeekAdapter extends SiteAdapter {
     _state: unknown,
   ): Promise<void> {
     this.clearExportSnapshot()
+    this.exportIncludeThoughtsOverride = null
   }
 
   getLatestReplyText(): string | null {
+    const prevOverride = this.exportIncludeThoughtsOverride
+    this.exportIncludeThoughtsOverride = false
+
     const scrollContainer =
       this.getScrollContainer() || document.querySelector(this.getResponseContainerSelector())
-    if (scrollContainer instanceof HTMLElement) {
-      const originalScrollTop = scrollContainer.scrollTop
-      const maxScroll = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight)
+    try {
+      if (scrollContainer instanceof HTMLElement) {
+        const originalScrollTop = scrollContainer.scrollTop
+        const maxScroll = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight)
 
-      try {
-        scrollContainer.scrollTop = maxScroll
-        scrollContainer.dispatchEvent(new Event("scroll", { bubbles: true }))
-        scrollContainer.getBoundingClientRect()
-
-        const latest = this.extractLatestReplyTextFromMarkdowns(
-          this.getVisibleAssistantMarkdownElements(scrollContainer),
-        )
-        if (latest) {
-          return latest
-        }
-      } finally {
-        scrollContainer.scrollTop = originalScrollTop
-        scrollContainer.dispatchEvent(new Event("scroll", { bubbles: true }))
-      }
-    }
-
-    return this.extractLatestReplyTextFromMarkdowns(
-      this.getVisibleAssistantMarkdownElements(document),
-    )
-  }
-
-  getLastCodeBlockText(): string | null {
-    const scrollContainer =
-      this.getScrollContainer() || document.querySelector(this.getResponseContainerSelector())
-    if (scrollContainer instanceof HTMLElement) {
-      const positions = this.buildBottomUpScanPositions(scrollContainer)
-      const originalScrollTop = scrollContainer.scrollTop
-
-      try {
-        for (const top of positions) {
-          scrollContainer.scrollTop = top
+        try {
+          scrollContainer.scrollTop = maxScroll
           scrollContainer.dispatchEvent(new Event("scroll", { bubbles: true }))
           scrollContainer.getBoundingClientRect()
 
-          const code = this.extractLastCodeBlockTextFromMarkdowns(
-            this.getVisibleAssistantMarkdownElements(scrollContainer),
+          const latest = this.extractLatestReplyTextFromMessages(
+            this.getVisibleAssistantMessages(scrollContainer),
           )
-          if (code) {
-            return code
+          if (latest) {
+            return latest
           }
+        } finally {
+          scrollContainer.scrollTop = originalScrollTop
+          scrollContainer.dispatchEvent(new Event("scroll", { bubbles: true }))
         }
-      } finally {
-        scrollContainer.scrollTop = originalScrollTop
-        scrollContainer.dispatchEvent(new Event("scroll", { bubbles: true }))
       }
-    }
 
-    return this.extractLastCodeBlockTextFromMarkdowns(
-      this.getVisibleAssistantMarkdownElements(document),
-    )
+      return this.extractLatestReplyTextFromMessages(this.getVisibleAssistantMessages(document))
+    } finally {
+      this.exportIncludeThoughtsOverride = prevOverride
+    }
+  }
+
+  getLastCodeBlockText(): string | null {
+    const prevOverride = this.exportIncludeThoughtsOverride
+    this.exportIncludeThoughtsOverride = false
+
+    const scrollContainer =
+      this.getScrollContainer() || document.querySelector(this.getResponseContainerSelector())
+    try {
+      if (scrollContainer instanceof HTMLElement) {
+        const positions = this.buildBottomUpScanPositions(scrollContainer)
+        const originalScrollTop = scrollContainer.scrollTop
+
+        try {
+          for (const top of positions) {
+            scrollContainer.scrollTop = top
+            scrollContainer.dispatchEvent(new Event("scroll", { bubbles: true }))
+            scrollContainer.getBoundingClientRect()
+
+            const code = this.extractLastCodeBlockTextFromMessages(
+              this.getVisibleAssistantMessages(scrollContainer),
+            )
+            if (code) {
+              return code
+            }
+          }
+        } finally {
+          scrollContainer.scrollTop = originalScrollTop
+          scrollContainer.dispatchEvent(new Event("scroll", { bubbles: true }))
+        }
+      }
+
+      return this.extractLastCodeBlockTextFromMessages(this.getVisibleAssistantMessages(document))
+    } finally {
+      this.exportIncludeThoughtsOverride = prevOverride
+    }
   }
 
   getSubmitButtonSelectors(): string[] {
@@ -846,7 +878,7 @@ export class DeepSeekAdapter extends SiteAdapter {
     const rect = element.getBoundingClientRect()
     const messageCount = element.querySelectorAll(MESSAGE_SELECTOR).length
     const userCount = element.querySelectorAll(USER_MESSAGE_SELECTOR).length
-    const assistantCount = element.querySelectorAll(ASSISTANT_MARKDOWN_SELECTOR).length
+    const assistantCount = element.querySelectorAll(ASSISTANT_MESSAGE_SELECTOR).length
 
     let score = 0
 
@@ -924,12 +956,30 @@ export class DeepSeekAdapter extends SiteAdapter {
       return [...nativeUserQueries, ...domOutline]
     }
 
-    const merged: OutlineItem[] = []
+    type QuerySegment =
+      | {
+          type: "matched"
+          nativeIndex: number
+          assistantItems: OutlineItem[]
+        }
+      | {
+          type: "unmatched"
+          userItem: OutlineItem
+          assistantItems: OutlineItem[]
+        }
+
+    const leadingAssistantItems: OutlineItem[] = []
+    const segments: QuerySegment[] = []
+    let currentSegment: QuerySegment | null = null
     let nativeQueryCursor = 0
 
     domOutline.forEach((item) => {
       if (!item.isUserQuery) {
-        merged.push(item)
+        if (currentSegment) {
+          currentSegment.assistantItems.push(item)
+        } else {
+          leadingAssistantItems.push(item)
+        }
         return
       }
 
@@ -938,20 +988,73 @@ export class DeepSeekAdapter extends SiteAdapter {
         item,
         nativeQueryCursor,
       )
-      if (matchIndex < 0) {
-        merged.push(item)
+
+      if (matchIndex >= 0) {
+        currentSegment = {
+          type: "matched",
+          nativeIndex: matchIndex,
+          assistantItems: [],
+        }
+        nativeQueryCursor = matchIndex + 1
+      } else {
+        currentSegment = {
+          type: "unmatched",
+          userItem: item,
+          assistantItems: [],
+        }
+      }
+
+      segments.push(currentSegment)
+    })
+
+    const firstMatchedSegment = segments.find(
+      (segment): segment is Extract<QuerySegment, { type: "matched" }> =>
+        segment.type === "matched",
+    )
+    if (!firstMatchedSegment) {
+      return [...nativeUserQueries, ...domOutline]
+    }
+
+    const merged: OutlineItem[] = []
+    let nextNativeQueryIndex = 0
+
+    if (leadingAssistantItems.length > 0) {
+      // DeepSeek 虚拟滚动可能会让当前可见 assistant 回复先挂在 DOM 中，
+      // 而对应的上一条用户提问暂时被卸载。此时把这些 heading 归到
+      // “首个可见用户提问之前的最后一条原生提问”后面，可以避免回答跑到提问上方。
+      const leadingTargetIndex = Math.max(firstMatchedSegment.nativeIndex - 1, 0)
+
+      while (
+        nextNativeQueryIndex <= leadingTargetIndex &&
+        nextNativeQueryIndex < nativeUserQueries.length
+      ) {
+        merged.push(nativeUserQueries[nextNativeQueryIndex])
+        nextNativeQueryIndex += 1
+      }
+
+      merged.push(...leadingAssistantItems)
+    }
+
+    segments.forEach((segment) => {
+      if (segment.type === "matched") {
+        while (
+          nextNativeQueryIndex <= segment.nativeIndex &&
+          nextNativeQueryIndex < nativeUserQueries.length
+        ) {
+          merged.push(nativeUserQueries[nextNativeQueryIndex])
+          nextNativeQueryIndex += 1
+        }
+
+        merged.push(...segment.assistantItems)
         return
       }
 
-      while (nativeQueryCursor <= matchIndex) {
-        merged.push(nativeUserQueries[nativeQueryCursor])
-        nativeQueryCursor += 1
-      }
+      merged.push(segment.userItem, ...segment.assistantItems)
     })
 
-    while (nativeQueryCursor < nativeUserQueries.length) {
-      merged.push(nativeUserQueries[nativeQueryCursor])
-      nativeQueryCursor += 1
+    while (nextNativeQueryIndex < nativeUserQueries.length) {
+      merged.push(nativeUserQueries[nextNativeQueryIndex])
+      nextNativeQueryIndex += 1
     }
 
     return merged
@@ -1516,18 +1619,100 @@ export class DeepSeekAdapter extends SiteAdapter {
     return positions
   }
 
-  private getVisibleAssistantMarkdownElements(container: ParentNode): HTMLElement[] {
-    return Array.from(container.querySelectorAll(ASSISTANT_MARKDOWN_SELECTOR)).filter(
-      (element): element is HTMLElement =>
-        element instanceof HTMLElement &&
-        !element.closest(`[${DEEPSEEK_EXPORT_ROOT_ATTR}]`) &&
-        !element.closest(".gh-root"),
+  private shouldIncludeThoughtsInExport(): boolean {
+    if (typeof this.exportIncludeThoughtsOverride === "boolean") {
+      return this.exportIncludeThoughtsOverride
+    }
+
+    return false
+  }
+
+  private resolveAssistantMessageElement(element: Element): HTMLElement | null {
+    if (element.matches(MESSAGE_SELECTOR)) {
+      return element as HTMLElement
+    }
+
+    const message = element.closest(MESSAGE_SELECTOR)
+    return message instanceof HTMLElement ? message : null
+  }
+
+  private resolveAssistantBodyMarkdownElement(element: Element): HTMLElement | null {
+    if (element.matches(".ds-markdown") && !this.isThoughtMarkdownElement(element)) {
+      return element as HTMLElement
+    }
+
+    const message = this.resolveAssistantMessageElement(element)
+    if (!message) {
+      return null
+    }
+
+    return this.getAssistantBodyMarkdown(message)
+  }
+
+  private getAssistantBodyMarkdown(message: Element): HTMLElement | null {
+    const markdowns = Array.from(message.querySelectorAll(".ds-markdown")).filter(
+      (markdown): markdown is HTMLElement =>
+        markdown instanceof HTMLElement && !this.isThoughtMarkdownElement(markdown),
+    )
+
+    return markdowns.length > 0 ? markdowns[markdowns.length - 1] : null
+  }
+
+  private isThoughtMarkdownElement(element: Element): boolean {
+    return element.closest(THOUGHT_CONTAINER_SELECTOR) !== null
+  }
+
+  private extractThoughtBlockquotesFromMessage(message: Element): string[] {
+    const thoughtMarkdowns = Array.from(
+      message.querySelectorAll(`${THOUGHT_CONTAINER_SELECTOR} .ds-markdown`),
+    ).filter((markdown): markdown is HTMLElement => markdown instanceof HTMLElement)
+
+    const blocks: string[] = []
+
+    thoughtMarkdowns.forEach((markdown) => {
+      const text = this.extractMarkdownText(markdown)
+      if (!text) return
+      blocks.push(this.formatAsThoughtBlockquote(text))
+    })
+
+    return blocks
+  }
+
+  private extractMarkdownText(element: Element): string {
+    const clone = element.cloneNode(true) as HTMLElement
+    clone
+      .querySelectorAll(
+        'button, [role="button"], svg, .ds-icon-button, .ds-focus-ring, [aria-hidden="true"]',
+      )
+      .forEach((node) => node.remove())
+
+    const content = htmlToMarkdown(clone).trim()
+    if (content) {
+      return content
+    }
+
+    return this.extractTextWithLineBreaks(clone).trim()
+  }
+
+  private formatAsThoughtBlockquote(markdown: string): string {
+    const lines = markdown.replace(/\r\n/g, "\n").split("\n")
+    const quotedLines = lines.map((line) => (line.trim().length > 0 ? `> ${line}` : ">"))
+    return ["> [Thoughts]", ...quotedLines].join("\n")
+  }
+
+  private getVisibleAssistantMessages(container: ParentNode): HTMLElement[] {
+    return Array.from(container.querySelectorAll(ASSISTANT_MESSAGE_SELECTOR)).filter(
+      (message): message is HTMLElement =>
+        message instanceof HTMLElement &&
+        !message.closest(`[${DEEPSEEK_EXPORT_ROOT_ATTR}]`) &&
+        !message.closest(".gh-root") &&
+        !message.parentElement?.closest(MESSAGE_SELECTOR),
     )
   }
 
-  private extractLatestReplyTextFromMarkdowns(markdowns: HTMLElement[]): string | null {
-    for (let i = markdowns.length - 1; i >= 0; i -= 1) {
-      const text = this.extractAssistantResponseText(markdowns[i]).trim()
+  private extractLatestReplyTextFromMessages(messages: HTMLElement[]): string | null {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const text = this.extractAssistantResponseText(messages[i]).trim()
       if (text) {
         return text
       }
@@ -1536,15 +1721,19 @@ export class DeepSeekAdapter extends SiteAdapter {
     return null
   }
 
-  private extractLastCodeBlockTextFromMarkdowns(markdowns: HTMLElement[]): string | null {
-    for (let i = markdowns.length - 1; i >= 0; i -= 1) {
-      const markdownText = this.extractAssistantResponseText(markdowns[i])
+  private extractLastCodeBlockTextFromMessages(messages: HTMLElement[]): string | null {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const message = messages[i]
+      const bodyMarkdown = this.getAssistantBodyMarkdown(message)
+      if (!bodyMarkdown) continue
+
+      const markdownText = this.extractAssistantResponseText(message)
       const fromMarkdown = this.extractLastFencedCodeBlock(markdownText)
       if (fromMarkdown) {
         return fromMarkdown
       }
 
-      const fromDom = this.extractLastCodeBlockTextFromDom(markdowns[i])
+      const fromDom = this.extractLastCodeBlockTextFromDom(bodyMarkdown)
       if (fromDom) {
         return fromDom
       }
@@ -1609,11 +1798,9 @@ export class DeepSeekAdapter extends SiteAdapter {
   }
 
   private extractExportMessageSnapshot(message: Element): DeepSeekExportMessageSnapshot | null {
-    const markdown = message.querySelector(".ds-markdown")
+    const markdown = this.getAssistantBodyMarkdown(message)
     if (markdown) {
-      const content = this.normalizeExportMessageContent(
-        this.extractAssistantResponseText(markdown),
-      )
+      const content = this.normalizeExportMessageContent(this.extractAssistantResponseText(message))
       return content
         ? {
             role: DEEPSEEK_EXPORT_ROLE_ASSISTANT,
@@ -1908,7 +2095,7 @@ export class DeepSeekAdapter extends SiteAdapter {
 
   private findNextAssistantMarkdown(messages: Element[], currentIndex: number): Element | null {
     for (let i = currentIndex + 1; i < messages.length; i++) {
-      const markdown = messages[i].querySelector(".ds-markdown")
+      const markdown = this.getAssistantBodyMarkdown(messages[i])
       if (markdown) {
         return markdown
       }
@@ -1938,6 +2125,32 @@ export class DeepSeekAdapter extends SiteAdapter {
       isActive,
       isPinned: this.isPinnedConversationLink(el),
     }
+  }
+
+  private getShareConversationTitle(): string | null {
+    const firstUserMessage = Array.from(document.querySelectorAll(USER_MESSAGE_SELECTOR)).find(
+      (message) => !message.parentElement?.closest(MESSAGE_SELECTOR),
+    )
+    const firstUserText = firstUserMessage ? this.extractUserQueryText(firstUserMessage) : ""
+    const normalizedUserText = this.normalizeOutlineText(firstUserText)
+
+    if (normalizedUserText) {
+      return normalizedUserText.length > 80
+        ? `${normalizedUserText.slice(0, 80)}...`
+        : normalizedUserText
+    }
+
+    const metaTitle = document
+      .querySelector('meta[property="og:title"], meta[name="twitter:title"]')
+      ?.getAttribute("content")
+      ?.replace(/\s*[-|]\s*DeepSeek$/i, "")
+      ?.trim()
+
+    if (metaTitle && metaTitle !== "来自分享的对话") {
+      return metaTitle
+    }
+
+    return metaTitle || "DeepSeek Share"
   }
 
   private isPinnedConversationLink(link: Element): boolean {
