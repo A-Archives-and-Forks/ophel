@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-03-23T11:39:01.538Z",
+  "version": "1.0.22",
+  "resources": {
+    "ophelStyles": {
+      "fileName": "ophel.user.7ed62ddc9cb9.css",
+      "relativePath": "userscript-assets/ophel.user.7ed62ddc9cb9.css"
+    },
+    "ophelIcon": {
+      "fileName": "ophel-icon.193ed41c2441.png",
+      "relativePath": "userscript-assets/ophel-icon.193ed41c2441.png"
+    },
+    "ophelNotificationDefault": {
+      "fileName": "ophel-sound-default.15d3cda1ee80.mp3",
+      "relativePath": "userscript-assets/ophel-sound-default.15d3cda1ee80.mp3"
+    },
+    "ophelNotificationSoftChime": {
+      "fileName": "ophel-sound-soft-chime.063564703b60.ogg",
+      "relativePath": "userscript-assets/ophel-sound-soft-chime.063564703b60.ogg"
+    },
+    "ophelNotificationGlassPing": {
+      "fileName": "ophel-sound-glass-ping.2379b58f953e.ogg",
+      "relativePath": "userscript-assets/ophel-sound-glass-ping.2379b58f953e.ogg"
+    },
+    "ophelNotificationBrightAlert": {
+      "fileName": "ophel-sound-bright-alert.568967a3d9f8.ogg",
+      "relativePath": "userscript-assets/ophel-sound-bright-alert.568967a3d9f8.ogg"
+    },
+    "ophelWatermarkBg48": {
+      "fileName": "ophel-watermark-bg-48.4afc99afe0ef.png",
+      "relativePath": "userscript-assets/ophel-watermark-bg-48.4afc99afe0ef.png"
+    },
+    "ophelWatermarkBg96": {
+      "fileName": "ophel-watermark-bg-96.3e26f2233a12.png",
+      "relativePath": "userscript-assets/ophel-watermark-bg-96.3e26f2233a12.png"
+    }
+  }
+}
