@@ -36,6 +36,7 @@ import {
   smartScrollTo,
   smartScrollToBottom,
 } from "~utils/scroll-helper"
+import { EVENT_PRIVACY_TOGGLE } from "~utils/messaging"
 import { DEFAULT_SETTINGS } from "~utils/storage"
 import { showToast } from "~utils/toast"
 
@@ -144,6 +145,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [loadingText, setLoadingText] = useState("")
   const abortLoadingRef = useRef(false)
+  const isPrivacyMode = currentSettings.tab?.privacyMode ?? DEFAULT_SETTINGS.tab.privacyMode
 
   // 滚动到顶部（支持图文并茂模式）
   const scrollToTop = useCallback(async () => {
@@ -518,6 +520,12 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     </Tooltip>
   )
 
+  const renderRailDivider = (key: string) => <div key={key} className="quick-rail-divider" />
+
+  const togglePrivacyMode = useCallback(() => {
+    window.postMessage({ type: EVENT_PRIVACY_TOGGLE }, window.location.origin)
+  }, [])
+
   const renderRailLayout = () => {
     const ScrollTopRailIcon = COLLAPSED_BUTTON_DEFS.scrollTop.IconComponent
     const AnchorRailIcon = COLLAPSED_BUTTON_DEFS.anchor.IconComponent
@@ -550,12 +558,17 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
 
     railSections.push(
       <div key="top" className="quick-rail-section quick-rail-section-top">
-        <div className="quick-rail-brand" title={t("panelTitle") || "Ophel"}>
-          <div className="quick-rail-brand-icon">
-            <SparklesIcon size={16} />
-          </div>
-          <div className="quick-rail-brand-text">{t("panelTitle") || "Ophel"}</div>
-        </div>
+        <Tooltip content={t("privacyModeDesc") || "双击切换隐私模式"}>
+          <button
+            className={`quick-rail-brand ${isPrivacyMode ? "active" : ""}`}
+            onDoubleClick={togglePrivacyMode}
+            type="button">
+            <div className="quick-rail-brand-icon">
+              <SparklesIcon size={16} />
+            </div>
+            <div className="quick-rail-brand-text">{t("panelTitle") || "Ophel"}</div>
+          </button>
+        </Tooltip>
         {renderRailButton({
           key: "toggle",
           label: isPanelOpen ? t("collapse") || "收起" : "展开",
@@ -565,6 +578,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
           extraClassName: "rail-toggle-btn",
         })}
       </div>,
+      renderRailDivider("divider-top"),
     )
 
     railSections.push(
@@ -581,10 +595,28 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
           }),
         )}
       </div>,
+      renderRailDivider("divider-tabs"),
     )
 
     railSections.push(
       <div key="actions" className="quick-rail-section">
+        {renderRailButton({
+          key: "newConversation",
+          label: t("shortcutNewConversation") || "新会话",
+          icon: <FolderPlusIcon size={18} />,
+          onClick: onNewConversation,
+        })}
+        {collapsedButtonEnabled("globalSearch")
+          ? renderRailButton({
+              key: "globalSearch",
+              label: t("navGlobalSearch") || "全局搜索",
+              icon: <SearchIcon size={18} />,
+              onClick: () => {
+                setIsToolsMenuOpen(false)
+                onGlobalSearch?.()
+              },
+            })
+          : null}
         <div key="tools-anchor" className="quick-rail-tools-anchor">
           {renderRailButton({
             key: "tools",
@@ -604,37 +636,6 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
             </div>
           )}
         </div>
-        {collapsedButtonEnabled("globalSearch")
-          ? renderRailButton({
-              key: "globalSearch",
-              label: t("navGlobalSearch") || "全局搜索",
-              icon: <SearchIcon size={18} />,
-              onClick: () => {
-                setIsToolsMenuOpen(false)
-                onGlobalSearch?.()
-              },
-            })
-          : null}
-        {collapsedButtonEnabled("theme")
-          ? renderRailButton({
-              key: "theme",
-              label: t("showCollapsedThemeLabel") || "主题",
-              icon: getThemeIcon(),
-              onClick: onThemeToggle,
-            })
-          : null}
-        {renderRailButton({
-          key: "settings",
-          label: t("tabSettings") || "设置",
-          icon: <SettingsIcon size={18} />,
-          onClick: onSettings,
-        })}
-        {renderRailButton({
-          key: "newConversation",
-          label: "新会话",
-          icon: <FolderPlusIcon size={18} />,
-          onClick: onNewConversation,
-        })}
       </div>,
     )
 
@@ -679,6 +680,23 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
               onClick: scrollToBottom,
             })
           : null}
+      </div>,
+      renderRailDivider("divider-bottom"),
+      <div key="system" className="quick-rail-section quick-rail-section-system">
+        {collapsedButtonEnabled("theme")
+          ? renderRailButton({
+              key: "theme",
+              label: t("showCollapsedThemeLabel") || "主题",
+              icon: getThemeIcon(),
+              onClick: onThemeToggle,
+            })
+          : null}
+        {renderRailButton({
+          key: "settings",
+          label: t("tabSettings") || "设置",
+          icon: <SettingsIcon size={18} />,
+          onClick: onSettings,
+        })}
       </div>,
     )
 
