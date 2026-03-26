@@ -712,6 +712,20 @@ export class YuanbaoAdapter extends SiteAdapter {
         value: `min(100%, var(${YUANBAO_WIDTH_MAX_VAR}))`,
         noCenter: true,
       },
+      {
+        selector: ".agent-dialogue__content--common__input-box",
+        property: "width",
+        // value: `min(100%, var(${YUANBAO_WIDTH_MAX_VAR}))`,
+        value: "100%",
+        noCenter: true,
+      },
+      {
+        selector: ".agent-dialogue__content--common__input-box",
+        property: "max-width",
+        // value: `min(100%, var(${YUANBAO_WIDTH_MAX_VAR}))`,
+        value: "100%",
+        noCenter: true,
+      },
     ]
   }
 
@@ -721,12 +735,6 @@ export class YuanbaoAdapter extends SiteAdapter {
         {
           type: "inset",
           selectors: [".agent-dialogue__content-split-pane"],
-        },
-      ],
-      composer: [
-        {
-          type: "padding",
-          selectors: ["#search-bar"],
         },
       ],
     }
