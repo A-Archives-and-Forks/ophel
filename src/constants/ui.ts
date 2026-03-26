@@ -27,7 +27,7 @@ export const TAB_IDS = {
 
 export type TabId = (typeof TAB_IDS)[keyof typeof TAB_IDS]
 
-export const PANEL_RAIL_WIDTH = 56
+export const PANEL_RAIL_WIDTH = 48
 export const PANEL_EDGE_OFFSET = 12
 export const PANEL_RAIL_GAP = 12
 

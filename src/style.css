@@ -855,12 +855,13 @@
 .quick-btn-group.rail-mode {
   top: 12px;
   transform: none;
-  gap: 10px;
+  gap: 8px;
   cursor: default;
   user-select: none;
   touch-action: auto;
-  padding: 8px 6px;
-  border-radius: 10px;
+  padding: 6px 3px;
+  border-radius: 7px;
+  box-sizing: border-box;
   border: 1px solid var(--gh-border, #e5e7eb);
   background: var(--gh-bg, #ffffff);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
@@ -869,7 +870,8 @@
 .quick-btn-group.rail-mode .quick-prompt-btn {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: 7px;
+  box-sizing: border-box;
   border: 1px solid transparent;
   background: transparent;
   color: var(--gh-text-secondary, #6b7280);
@@ -916,7 +918,7 @@
 }
 
 .quick-rail-divider {
-  width: calc(100% - 8px);
+  width: calc(100% - 4px);
   height: 1px;
   margin: 0 auto;
   background: color-mix(in srgb, var(--gh-border, #e5e7eb) 88%, transparent);
@@ -926,7 +928,8 @@
   width: 40px;
   min-height: 52px;
   padding: 8px 4px;
-  border-radius: 8px;
+  border-radius: 7px;
+  box-sizing: border-box;
   border: 1px solid var(--gh-border, #e5e7eb);
   background: transparent;
   color: var(--gh-text, #111827);
