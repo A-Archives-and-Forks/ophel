@@ -1,10 +1,31 @@
 import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react"
 
 import { getAdapter } from "~adapters/index"
-import { ThemeDarkIcon, ThemeLightIcon } from "~components/icons"
+import {
+  ConversationIcon,
+  FolderPlusIcon,
+  MaximizeIcon,
+  MinimizeIcon,
+  OutlineIcon,
+  PromptIcon,
+  SearchIcon,
+  SettingsIcon,
+  SparklesIcon,
+  ThemeDarkIcon,
+  ThemeLightIcon,
+  ToolsIcon,
+} from "~components/icons"
 import { LoadingOverlay } from "~components/LoadingOverlay"
 import { Tooltip } from "~components/ui/Tooltip"
-import { COLLAPSED_BUTTON_DEFS, TOOLS_MENU_IDS, TOOLS_MENU_ITEMS } from "~constants"
+import {
+  COLLAPSED_BUTTON_DEFS,
+  PANEL_EDGE_OFFSET,
+  PANEL_RAIL_GAP,
+  PANEL_RAIL_WIDTH,
+  TAB_IDS,
+  TOOLS_MENU_IDS,
+  TOOLS_MENU_ITEMS,
+} from "~constants"
 import { anchorStore } from "~stores/anchor-store"
 import { useSettingsStore } from "~stores/settings-store"
 import { loadHistoryUntil } from "~utils/history-loader"
@@ -19,8 +40,11 @@ import { DEFAULT_SETTINGS } from "~utils/storage"
 import { showToast } from "~utils/toast"
 
 interface QuickButtonsProps {
+  layoutVariant?: "legacy" | "rail"
   isPanelOpen: boolean
   onPanelToggle: () => void
+  activeTab?: string
+  onTabSelect?: (tabId: string) => void
   onThemeToggle?: () => void
   themeMode?: "light" | "dark"
   // 工具栏功能
@@ -31,6 +55,7 @@ interface QuickButtonsProps {
   onSettings?: () => void
   onCleanup?: () => void
   onGlobalSearch?: () => void
+  onNewConversation?: () => void
   scrollLocked?: boolean
   // 新增功能
   onCopyMarkdown?: () => void
@@ -39,8 +64,11 @@ interface QuickButtonsProps {
 }
 
 export const QuickButtons: React.FC<QuickButtonsProps> = ({
+  layoutVariant = "legacy",
   isPanelOpen,
   onPanelToggle,
+  activeTab,
+  onTabSelect,
   onThemeToggle,
   themeMode,
   onExport,
@@ -50,6 +78,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   onSettings,
   onCleanup,
   onGlobalSearch,
+  onNewConversation,
   scrollLocked,
   onCopyMarkdown,
   onModelLockToggle,
@@ -60,7 +89,9 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   const collapsedButtonsOrder = currentSettings.collapsedButtons || []
   const quickButtonsSide = currentSettings.panel?.defaultPosition ?? "right"
   const quickButtonsPositionStyle =
-    quickButtonsSide === "left" ? { left: "16px", right: "auto" } : { right: "16px", left: "auto" }
+    quickButtonsSide === "left"
+      ? { left: `${PANEL_EDGE_OFFSET}px`, right: "auto" }
+      : { right: `${PANEL_EDGE_OFFSET}px`, left: "auto" }
   const quickButtonsOpacity = Math.min(Math.max(currentSettings.quickButtonsOpacity ?? 1, 0.4), 1)
 
   const DRAG_LONG_PRESS_MS = 150
@@ -456,8 +487,229 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     return elements
   }
 
+  const renderRailButton = ({
+    key,
+    label,
+    icon,
+    onClick,
+    active = false,
+    disabled = false,
+    extraClassName = "",
+  }: {
+    key: string
+    label: string
+    icon: React.ReactNode
+    onClick?: () => void
+    active?: boolean
+    disabled?: boolean
+    extraClassName?: string
+  }) => (
+    <Tooltip key={key} content={label}>
+      <button
+        className={`quick-prompt-btn gh-interactive rail-btn ${active ? "active" : ""} ${extraClassName}`.trim()}
+        onClick={() => onClick?.()}
+        disabled={disabled}
+        style={{
+          opacity: disabled ? 0.4 : 1,
+          cursor: disabled ? "default" : "pointer",
+        }}>
+        {icon}
+      </button>
+    </Tooltip>
+  )
+
+  const renderRailLayout = () => {
+    const ScrollTopRailIcon = COLLAPSED_BUTTON_DEFS.scrollTop.IconComponent
+    const AnchorRailIcon = COLLAPSED_BUTTON_DEFS.anchor.IconComponent
+    const ScrollBottomRailIcon = COLLAPSED_BUTTON_DEFS.scrollBottom.IconComponent
+    const railSections: React.ReactNode[] = []
+    const toolsPopoverSide = quickButtonsSide === "left" ? "side-right" : "side-left"
+    const tabButtons = [
+      {
+        id: TAB_IDS.OUTLINE,
+        label: t("tabOutline") || "大纲",
+        enabled: currentSettings.features?.outline?.enabled !== false,
+        icon: <OutlineIcon size={18} />,
+      },
+      {
+        id: TAB_IDS.CONVERSATIONS,
+        label: t("tabConversations") || "会话",
+        enabled: currentSettings.features?.conversations?.enabled !== false,
+        icon: <ConversationIcon size={18} />,
+      },
+      {
+        id: TAB_IDS.PROMPTS,
+        label: t("tabPrompts") || "提示词",
+        enabled: currentSettings.features?.prompts?.enabled !== false,
+        icon: <PromptIcon size={18} />,
+      },
+    ].filter((item) => item.enabled)
+
+    const collapsedButtonEnabled = (id: string, fallback = true) =>
+      collapsedButtonsOrder.find((item) => item.id === id)?.enabled ?? fallback
+
+    railSections.push(
+      <div key="top" className="quick-rail-section quick-rail-section-top">
+        <div className="quick-rail-brand" title={t("panelTitle") || "Ophel"}>
+          <div className="quick-rail-brand-icon">
+            <SparklesIcon size={16} />
+          </div>
+          <div className="quick-rail-brand-text">{t("panelTitle") || "Ophel"}</div>
+        </div>
+        {renderRailButton({
+          key: "toggle",
+          label: isPanelOpen ? t("collapse") || "收起" : "展开",
+          icon: isPanelOpen ? <MinimizeIcon size={16} /> : <MaximizeIcon size={16} />,
+          onClick: onPanelToggle,
+          active: isPanelOpen,
+          extraClassName: "rail-toggle-btn",
+        })}
+      </div>,
+    )
+
+    railSections.push(
+      <div key="tabs" className="quick-rail-section">
+        {tabButtons.map((item) =>
+          renderRailButton({
+            key: item.id,
+            label: item.label,
+            icon: item.icon,
+            active: isPanelOpen && activeTab === item.id,
+            onClick: () => {
+              onTabSelect?.(item.id)
+            },
+          }),
+        )}
+      </div>,
+    )
+
+    railSections.push(
+      <div key="actions" className="quick-rail-section">
+        <div key="tools-anchor" className="quick-rail-tools-anchor">
+          {renderRailButton({
+            key: "tools",
+            label: t("tools") || "工具",
+            icon: <ToolsIcon size={18} />,
+            active: isToolsMenuOpen,
+            onClick: () => setIsToolsMenuOpen((prev) => !prev),
+            extraClassName: "tools-trigger-btn",
+          })}
+          {isToolsMenuOpen && (
+            <div
+              className={`quick-menu-popover rail-popover ${toolsPopoverSide}`}
+              onPointerDown={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}>
+              {renderToolsMenuItems()}
+            </div>
+          )}
+        </div>
+        {collapsedButtonEnabled("globalSearch")
+          ? renderRailButton({
+              key: "globalSearch",
+              label: t("navGlobalSearch") || "全局搜索",
+              icon: <SearchIcon size={18} />,
+              onClick: () => {
+                setIsToolsMenuOpen(false)
+                onGlobalSearch?.()
+              },
+            })
+          : null}
+        {collapsedButtonEnabled("theme")
+          ? renderRailButton({
+              key: "theme",
+              label: t("showCollapsedThemeLabel") || "主题",
+              icon: getThemeIcon(),
+              onClick: onThemeToggle,
+            })
+          : null}
+        {renderRailButton({
+          key: "settings",
+          label: t("tabSettings") || "设置",
+          icon: <SettingsIcon size={18} />,
+          onClick: onSettings,
+        })}
+        {renderRailButton({
+          key: "newConversation",
+          label: "新会话",
+          icon: <FolderPlusIcon size={18} />,
+          onClick: onNewConversation,
+        })}
+      </div>,
+    )
+
+    railSections.push(
+      <div key="spacer" className="quick-rail-spacer" />,
+      <div key="nav" className="quick-rail-section quick-rail-section-bottom">
+        {collapsedButtonEnabled("scrollTop")
+          ? renderRailButton({
+              key: "scrollTop",
+              label: t("scrollTop") || "顶部",
+              icon: ScrollTopRailIcon ? (
+                <ScrollTopRailIcon size={18} />
+              ) : (
+                COLLAPSED_BUTTON_DEFS.scrollTop.icon
+              ),
+              onClick: scrollToTop,
+            })
+          : null}
+        {collapsedButtonEnabled("anchor")
+          ? renderRailButton({
+              key: "anchor",
+              label: hasAnchor ? t("goToAnchor") || "返回锚点" : t("noAnchor") || "暂无锚点",
+              icon: AnchorRailIcon ? (
+                <AnchorRailIcon size={18} />
+              ) : (
+                COLLAPSED_BUTTON_DEFS.anchor.icon
+              ),
+              onClick: handleAnchorClick,
+              active: hasAnchor,
+              disabled: !hasAnchor,
+            })
+          : null}
+        {collapsedButtonEnabled("scrollBottom")
+          ? renderRailButton({
+              key: "scrollBottom",
+              label: t("scrollBottom") || "底部",
+              icon: ScrollBottomRailIcon ? (
+                <ScrollBottomRailIcon size={18} />
+              ) : (
+                COLLAPSED_BUTTON_DEFS.scrollBottom.icon
+              ),
+              onClick: scrollToBottom,
+            })
+          : null}
+      </div>,
+    )
+
+    return (
+      <>
+        <LoadingOverlay isVisible={isLoadingHistory} text={loadingText} onStop={stopLoading} />
+        <div
+          ref={groupRef}
+          className={`quick-btn-group gh-interactive gh-quick-buttons rail-mode ${quickButtonsSide === "left" ? "side-left" : "side-right"}`}
+          style={{
+            position: "fixed",
+            top: `${PANEL_EDGE_OFFSET}px`,
+            bottom: `${PANEL_EDGE_OFFSET}px`,
+            left: quickButtonsPositionStyle.left,
+            right: quickButtonsPositionStyle.right,
+            width: `${PANEL_RAIL_WIDTH}px`,
+            display: "flex",
+            flexDirection: "column",
+            gap: `${PANEL_RAIL_GAP}px`,
+            zIndex: 9998,
+            opacity: quickButtonsOpacity,
+          }}>
+          {railSections}
+        </div>
+      </>
+    )
+  }
+
   // 悬浮隐藏：鼠标离开后延迟隐藏
   useEffect(() => {
+    if (layoutVariant === "rail") return
     if (!groupRef.current) return
 
     let hideTimer: number | null = null
@@ -485,13 +737,15 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
       el.removeEventListener("mouseleave", handleMouseLeave)
       if (hideTimer) clearTimeout(hideTimer)
     }
-  }, [])
+  }, [layoutVariant])
 
   useEffect(() => {
+    if (layoutVariant === "rail") return
     setGroupPosition(null)
-  }, [quickButtonsSide])
+  }, [layoutVariant, quickButtonsSide])
 
   useEffect(() => {
+    if (layoutVariant === "rail") return
     let rafId: number | null = null
     let debounceId: number | null = null
     let needsFollowUp = false
@@ -544,7 +798,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
       if (rafId !== null) cancelAnimationFrame(rafId)
       if (debounceId !== null) window.clearTimeout(debounceId)
     }
-  }, [clampGroupPosition])
+  }, [layoutVariant, clampGroupPosition])
 
   const clearDragTimer = () => {
     if (dragTimerRef.current) {
@@ -637,13 +891,17 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     suppressClickRef.current = false
   }
 
+  if (layoutVariant === "rail") {
+    return renderRailLayout()
+  }
+
   return (
     <>
       {/* 加载历史遮罩 */}
       <LoadingOverlay isVisible={isLoadingHistory} text={loadingText} onStop={stopLoading} />
       <div
         ref={groupRef}
-        className={`quick-btn-group gh-interactive ${!isPanelOpen ? "collapsed" : ""} ${isDragging ? "dragging" : ""} ${isPressing ? "pressing" : ""}`}
+        className={`quick-btn-group gh-interactive gh-quick-buttons ${!isPanelOpen ? "collapsed" : ""} ${isDragging ? "dragging" : ""} ${isPressing ? "pressing" : ""}`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

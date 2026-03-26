@@ -7,6 +7,7 @@ import React, {
   useSyncExternalStore,
 } from "react"
 
+import type { SidebarLayoutConfig, SidebarLayoutRule } from "~adapters/base"
 import { getAdapter } from "~adapters/index"
 import { SITE_IDS } from "~constants/defaults"
 import { ConversationManager } from "~core/conversation-manager"
@@ -61,6 +62,9 @@ import {
   APPEARANCE_TAB_IDS,
   FEATURES_TAB_IDS,
   NAV_IDS,
+  PANEL_EDGE_OFFSET,
+  PANEL_RAIL_GAP,
+  PANEL_RAIL_WIDTH,
   SITE_SETTINGS_TAB_IDS,
   TAB_IDS,
   resolveSettingRoute,
@@ -77,6 +81,85 @@ import {
 interface LocalizedLabelDefinition {
   key: string
   fallback: string
+}
+
+const FIXED_SIDEBAR_LAYOUT_STYLE_ID = "gh-fixed-sidebar-layout"
+
+const cleanupFixedSidebarLayout = () => {
+  const root = document.documentElement
+  document.getElementById(FIXED_SIDEBAR_LAYOUT_STYLE_ID)?.remove()
+  root.style.removeProperty("--ophel-sidebar-reserve")
+  delete root.dataset.ophelSidebarLayout
+  delete root.dataset.ophelSidebarSide
+}
+
+const buildSidebarLayoutRuleCss = (
+  rules: SidebarLayoutRule[] | undefined,
+  side: "left" | "right",
+) => {
+  if (!rules || rules.length === 0) {
+    return ""
+  }
+
+  const reserveValue = "var(--ophel-sidebar-reserve)"
+
+  return rules
+    .map((rule) => {
+      const property =
+        rule.type === "padding"
+          ? side === "left"
+            ? "padding-left"
+            : "padding-right"
+          : rule.type === "margin"
+            ? side === "left"
+              ? "margin-left"
+              : "margin-right"
+            : side === "left"
+              ? "left"
+              : "right"
+
+      const transitionCss =
+        rule.type === "inset"
+          ? "left 0.25s ease, right 0.25s ease, width 0.25s ease"
+          : "padding-left 0.25s ease, padding-right 0.25s ease, margin-left 0.25s ease, margin-right 0.25s ease, width 0.25s ease, max-width 0.25s ease"
+
+      const extraCss = rule.extraCss ? ` ${rule.extraCss}` : ""
+      const boxSizingCss = rule.type === "inset" ? "" : " box-sizing: border-box !important;"
+
+      return rule.selectors
+        .map(
+          (selector) =>
+            `${selector} { ${property}: ${reserveValue} !important;${boxSizingCss} transition: ${transitionCss} !important;${extraCss} }`,
+        )
+        .join("\n")
+    })
+    .join("\n")
+}
+
+const hasSidebarLayoutRules = (layoutConfig: SidebarLayoutConfig | null | undefined) =>
+  !!layoutConfig &&
+  [layoutConfig.main?.length, layoutConfig.composer?.length, layoutConfig.obstacles?.length].some(
+    (length) => (length || 0) > 0,
+  )
+
+const getFirstEnabledPanelTab = (settings?: Settings | null): string => {
+  const currentSettings = settings || DEFAULT_SETTINGS
+  const orderedTabs = currentSettings.features?.order || DEFAULT_SETTINGS.features.order
+
+  for (const tabId of orderedTabs) {
+    if (tabId === TAB_IDS.OUTLINE && currentSettings.features?.outline?.enabled === false) continue
+    if (
+      tabId === TAB_IDS.CONVERSATIONS &&
+      currentSettings.features?.conversations?.enabled === false
+    ) {
+      continue
+    }
+    if (tabId === TAB_IDS.PROMPTS && currentSettings.features?.prompts?.enabled === false) continue
+    if (tabId === TAB_IDS.SETTINGS) continue
+    return tabId
+  }
+
+  return TAB_IDS.OUTLINE
 }
 
 const SETTINGS_PAGE_LABEL_DEFINITIONS: Record<string, LocalizedLabelDefinition> = {
@@ -734,6 +817,8 @@ export const App = () => {
 
   // 单例实例
   const adapter = useMemo(() => getAdapter(), [])
+  const sidebarLayoutConfig = useMemo(() => adapter?.getSidebarLayoutConfig?.() ?? null, [adapter])
+  const supportsDockedSidebar = hasSidebarLayoutRules(sidebarLayoutConfig)
 
   const promptManager = useMemo(() => {
     return adapter ? new PromptManager(adapter) : null
@@ -782,6 +867,7 @@ export const App = () => {
 
   // 面板状态 - 初始值来自设置
   const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [sidebarActiveTab, setSidebarActiveTab] = useState<string>(TAB_IDS.OUTLINE)
 
   // 使用 ref 保持 settings 的最新引用，避免闭包捕获过期值
   const settingsRef = useRef(settings)
@@ -789,11 +875,56 @@ export const App = () => {
     settingsRef.current = settings
   }, [settings])
 
+  useEffect(() => {
+    if (!adapter || !supportsDockedSidebar || !sidebarLayoutConfig) {
+      cleanupFixedSidebarLayout()
+      return
+    }
+
+    const root = document.documentElement
+    const side = settings?.panel?.defaultPosition ?? DEFAULT_SETTINGS.panel.defaultPosition
+    const paneWidth = settings?.panel?.width ?? DEFAULT_SETTINGS.panel.width
+    const reserveWidth =
+      PANEL_EDGE_OFFSET * 2 + PANEL_RAIL_WIDTH + (isPanelOpen ? PANEL_RAIL_GAP + paneWidth : 0)
+    let style = document.getElementById(FIXED_SIDEBAR_LAYOUT_STYLE_ID) as HTMLStyleElement | null
+    if (!style) {
+      style = document.createElement("style")
+      style.id = FIXED_SIDEBAR_LAYOUT_STYLE_ID
+      document.head.appendChild(style)
+    }
+
+    style.textContent = [
+      buildSidebarLayoutRuleCss(sidebarLayoutConfig.main, side),
+      buildSidebarLayoutRuleCss(sidebarLayoutConfig.composer, side),
+      buildSidebarLayoutRuleCss(sidebarLayoutConfig.obstacles, side),
+    ]
+      .filter(Boolean)
+      .join("\n")
+
+    root.style.setProperty("--ophel-sidebar-reserve", `${reserveWidth}px`)
+    root.dataset.ophelSidebarLayout = "fixed-rail"
+    root.dataset.ophelSidebarSide = side
+  }, [
+    adapter,
+    supportsDockedSidebar,
+    sidebarLayoutConfig,
+    isPanelOpen,
+    settings?.panel?.defaultPosition,
+    settings?.panel?.width,
+  ])
+
+  useEffect(() => {
+    return () => {
+      cleanupFixedSidebarLayout()
+    }
+  }, [])
+
   // 初始化面板状态
   useEffect(() => {
     // 确保仅在 hydration 完成且 settings 加载后执行一次初始化
     if (isSettingsHydrated && settings && !isInitializedRef.current) {
       isInitializedRef.current = true
+      setSidebarActiveTab(getFirstEnabledPanelTab(settings))
       // 如果 defaultPanelOpen 为 true，打开面板
       if (settings.panel?.defaultOpen) {
         // 如果开启了边缘吸附，且初始边距小于吸附阈值，则直接初始化为吸附状态
@@ -810,6 +941,20 @@ export const App = () => {
       }
     }
   }, [isSettingsHydrated, settings])
+
+  useEffect(() => {
+    if (!supportsDockedSidebar || !settings) return
+    const nextTab = getFirstEnabledPanelTab(settings)
+    const isCurrentTabEnabled =
+      (sidebarActiveTab === TAB_IDS.OUTLINE && settings.features?.outline?.enabled !== false) ||
+      (sidebarActiveTab === TAB_IDS.CONVERSATIONS &&
+        settings.features?.conversations?.enabled !== false) ||
+      (sidebarActiveTab === TAB_IDS.PROMPTS && settings.features?.prompts?.enabled !== false)
+
+    if (!isCurrentTabEnabled) {
+      setSidebarActiveTab(nextTab)
+    }
+  }, [supportsDockedSidebar, settings, sidebarActiveTab])
 
   useEffect(() => {
     if (!isSettingsHydrated || !settings) return
@@ -1446,6 +1591,16 @@ export const App = () => {
 
     setIsSettingsOpen(true)
   }, [closeGlobalSettingsSearch, edgeSnapState, isGlobalSettingsSearchOpen])
+
+  const handleSidebarTabSelect = useCallback((tabId: string) => {
+    setSidebarActiveTab(tabId)
+    setIsPanelOpen(true)
+  }, [])
+
+  const handleSidebarNewConversation = useCallback(() => {
+    if (!adapter) return
+    adapter.startNewConversation()
+  }, [adapter])
 
   const navigateToSearchResult = useCallback(
     async (item: GlobalSearchResultItem) => {
@@ -2835,8 +2990,11 @@ export const App = () => {
   return (
     <div className="gh-root">
       <MainPanel
+        layoutVariant={supportsDockedSidebar ? "sidebar" : "legacy"}
         isOpen={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}
+        activeTab={supportsDockedSidebar ? sidebarActiveTab : undefined}
+        onActiveTabChange={supportsDockedSidebar ? handleSidebarTabSelect : undefined}
         promptManager={promptManager}
         conversationManager={conversationManager}
         outlineManager={outlineManager}
@@ -2901,8 +3059,13 @@ export const App = () => {
       />
 
       <QuickButtons
+        layoutVariant={supportsDockedSidebar ? "rail" : "legacy"}
         isPanelOpen={isPanelOpen}
         onPanelToggle={() => {
+          if (supportsDockedSidebar) {
+            setIsPanelOpen((prev) => !prev)
+            return
+          }
           if (!isPanelOpen) {
             // 展开面板：如果处于吸附状态，进入 peek 模式
             if (edgeSnapState && settings?.panel?.edgeSnap) {
@@ -2914,6 +3077,8 @@ export const App = () => {
           }
           setIsPanelOpen(!isPanelOpen)
         }}
+        activeTab={supportsDockedSidebar ? sidebarActiveTab : undefined}
+        onTabSelect={supportsDockedSidebar ? handleSidebarTabSelect : undefined}
         onThemeToggle={handleThemeToggle}
         themeMode={themeMode}
         onExport={handleFloatingToolbarExport}
@@ -2941,6 +3106,7 @@ export const App = () => {
           setIsFloatingToolbarClearOpen(true)
         }}
         onGlobalSearch={openGlobalSettingsSearch}
+        onNewConversation={handleSidebarNewConversation}
         onCopyMarkdown={handleCopyMarkdown}
         onModelLockToggle={handleModelLockToggle}
         isModelLocked={isModelLocked}

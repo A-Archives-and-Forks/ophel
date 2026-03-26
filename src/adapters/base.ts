@@ -82,6 +82,27 @@ export interface ConversationObserverConfig {
   getTitleElement: (el: Element) => Element | null
 }
 
+export interface LayoutSelectorConfig {
+  selector: string
+  property: string
+  globalSelector?: string
+  value?: string
+  extraCss?: string
+  noCenter?: boolean
+}
+
+export interface SidebarLayoutRule {
+  type: "padding" | "margin" | "inset"
+  selectors: string[]
+  extraCss?: string
+}
+
+export interface SidebarLayoutConfig {
+  main: SidebarLayoutRule[]
+  composer?: SidebarLayoutRule[]
+  obstacles?: SidebarLayoutRule[]
+}
+
 export interface AnchorData {
   type: "selector" | "index"
   selector?: string
@@ -331,13 +352,18 @@ export abstract class SiteAdapter {
   // ==================== 页面宽度控制 ====================
 
   /** 返回需要加宽的 CSS 选择器列表 */
-  getWidthSelectors(): Array<{ selector: string; property: string }> {
+  getWidthSelectors(): LayoutSelectorConfig[] {
     return []
   }
 
   /** 返回用户问题宽度调整的 CSS 选择器列表 */
-  getUserQueryWidthSelectors(): Array<{ selector: string; property: string }> {
+  getUserQueryWidthSelectors(): LayoutSelectorConfig[] {
     return []
+  }
+
+  /** 返回固定侧边栏布局需要让位的站点容器配置 */
+  getSidebarLayoutConfig(): SidebarLayoutConfig | null {
+    return null
   }
 
   /** 返回 Zen Mode 需要隐藏/调整的 CSS 选择器规则列表 */

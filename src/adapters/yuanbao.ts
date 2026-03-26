@@ -20,6 +20,7 @@ import {
   type NetworkMonitorConfig,
   type OutlineItem,
   type SiteDeleteConversationResult,
+  type SidebarLayoutConfig,
   type ZenModeRule,
 } from "./base"
 
@@ -712,6 +713,23 @@ export class YuanbaoAdapter extends SiteAdapter {
         noCenter: true,
       },
     ]
+  }
+
+  getSidebarLayoutConfig(): SidebarLayoutConfig {
+    return {
+      main: [
+        {
+          type: "inset",
+          selectors: [".agent-dialogue__content-split-pane"],
+        },
+      ],
+      composer: [
+        {
+          type: "padding",
+          selectors: ["#search-bar"],
+        },
+      ],
+    }
   }
 
   async toggleTheme(targetMode: "light" | "dark"): Promise<boolean> {
