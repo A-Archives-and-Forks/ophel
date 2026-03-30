@@ -34,7 +34,8 @@ const chatPathPattern = /^(?:\/code)?\/chat\/([^/?#]+)/
 const LEGACY_USER_QUERY_SELECTOR = '[data-testid="send_message"]'
 const NEW_USER_QUERY_SELECTOR = '[data-testid="message_content"].justify-end'
 const USER_QUERY_SELECTOR = `${LEGACY_USER_QUERY_SELECTOR}, ${NEW_USER_QUERY_SELECTOR}`
-const USER_QUERY_TEXT_SELECTOR = '[data-testid="message_text_content"]'
+const RAW_USER_QUERY_TEXT_SELECTOR = '[data-testid="message_text_content"]'
+const USER_QUERY_TEXT_SELECTOR = `${LEGACY_USER_QUERY_SELECTOR} ${RAW_USER_QUERY_TEXT_SELECTOR}, ${NEW_USER_QUERY_SELECTOR} ${RAW_USER_QUERY_TEXT_SELECTOR}`
 const DOUBAO_DELETE_REASON = {
   UI_FAILED: "delete_ui_failed",
   BATCH_ABORTED_AFTER_UI_FAILURE: "delete_batch_aborted_after_ui_failure",
@@ -441,15 +442,35 @@ export class DoubaoAdapter extends SiteAdapter {
   }
 
   private getUserMessageTextContainer(element: Element): HTMLElement | null {
-    if (element.matches(USER_QUERY_TEXT_SELECTOR)) {
+    if (
+      element.matches(USER_QUERY_TEXT_SELECTOR) ||
+      element.matches(RAW_USER_QUERY_TEXT_SELECTOR)
+    ) {
       return element as HTMLElement
     }
-    return element.querySelector(USER_QUERY_TEXT_SELECTOR) as HTMLElement | null
+    return element.querySelector(RAW_USER_QUERY_TEXT_SELECTOR) as HTMLElement | null
+  }
+
+  extractUserQueryText(element: Element): string {
+    const textContainer = this.getUserMessageTextContainer(element)
+    return textContainer ? this.extractTextWithLineBreaks(textContainer).trim() : ""
   }
 
   extractUserQueryMarkdown(element: Element): string {
     const textContainer = this.getUserMessageTextContainer(element)
-    return textContainer?.textContent?.trim() || ""
+    return textContainer ? this.extractTextWithLineBreaks(textContainer).trim() : ""
+  }
+
+  extractUserQueryExportText(element: Element): string {
+    const textContainer = this.getUserMessageTextContainer(element)
+    if (!textContainer) {
+      return this.extractUserQueryText(element)
+    }
+
+    // 豆包会保留一份隐藏的原始用户输入文本，导出时直接读取这份源文本，
+    // 避免从我们注入的渲染结果反推 Markdown，减少回归风险。
+    const rawText = textContainer.textContent?.trim()
+    return rawText || this.extractUserQueryText(textContainer)
   }
 
   replaceUserQueryContent(element: Element, html: string): boolean {
@@ -1007,9 +1028,9 @@ export class DoubaoAdapter extends SiteAdapter {
 
   getExportConfig(): ExportConfig | null {
     return {
-      userQuerySelector: USER_QUERY_SELECTOR,
+      userQuerySelector: USER_QUERY_TEXT_SELECTOR,
       assistantResponseSelector: '[data-testid="receive_message"]',
-      turnSelector: null,
+      turnSelector: '[data-testid="union_message"]',
       useShadowDOM: false,
     }
   }

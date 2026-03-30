@@ -9,7 +9,7 @@ import type { SiteAdapter } from "~adapters/base"
 import { SITE_IDS } from "~constants"
 import { DOMToolkit } from "~utils/dom-toolkit"
 import { initCopyButtons, showCopySuccess } from "~utils/icons"
-import { getHighlightStyles, renderMarkdown } from "~utils/markdown"
+import { getHighlightStyles, getMathStyles, renderMarkdown } from "~utils/markdown"
 
 // Markdown 语法检测规则
 const BLOCK_MARKDOWN_PATTERNS = [
@@ -24,6 +24,16 @@ const INLINE_MARKDOWN_PATTERNS = [
   /\*\*[^*]+\*\*/, // 加粗：**bold**
   /`[^`]+`/, // 行内代码：`code`
   /\[.+\]\(.+\)/, // 链接：[text](url)
+]
+
+const BLOCK_MATH_PATTERNS = [
+  /(^|[^\\])\$\$[\s\S]+?\$\$/m, // 块公式：$$...$$
+  /\\\[[\s\S]+?\\\]/m, // 块公式：\[...\]
+]
+
+const INLINE_MATH_PATTERNS = [
+  /(^|[^\\$])\$[^\s$](?:[^$\n]*[^\s$])?\$(?!\$)/, // 行内公式：$...$
+  /\\\([^\n]+?\\\)/, // 行内公式：\(...\)
 ]
 
 // 配置
@@ -250,7 +260,21 @@ function looksLikeMarkdown(text: string): boolean {
 
   return (
     BLOCK_MARKDOWN_PATTERNS.some((pattern) => pattern.test(normalized)) ||
-    INLINE_MARKDOWN_PATTERNS.some((pattern) => pattern.test(normalized))
+    INLINE_MARKDOWN_PATTERNS.some((pattern) => pattern.test(normalized)) ||
+    containsLikelyMath(normalized)
+  )
+}
+
+function stripCodeContent(text: string): string {
+  return text.replace(/```[\s\S]*?```/g, "").replace(/`[^`\n]*`/g, "")
+}
+
+function containsLikelyMath(text: string): boolean {
+  const normalized = stripCodeContent(text)
+
+  return (
+    BLOCK_MATH_PATTERNS.some((pattern) => pattern.test(normalized)) ||
+    INLINE_MATH_PATTERNS.some((pattern) => pattern.test(normalized))
   )
 }
 
@@ -298,9 +322,10 @@ export class UserQueryMarkdownRenderer {
         { shadow: true },
       )
 
-      // 兜底重扫：豆包会先插入空节点，再异步填充文本
+      // 兜底重扫：豆包 / QwenAI 可能先插入空节点，再异步填充文本
       // 仅靠 each() 的“新增节点回调一次”可能错过最终内容
-      if (this.adapter.getSiteId() === SITE_IDS.DOUBAO) {
+      const siteId = this.adapter.getSiteId()
+      if (siteId === SITE_IDS.DOUBAO || siteId === SITE_IDS.QWENAI) {
         this.startRescanTimer()
       }
     }
@@ -314,7 +339,9 @@ export class UserQueryMarkdownRenderer {
 
     const style = document.createElement("style")
     style.id = STYLE_ID
-    style.textContent = getHighlightStyles() + "\n" + USER_QUERY_MARKDOWN_CSS
+    style.textContent = [getHighlightStyles(), getMathStyles(), USER_QUERY_MARKDOWN_CSS]
+      .filter(Boolean)
+      .join("\n")
     document.head.appendChild(style)
   }
 
@@ -327,7 +354,9 @@ export class UserQueryMarkdownRenderer {
 
     const style = document.createElement("style")
     style.id = STYLE_ID
-    style.textContent = getHighlightStyles() + "\n" + USER_QUERY_MARKDOWN_CSS
+    style.textContent = [getHighlightStyles(), getMathStyles(), USER_QUERY_MARKDOWN_CSS]
+      .filter(Boolean)
+      .join("\n")
     shadowRoot.prepend(style)
     this.injectedShadowRoots.add(shadowRoot)
 
@@ -415,7 +444,7 @@ export class UserQueryMarkdownRenderer {
     if (processedMarkdown === rawMarkdown) return
 
     // 3. 渲染成 HTML
-    const html = renderMarkdown(rawMarkdown, false)
+    const html = renderMarkdown(rawMarkdown, false, { enableMath: true })
 
     // 4. 对于 Shadow DOM 站点，先注入样式到目标 Shadow DOM
     if (this.adapter.usesShadowDOM()) {
