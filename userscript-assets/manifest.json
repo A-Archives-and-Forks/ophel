@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-04-01T11:57:05.135Z",
-  "version": "1.0.28",
+  "generatedAt": "2026-04-01T16:15:28.588Z",
+  "version": "1.0.29",
   "resources": {
     "ophelStyles": {
       "fileName": "ophel.user.cae3cc3f78b7.css",
@@ -33,6 +33,46 @@
     "ophelWatermarkBg96": {
       "fileName": "ophel-watermark-bg-96.3e26f2233a12.png",
       "relativePath": "userscript-assets/ophel-watermark-bg-96.3e26f2233a12.png"
+    },
+    "ophelLocaleZhCN": {
+      "fileName": "ophel.locale.zh-CN.82c5fbfdef1d.json",
+      "relativePath": "userscript-assets/ophel.locale.zh-CN.82c5fbfdef1d.json"
+    },
+    "ophelLocaleZhTW": {
+      "fileName": "ophel.locale.zh-TW.9be1467e4378.json",
+      "relativePath": "userscript-assets/ophel.locale.zh-TW.9be1467e4378.json"
+    },
+    "ophelLocaleEn": {
+      "fileName": "ophel.locale.en.49ff0c1af66e.json",
+      "relativePath": "userscript-assets/ophel.locale.en.49ff0c1af66e.json"
+    },
+    "ophelLocaleJa": {
+      "fileName": "ophel.locale.ja.cc40edab6bc3.json",
+      "relativePath": "userscript-assets/ophel.locale.ja.cc40edab6bc3.json"
+    },
+    "ophelLocaleKo": {
+      "fileName": "ophel.locale.ko.fdb003e59090.json",
+      "relativePath": "userscript-assets/ophel.locale.ko.fdb003e59090.json"
+    },
+    "ophelLocaleFr": {
+      "fileName": "ophel.locale.fr.7e5e932fa421.json",
+      "relativePath": "userscript-assets/ophel.locale.fr.7e5e932fa421.json"
+    },
+    "ophelLocaleDe": {
+      "fileName": "ophel.locale.de.929b0a6d06ea.json",
+      "relativePath": "userscript-assets/ophel.locale.de.929b0a6d06ea.json"
+    },
+    "ophelLocaleRu": {
+      "fileName": "ophel.locale.ru.3c3767bb6aee.json",
+      "relativePath": "userscript-assets/ophel.locale.ru.3c3767bb6aee.json"
+    },
+    "ophelLocaleEs": {
+      "fileName": "ophel.locale.es.1d51cb2afeea.json",
+      "relativePath": "userscript-assets/ophel.locale.es.1d51cb2afeea.json"
+    },
+    "ophelLocalePt": {
+      "fileName": "ophel.locale.pt.a745ddea9e3f.json",
+      "relativePath": "userscript-assets/ophel.locale.pt.a745ddea9e3f.json"
     }
   }
 }
