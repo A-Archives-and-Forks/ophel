@@ -139,6 +139,9 @@ export const de = {
   version: "Version",
   aboutDescription:
     "{appName} ist eine Erweiterung für Gemini, ChatGPT, Claude, AI Studio und Grok. Optimieren Sie Ihren Workflow mit Chat-Verwaltung, smarten Inhaltsverzeichnissen und Prompt-Bibliotheken. Features wie Lesehistorie, Wasserzeichen-Entfernung und Modellsperre sowie umfangreiche Theme-Optionen sorgen für eine reibungslose KI-Erfahrung.",
+  aboutSupportedPlatforms: "Unterstützte Plattformen",
+  aboutSupportedPlatformsDesc:
+    "Derzeit werden {count} KI-Plattformen unterstützt, synchron mit Erkennung und Schnellzugriff im Popup.",
   projectLinks: "Projekt-Links",
   githubRepository: "GitHub-Repository",
   githubDesc: "Quellcode, Fehler melden oder beitragen",
@@ -448,8 +451,9 @@ export const de = {
   assistantMermaidLabel: "Mermaid-Rendering fur KI-Antworten",
   assistantMermaidDesc:
     "Rendert Mermaid-Diagramme in KI-Antworten automatisch auf Websites ohne native Mermaid-Unterstutzung",
-  userQueryMarkdownLabel: "Benutzer-Markdown",
-  userQueryMarkdownDesc: "Auch eigene Nachrichten formatieren",
+  userQueryMarkdownLabel: "Darstellung eigener Fragen optimieren",
+  userQueryMarkdownDesc:
+    "Wendet Markdown-Formatierung und LaTeX-Mathe-Rendering auf eigene Fragen an",
   assistantMermaidPreviewTab: "Diagramm",
   assistantMermaidCodeTab: "Code",
   assistantMermaidCopyCode: "Code kopieren",

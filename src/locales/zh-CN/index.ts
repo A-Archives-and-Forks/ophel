@@ -176,6 +176,9 @@ export const zhCN = {
   version: "版本",
   aboutDescription:
     "{appName} 是一款专为 Gemini、ChatGPT、Claude、AI Studio、Grok 等 AI 平台打造的浏览器增强扩展。它为您提供会话管理与导出、智能大纲导航、提示词指令库等效率工具，同时具备阅读进度恢复、双向锚点定位、水印移除、排版修复、公式复制及模型锁定等实用功能，并支持深度自定义主题与页面美化，让您的 AI 交互体验更加流畅愉悦。",
+  aboutSupportedPlatforms: "支持平台",
+  aboutSupportedPlatformsDesc:
+    "当前已覆盖 {count} 个 AI 平台，和弹窗中的站点识别与快捷入口保持同步。",
   projectLinks: "项目链接",
   githubRepository: "GitHub 仓库",
   communityAndSupport: "社区与支持",
@@ -588,8 +591,8 @@ export const zhCN = {
   exportImagesToBase64Desc: "导出会话时将图片转为Base64嵌入",
   assistantMermaidLabel: "AI 回复 Mermaid 渲染",
   assistantMermaidDesc: "为未原生支持 Mermaid 的站点自动渲染 AI 回复中的 Mermaid 图表",
-  userQueryMarkdownLabel: "用户提问 Markdown 渲染",
-  userQueryMarkdownDesc: "将用户提问中的 Markdown 语法渲染为格式化文本",
+  userQueryMarkdownLabel: "用户提问样式优化",
+  userQueryMarkdownDesc: "为用户提问启用 Markdown 排版与 LaTeX 数学公式渲染",
   assistantMermaidPreviewTab: "图表",
   assistantMermaidCodeTab: "代码",
   assistantMermaidCopyCode: "复制代码",

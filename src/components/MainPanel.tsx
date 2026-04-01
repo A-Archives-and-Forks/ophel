@@ -11,11 +11,11 @@ import {
   RefreshIcon,
   ScrollBottomIcon,
   ScrollTopIcon,
-  SparkleIcon,
   SettingsIcon,
   ThemeDarkIcon,
   ThemeLightIcon,
 } from "~components/icons"
+import { SparkleIcon } from "~components/icons/SparkleIcon"
 import { SITE_IDS, TAB_IDS } from "~constants"
 import type { ConversationManager } from "~core/conversation-manager"
 import type { OutlineManager } from "~core/outline-manager"
@@ -394,7 +394,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                 // 发送隐私模式切换事件给 TabManager
                 window.postMessage({ type: "GH_PRIVACY_TOGGLE" }, "*")
               }}>
-              <SparkleIcon size={18} />
+              <SparkleIcon size={18} color="currentColor" />
               <span style={{ fontSize: "15px", fontWeight: 600 }}>{t("panelTitle")}</span>
             </div>
           </Tooltip>

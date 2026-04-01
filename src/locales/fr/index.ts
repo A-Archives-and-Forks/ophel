@@ -139,6 +139,9 @@ export const fr = {
   version: "Version",
   aboutDescription:
     "{appName} est une extension conçue pour Gemini, ChatGPT, Claude, AI Studio et Grok. Elle améliore votre flux de travail avec la gestion des dossiers, des sommaires intelligents et une bibliothèque de prompts, tout en offrant des utilitaires comme l'historique de lecture, les ancres, la suppression de filigranes, les alertes de fin et le verrouillage de modèle. Avec de vastes options de personnalisation, {appName} assure une expérience IA plus fluide.",
+  aboutSupportedPlatforms: "Plateformes prises en charge",
+  aboutSupportedPlatformsDesc:
+    "Prend actuellement en charge {count} plateformes d'IA, synchronisées avec la détection et l'accès rapide du popup.",
   projectLinks: "Liens du Projet",
   githubRepository: "Dépôt GitHub",
   githubDesc: "Code source, rapports ou contribuer",
@@ -448,8 +451,9 @@ export const fr = {
   assistantMermaidLabel: "Rendu Mermaid des reponses IA",
   assistantMermaidDesc:
     "Affiche automatiquement les diagrammes Mermaid dans les reponses IA sur les sites sans prise en charge native de Mermaid",
-  userQueryMarkdownLabel: "Markdown chez l'Utilisateur",
-  userQueryMarkdownDesc: "Formater vos messages également",
+  userQueryMarkdownLabel: "Optimiser l'affichage des questions",
+  userQueryMarkdownDesc:
+    "Applique le formatage Markdown et le rendu mathématique LaTeX aux questions utilisateur",
   assistantMermaidPreviewTab: "Diagramme",
   assistantMermaidCodeTab: "Code",
   assistantMermaidCopyCode: "Copier le code",

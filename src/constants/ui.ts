@@ -12,9 +12,9 @@ import {
   ScrollBottomIcon,
   ScrollTopIcon,
   SearchIcon,
-  SparkleIcon,
   ToolsIcon,
 } from "~components/icons"
+import { SparkleIcon } from "~components/icons/SparkleIcon"
 import { SHORTCUT_META } from "~constants/shortcuts"
 
 // ==================== Tab ID 常量 ====================
@@ -610,8 +610,8 @@ export const SETTINGS_SEARCH_ITEMS: SettingsSearchItem[] = [
   },
   {
     settingId: "content-user-query-markdown",
-    title: "用户问题复制为 Markdown",
-    keywords: ["content", "markdown", "user query", "用户问题"],
+    title: "用户提问样式优化",
+    keywords: ["content", "markdown", "latex", "math", "user query", "用户提问", "数学公式"],
   },
   {
     settingId: "content-formula-copy",
@@ -912,7 +912,7 @@ export const TAB_DEFINITIONS: Record<
   {
     label: string
     icon: string
-    IconComponent?: React.ComponentType<{ size?: number; color?: string }>
+    IconComponent?: React.ComponentType<{ size?: number | string; color?: string }>
   }
 > = {
   [TAB_IDS.PROMPTS]: { label: "tabPrompts", icon: "✏️", IconComponent: PromptIcon },
@@ -936,7 +936,7 @@ export const COLLAPSED_BUTTON_DEFS: Record<
     canToggle: boolean
     isPanelOnly: boolean
     isGroup?: boolean
-    IconComponent?: React.ComponentType<{ size?: number; color?: string }>
+    IconComponent?: React.ComponentType<{ size?: number | string; color?: string }>
   }
 > = {
   scrollTop: {

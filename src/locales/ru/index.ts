@@ -138,6 +138,9 @@ export const ru = {
   version: "Версия",
   aboutDescription:
     "{appName} — расширение для Gemini, ChatGPT, Claude, AI Studio и Grok. Оно оптимизирует работу с папками чатов, умным содержанием и библиотекой промптов. Функции вроде истории чтения, удаления водяных знаков и блокировки модели вместе с темами делают работу с ИИ удобнее.",
+  aboutSupportedPlatforms: "Поддерживаемые платформы",
+  aboutSupportedPlatformsDesc:
+    "Сейчас поддерживается {count} AI-платформ, синхронизированных с определением сайта и быстрым доступом в popup.",
   projectLinks: "Ссылки",
   githubRepository: "Репозиторий GitHub",
   githubDesc: "Код, ошибки или вклад в проект",
@@ -445,8 +448,9 @@ export const ru = {
   assistantMermaidLabel: "Рендер Mermaid в ответах ИИ",
   assistantMermaidDesc:
     "Автоматически отображает диаграммы Mermaid в ответах ИИ на сайтах без нативной поддержки Mermaid",
-  userQueryMarkdownLabel: "Markdown у меня",
-  userQueryMarkdownDesc: "Форматировать и мои сообщения",
+  userQueryMarkdownLabel: "Улучшить вид вопросов пользователя",
+  userQueryMarkdownDesc:
+    "Применяет Markdown-оформление и рендеринг формул LaTeX к вопросам пользователя",
   assistantMermaidPreviewTab: "Диаграмма",
   assistantMermaidCodeTab: "Код",
   assistantMermaidCopyCode: "Копировать код",

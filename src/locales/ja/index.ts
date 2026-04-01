@@ -142,6 +142,9 @@ export const ja = {
   version: "バージョン",
   aboutDescription:
     "{appName}は、Gemini、ChatGPT、Claude、AI Studio、GrokなどのAIプラットフォーム向けに設計されたブラウザ拡張機能です。会話管理、スマートアウトライン、プロンプトライブラリなどの機能でワークフローを強化し、既読位置の復元、双方向アンカー、透かし除去、フォーマット修正、モデルロックなどのユーティリティを提供します。テーマやUIの豊富なカスタマイズオプションにより、よりスムーズで効率的なAI体験を実現します。",
+  aboutSupportedPlatforms: "対応プラットフォーム",
+  aboutSupportedPlatformsDesc:
+    "現在 {count} 個の AI プラットフォームに対応しており、ポップアップのサイト判定とクイックアクセスと同期しています。",
   projectLinks: "プロジェクトリンク",
   githubRepository: "GitHub リポジトリ",
   githubDesc: "ソースコードの確認、バグ報告、貢献はこちら",
@@ -461,8 +464,8 @@ export const ja = {
   assistantMermaidLabel: "AI回答のMermaid描画",
   assistantMermaidDesc:
     "Mermaidをネイティブ描画しないサイトで、AI回答内のMermaid図を自動描画します",
-  userQueryMarkdownLabel: "ユーザー入力のMarkdown描画",
-  userQueryMarkdownDesc: "ユーザーの発言に対してもMarkdown文法を適用し描画します",
+  userQueryMarkdownLabel: "ユーザー入力の表示最適化",
+  userQueryMarkdownDesc: "ユーザー入力に Markdown 整形と LaTeX 数式レンダリングを適用します",
   assistantMermaidPreviewTab: "図",
   assistantMermaidCodeTab: "コード",
   assistantMermaidCopyCode: "コードをコピー",
