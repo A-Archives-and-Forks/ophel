@@ -16,12 +16,13 @@ import {
   ThemeLightIcon,
 } from "~components/icons"
 import { SparkleIcon } from "~components/icons/SparkleIcon"
-import { SITE_IDS, TAB_IDS } from "~constants"
+import { TAB_IDS } from "~constants"
 import type { ConversationManager } from "~core/conversation-manager"
 import type { OutlineManager } from "~core/outline-manager"
 import type { PromptManager } from "~core/prompt-manager"
 import { useDraggable } from "~hooks/useDraggable"
 import { useSettingsStore } from "~stores/settings-store"
+import { attachEditableKeyboardFocusGuard } from "~utils/dom-toolkit"
 import { loadHistoryUntil } from "~utils/history-loader"
 import { t } from "~utils/i18n"
 import { getScrollInfo, smartScrollTo, smartScrollToBottom } from "~utils/scroll-helper"
@@ -152,44 +153,20 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [tabOrder])
 
-  // 防止 Grok 和 Claude 在 keydown 时抢占焦点
-  // 只在 Grok 和 Claude 站点生效
+  // 防止原生站点在面板输入时抢占焦点或吞掉按键
   useEffect(() => {
-    const siteId = adapter?.getSiteId()
-
-    if (isOpen && (siteId === SITE_IDS.GROK || siteId === SITE_IDS.CLAUDE)) {
-      const panel = panelRef.current
-      if (!panel) {
-        return
-      }
-
-      const handleKeyDown = (e: KeyboardEvent) => {
-        const target = e.target as HTMLElement
-
-        const isInputElement =
-          target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT" ||
-          target.getAttribute("contenteditable") === "true"
-
-        if (!isInputElement) return
-
-        // 阻止事件传播到 Grok 的监听器
-        e.stopPropagation()
-        e.stopImmediatePropagation()
-      }
-
-      // 直接在面板元素上监听，而不是 document
-      // 这样可以在 Shadow DOM 内部捕获事件
-      panel.addEventListener("keydown", handleKeyDown, true)
-      panel.addEventListener("keypress", handleKeyDown, true)
-
-      return () => {
-        panel.removeEventListener("keydown", handleKeyDown, true)
-        panel.removeEventListener("keypress", handleKeyDown, true)
-      }
+    if (!isOpen) {
+      return
     }
-  }, [isOpen, adapter, panelRef])
+
+    const panel = panelRef.current
+    if (!panel) {
+      return
+    }
+
+    // 直接在面板元素上监听，覆盖 Shadow DOM 内部的输入控件
+    return attachEditableKeyboardFocusGuard(panel)
+  }, [isOpen, panelRef])
 
   // === 锚点状态（使用全局存储） ===
   const anchorPosition = useSyncExternalStore(anchorStore.subscribe, anchorStore.getSnapshot)

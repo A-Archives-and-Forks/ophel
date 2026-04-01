@@ -16,6 +16,7 @@ import { formatShortcut, normalizeShortcutBinding } from "~constants/shortcuts"
 import type { QueueDispatcher } from "~core/queue-dispatcher"
 import { useSettingsStore } from "~stores/settings-store"
 import { useQueueItems, useQueueStore } from "~stores/queue-store"
+import { attachEditableKeyboardFocusGuard } from "~utils/dom-toolkit"
 import { t } from "~utils/i18n"
 import { showToast } from "~utils/toast"
 
@@ -234,6 +235,16 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     const timeoutId = window.setTimeout(() => batchTextareaRef.current?.focus(), 60)
     return () => window.clearTimeout(timeoutId)
   }, [isBatchDialogOpen])
+
+  useEffect(() => {
+    const panel = panelRef.current
+    if (!panel) {
+      return
+    }
+
+    // 队列输入依赖本地 Enter / Escape 逻辑，改为冒泡阶段拦截以避免吞掉自身键盘处理。
+    return attachEditableKeyboardFocusGuard(panel, { capture: false })
+  }, [isExpanded, position])
 
   // 点击外部关闭
   useEffect(() => {
