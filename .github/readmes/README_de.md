@@ -67,7 +67,6 @@
   <a href="#-demo">Demo</a> •
   <a href="#-kernfunktionen">Kernfunktionen</a> •
   <a href="#-schnellstart">Schnellstart</a> •
-  <a href="#%EF%B8%8F-architektur">Architektur</a> •
   <a href="#-unterstützung">Unterstützung</a>
 </p>
 
@@ -154,112 +153,19 @@ git clone https://github.com/urzeye/ophel.git
 cd ophel
 
 pnpm install
-pnpm dev              # Entwicklungsmodus
-pnpm build            # Chrome/Edge Produktions-Build
-pnpm build:firefox    # Firefox Produktions-Build
-pnpm build:userscript # Userscript Produktions-Build
-```
 
-</details>
+pnpm dev
+pnpm build
+pnpm build:firefox
+pnpm build:all
 
-## 🏗️ Architektur
+pnpm build:userscript
+pnpm build:userscript:local
+pnpm serve:userscript:assets
 
-**Tech Stack**: [Plasmo](https://docs.plasmo.com/) + [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Zustand](https://github.com/pmndrs/zustand)
-
-<details>
-<summary>📐 Architekturdiagramm (zum Erweitern klicken)</summary>
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#6366f1', 'primaryTextColor': '#fff', 'primaryBorderColor': '#4f46e5', 'lineColor': '#94a3b8', 'secondaryColor': '#f1f5f9', 'tertiaryColor': '#e2e8f0', 'background': '#ffffff'}}}%%
-flowchart TB
-    subgraph Platforms["🚀 Dual Platform Build"]
-        direction LR
-        EXT["🧩 Browser Extension<br/><small>Plasmo + Manifest V3</small>"]
-        US["🛢️ Userscript<br/><small>Vite + vite-plugin-monkey</small>"]
-    end
-
-    subgraph Entry["📦 Entry Layer"]
-        direction LR
-        CE["Content Script<br/><small>ui-entry.tsx</small>"]
-        BG["Background<br/><small>background.ts</small>"]
-        OPT["Options Page<br/><small>tabs/options.tsx</small>"]
-        USE["Userscript Entry<br/><small>platform/userscript/entry.tsx</small>"]
-    end
-
-    subgraph Adapters["🔌 Site Adapters"]
-        direction LR
-        GEM["Gemini"]
-        GPT["ChatGPT"]
-        CLA["Claude"]
-        GRK["Grok"]
-        AIS["AI Studio"]
-        GEE["Gemini<br/>Enterprise"]
-    end
-
-    subgraph Core["⚙️ Core Modules"]
-        direction TB
-        TM["🎨 Theme Manager<br/><small>Theme Switch · View Transitions</small>"]
-        OM["📑 Outline Manager<br/><small>Outline Generation · Navigation</small>"]
-        RH["📖 Reading History<br/><small>Position Restore</small>"]
-        ML["🔒 Model Lock<br/><small>Model Locking</small>"]
-        NM["📡 Network Monitor<br/><small>Request Interception · Status Detection</small>"]
-    end
-
-    subgraph State["💾 State Management"]
-        direction LR
-        ZS["Zustand Stores<br/><small>settings · prompts · conversations</small>"]
-        CS["Chrome Storage<br/><small>local · sync</small>"]
-        GM["GM_* Storage<br/><small>Userscript API</small>"]
-    end
-
-    subgraph UI["🎯 UI Components"]
-        direction TB
-        APP["App.tsx"]
-        MP["MainPanel<br/><small>Side Panel</small>"]
-        SM["SettingsModal<br/><small>Settings Dialog</small>"]
-        TABS["Tabs<br/><small>Outline · Conversations · Prompts</small>"]
-    end
-
-    subgraph CSS["🎨 Styling System"]
-        direction LR
-        SD["Shadow DOM<br/><small>Style Isolation</small>"]
-        TV["CSS Variables<br/><small>Theme Variables</small>"]
-        TH["Theme Presets<br/><small>20+ Preset Themes</small>"]
-    end
-
-    %% Connections
-    EXT --> CE & BG & OPT
-    US --> USE
-
-    CE --> Adapters
-    USE --> Adapters
-
-    Adapters --> Core
-    Core --> State
-
-    CE --> UI
-    USE --> UI
-    UI --> CSS
-
-    ZS <--> CS
-    ZS <-.-> GM
-
-    %% Styles
-    classDef platform fill:#818cf8,stroke:#6366f1,color:#fff
-    classDef entry fill:#34d399,stroke:#10b981,color:#fff
-    classDef adapter fill:#fbbf24,stroke:#f59e0b,color:#1f2937
-    classDef core fill:#60a5fa,stroke:#3b82f6,color:#fff
-    classDef state fill:#f472b6,stroke:#ec4899,color:#fff
-    classDef ui fill:#a78bfa,stroke:#8b5cf6,color:#fff
-    classDef css fill:#fb923c,stroke:#f97316,color:#fff
-
-    class EXT,US platform
-    class CE,BG,OPT,USE entry
-    class GEM,GPT,CLA,GRK,AIS,GEE adapter
-    class TM,OM,RH,ML,NM core
-    class ZS,CS,GM state
-    class APP,MP,SM,TABS ui
-    class SD,TV,TH css
+pnpm package
+pnpm package:firefox
+pnpm package:all
 ```
 
 </details>
@@ -268,17 +174,7 @@ flowchart TB
 
 Bei Problemen oder Vorschlägen besuchen Sie bitte [GitHub Issues](https://github.com/urzeye/ophel/issues).
 
-## ⭐ Star History
-
-<a href="https://star-history.com/#urzeye/ophel&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date" />
- </picture>
-</a>
-
-## 💖 Unterstützung und Dank
+## 🙌 Unterstützung und Dank
 
 <p align="center">
   <em>"If you want to go fast, go alone. If you want to go far, go together."</em>
@@ -309,7 +205,7 @@ Bei Problemen oder Vorschlägen besuchen Sie bitte [GitHub Issues](https://githu
   </tr>
 </table>
 
-### 🤝 Unterstützer und Freunde
+### 🤝 Unterstützer
 
 <table
   align="center"
@@ -324,9 +220,63 @@ Bei Problemen oder Vorschlägen besuchen Sie bitte [GitHub Issues](https://githu
       <strong>Hugh</strong>
     </td>
     <td align="center" width="220" style="border: none; padding: 0 18px;">
-      <a href="https://github.com/hugo1120"><img src="https://github.com/hugo1120.png?size=160" width="84" height="84" alt="hugo1120" /></a>
+      <a href="https://github.com/hugo1120"><img src="https://github.com/hugo1120.png?size=160" width="84" height="84" alt="hugo2233" /></a>
       <br />
-      <a href="https://github.com/hugo1120"><strong>hugo1120</strong></a>
+      <a href="https://github.com/hugo1120"><strong>hugo2233</strong></a>
+    </td>
+  </tr>
+</table>
+
+### 🌟 Mitwirkende
+
+<table
+  align="center"
+  border="0"
+  cellpadding="0"
+  cellspacing="0"
+  style="border-collapse: collapse; border: none;">
+  <tr style="border: none;">
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/urzeye"><img src="https://avatars.githubusercontent.com/u/20869204?s=64&amp;v=4" width="72" height="72" alt="urzeye" /></a>
+      <br />
+      <a href="https://github.com/urzeye"><strong>urzeye</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/treasuresure"><img src="https://avatars.githubusercontent.com/u/50103468?s=64&amp;v=4" width="72" height="72" alt="treasuresure" /></a>
+      <br />
+      <a href="https://github.com/treasuresure"><strong>treasuresure</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/joevalleyfield"><img src="https://avatars.githubusercontent.com/u/14796422?s=64&amp;v=4" width="72" height="72" alt="joevalleyfield" /></a>
+      <br />
+      <a href="https://github.com/joevalleyfield"><strong>joevalleyfield</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/tjsky"><img src="https://avatars.githubusercontent.com/u/7272911?s=64&amp;v=4" width="72" height="72" alt="tjsky" /></a>
+      <br />
+      <a href="https://github.com/tjsky"><strong>tjsky</strong></a>
+    </td>
+  </tr>
+  <tr style="border: none;">
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/lanvent"><img src="https://avatars.githubusercontent.com/u/26515464?s=64&amp;v=4" width="72" height="72" alt="lanvent" /></a>
+      <br />
+      <a href="https://github.com/lanvent"><strong>lanvent</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/KanameMadoka520"><img src="https://avatars.githubusercontent.com/u/90090108?s=64&amp;v=4" width="72" height="72" alt="KanameMadoka520" /></a>
+      <br />
+      <a href="https://github.com/KanameMadoka520"><strong>KanameMadoka520</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/Felix3322"><img src="https://avatars.githubusercontent.com/u/115849429?s=64&amp;v=4" width="72" height="72" alt="Felix3322" /></a>
+      <br />
+      <a href="https://github.com/Felix3322"><strong>Felix3322</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/RyanLin-InfEvo"><img src="https://avatars.githubusercontent.com/u/121378653?s=64&amp;v=4" width="72" height="72" alt="RyanLin-InfEvo" /></a>
+      <br />
+      <a href="https://github.com/RyanLin-InfEvo"><strong>RyanLin-InfEvo</strong></a>
     </td>
   </tr>
 </table>
@@ -336,13 +286,26 @@ Bei Problemen oder Vorschlägen besuchen Sie bitte [GitHub Issues](https://githu
 <!-- supporters:end -->
 
 <p align="center">
-  Wenn Ophel Ihren Arbeitsablauf oder Ihr Lernen verbessert, ziehen Sie bitte eine Unterstützung durch Star oder Sponsor in Betracht, damit wir weiter kommen.
+  Wenn <strong>Ophel Atlas</strong> deine Arbeit oder dein Lernen effizienter macht, unterstütze uns gern mit einem <strong>Star</strong> oder <strong>Sponsor</strong>.
 </p>
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/urzeye">urzeye</a>
+  <strong>Auch das Weiterempfehlen ist wertvoll</strong>: Wir freuen uns, wenn du es auf <strong>Linux.do, X, Xiaohongshu, Bilibili</strong> und weiteren Plattformen teilst. Jedes Feedback und jede Weiterempfehlung helfen dabei, Ophel besser zu machen!
 </p>
 
-## 📜 Lizenz
+⭐ Star History
 
-Dieses Projekt ist unter **GNU GPLv3** lizenziert. Siehe [LICENSE](../../LICENSE) für Details.
+<div align="center">
+<a href="https://star-history.com/#urzeye/ophel&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date" />
+ </picture>
+</a>
+<p>
+  Made with ❤️ by <a href="https://github.com/urzeye">urzeye</a>
+  <span aria-hidden="true"> · </span>
+  <a href="../../LICENSE"><strong>GPLv3 License</strong></a>
+</p>
+</div>

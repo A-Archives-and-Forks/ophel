@@ -75,7 +75,6 @@
   <a href="#-기능-데모">기능 데모</a> •
   <a href="#-핵심-기능">핵심 기능</a> •
   <a href="#-시작하기">시작하기</a> •
-  <a href="#%EF%B8%8F-기술 아키텍처">기술 아키텍처</a> •
   <a href="#-프로젝트-후원">프로젝트 후원</a>
 </p>
 
@@ -162,112 +161,19 @@ git clone https://github.com/urzeye/ophel.git
 cd ophel
 
 pnpm install
-pnpm dev              # 개발 모드
-pnpm build            # Chrome/Edge 프로덕션 빌드
-pnpm build:firefox    # Firefox 프로덕션 빌드
-pnpm build:userscript # Userscript 프로덕션 빌드
-```
 
-</details>
+pnpm dev
+pnpm build
+pnpm build:firefox
+pnpm build:all
 
-## 🏗️ 기술 아키텍처
+pnpm build:userscript
+pnpm build:userscript:local
+pnpm serve:userscript:assets
 
-**기술 스택**: [Plasmo](https://docs.plasmo.com/) + [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Zustand](https://github.com/pmndrs/zustand)
-
-<details>
-<summary>📐 아키텍처 다이어그램 (클릭하여 펼치기)</summary>
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#6366f1', 'primaryTextColor': '#fff', 'primaryBorderColor': '#4f46e5', 'lineColor': '#94a3b8', 'secondaryColor': '#f1f5f9', 'tertiaryColor': '#e2e8f0', 'background': '#ffffff'}}}%%
-flowchart TB
-    subgraph Platforms["🚀 듀얼 플랫폼 빌드"]
-        direction LR
-        EXT["🧩 브라우저 확장<br/><small>Plasmo + Manifest V3</small>"]
-        US["🛢️ 유저스크립트<br/><small>Vite + vite-plugin-monkey</small>"]
-    end
-
-    subgraph Entry["📦 진입 계층"]
-        direction LR
-        CE["Content Script<br/><small>ui-entry.tsx</small>"]
-        BG["Background<br/><small>background.ts</small>"]
-        OPT["Options Page<br/><small>tabs/options.tsx</small>"]
-        USE["Userscript Entry<br/><small>platform/userscript/entry.tsx</small>"]
-    end
-
-    subgraph Adapters["🔌 사이트 어댑터"]
-        direction LR
-        GEM["Gemini"]
-        GPT["ChatGPT"]
-        CLA["Claude"]
-        GRK["Grok"]
-        AIS["AI Studio"]
-        GEE["Gemini<br/>Enterprise"]
-    end
-
-    subgraph Core["⚙️ 핵심 모듈"]
-        direction TB
-        TM["🎨 Theme Manager<br/><small>테마 전환 · View Transitions</small>"]
-        OM["📑 Outline Manager<br/><small>개요 생성 · 내비게이션</small>"]
-        RH["📖 Reading History<br/><small>읽기 위치 복원</small>"]
-        ML["🔒 Model Lock<br/><small>모델 잠금</small>"]
-        NM["📡 Network Monitor<br/><small>요청 가로채기 · 상태 감지</small>"]
-    end
-
-    subgraph State["💾 상태 관리"]
-        direction LR
-        ZS["Zustand Stores<br/><small>settings · prompts · conversations</small>"]
-        CS["Chrome Storage<br/><small>local · sync</small>"]
-        GM["GM_* Storage<br/><small>유저스크립트 API</small>"]
-    end
-
-    subgraph UI["🎯 UI 컴포넌트"]
-        direction TB
-        APP["App.tsx"]
-        MP["MainPanel<br/><small>사이드 패널</small>"]
-        SM["SettingsModal<br/><small>설정 모달</small>"]
-        TABS["Tabs<br/><small>개요 · 대화 · 프롬프트</small>"]
-    end
-
-    subgraph CSS["🎨 스타일 시스템"]
-        direction LR
-        SD["Shadow DOM<br/><small>스타일 격리</small>"]
-        TV["CSS Variables<br/><small>테마 변수</small>"]
-        TH["Theme Presets<br/><small>20+ 프리셋 테마</small>"]
-    end
-
-    %% Connections
-    EXT --> CE & BG & OPT
-    US --> USE
-
-    CE --> Adapters
-    USE --> Adapters
-
-    Adapters --> Core
-    Core --> State
-
-    CE --> UI
-    USE --> UI
-    UI --> CSS
-
-    ZS <--> CS
-    ZS <-.-> GM
-
-    %% Styles
-    classDef platform fill:#818cf8,stroke:#6366f1,color:#fff
-    classDef entry fill:#34d399,stroke:#10b981,color:#fff
-    classDef adapter fill:#fbbf24,stroke:#f59e0b,color:#1f2937
-    classDef core fill:#60a5fa,stroke:#3b82f6,color:#fff
-    classDef state fill:#f472b6,stroke:#ec4899,color:#fff
-    classDef ui fill:#a78bfa,stroke:#8b5cf6,color:#fff
-    classDef css fill:#fb923c,stroke:#f97316,color:#fff
-
-    class EXT,US platform
-    class CE,BG,OPT,USE entry
-    class GEM,GPT,CLA,GRK,AIS,GEE adapter
-    class TM,OM,RH,ML,NM core
-    class ZS,CS,GM state
-    class APP,MP,SM,TABS ui
-    class SD,TV,TH css
+pnpm package
+pnpm package:firefox
+pnpm package:all
 ```
 
 </details>
@@ -276,17 +182,7 @@ flowchart TB
 
 문제가 있거나 제안 사항이 있으면 [GitHub Issues](https://github.com/urzeye/ophel/issues) 에 피드백을 남겨주세요.
 
-## ⭐ Star History
-
-<a href="https://star-history.com/#urzeye/ophel&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date" />
- </picture>
-</a>
-
-## 💖 지원과 감사
+## 🙌 지원과 감사
 
 <p align="center">
   <em>"If you want to go fast, go alone. If you want to go far, go together."</em>
@@ -317,7 +213,7 @@ flowchart TB
   </tr>
 </table>
 
-### 🤝 후원자와 친구들
+### 🤝 후원자
 
 <table
   align="center"
@@ -332,9 +228,63 @@ flowchart TB
       <strong>Hugh</strong>
     </td>
     <td align="center" width="220" style="border: none; padding: 0 18px;">
-      <a href="https://github.com/hugo1120"><img src="https://github.com/hugo1120.png?size=160" width="84" height="84" alt="hugo1120" /></a>
+      <a href="https://github.com/hugo1120"><img src="https://github.com/hugo1120.png?size=160" width="84" height="84" alt="hugo2233" /></a>
       <br />
-      <a href="https://github.com/hugo1120"><strong>hugo1120</strong></a>
+      <a href="https://github.com/hugo1120"><strong>hugo2233</strong></a>
+    </td>
+  </tr>
+</table>
+
+### 🌟 기여자
+
+<table
+  align="center"
+  border="0"
+  cellpadding="0"
+  cellspacing="0"
+  style="border-collapse: collapse; border: none;">
+  <tr style="border: none;">
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/urzeye"><img src="https://avatars.githubusercontent.com/u/20869204?s=64&amp;v=4" width="72" height="72" alt="urzeye" /></a>
+      <br />
+      <a href="https://github.com/urzeye"><strong>urzeye</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/treasuresure"><img src="https://avatars.githubusercontent.com/u/50103468?s=64&amp;v=4" width="72" height="72" alt="treasuresure" /></a>
+      <br />
+      <a href="https://github.com/treasuresure"><strong>treasuresure</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/joevalleyfield"><img src="https://avatars.githubusercontent.com/u/14796422?s=64&amp;v=4" width="72" height="72" alt="joevalleyfield" /></a>
+      <br />
+      <a href="https://github.com/joevalleyfield"><strong>joevalleyfield</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/tjsky"><img src="https://avatars.githubusercontent.com/u/7272911?s=64&amp;v=4" width="72" height="72" alt="tjsky" /></a>
+      <br />
+      <a href="https://github.com/tjsky"><strong>tjsky</strong></a>
+    </td>
+  </tr>
+  <tr style="border: none;">
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/lanvent"><img src="https://avatars.githubusercontent.com/u/26515464?s=64&amp;v=4" width="72" height="72" alt="lanvent" /></a>
+      <br />
+      <a href="https://github.com/lanvent"><strong>lanvent</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/KanameMadoka520"><img src="https://avatars.githubusercontent.com/u/90090108?s=64&amp;v=4" width="72" height="72" alt="KanameMadoka520" /></a>
+      <br />
+      <a href="https://github.com/KanameMadoka520"><strong>KanameMadoka520</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/Felix3322"><img src="https://avatars.githubusercontent.com/u/115849429?s=64&amp;v=4" width="72" height="72" alt="Felix3322" /></a>
+      <br />
+      <a href="https://github.com/Felix3322"><strong>Felix3322</strong></a>
+    </td>
+    <td align="center" width="160" style="border: none; padding: 0 12px 18px;">
+      <a href="https://github.com/RyanLin-InfEvo"><img src="https://avatars.githubusercontent.com/u/121378653?s=64&amp;v=4" width="72" height="72" alt="RyanLin-InfEvo" /></a>
+      <br />
+      <a href="https://github.com/RyanLin-InfEvo"><strong>RyanLin-InfEvo</strong></a>
     </td>
   </tr>
 </table>
@@ -344,13 +294,26 @@ flowchart TB
 <!-- supporters:end -->
 
 <p align="center">
-  이 도구가 여러분의 업무나 학습 워크플로우를 개선하는 데 도움이 되었다면, Star나 Sponsor로 지원해 주세요. Ophel이 더 발전할 수 있도록 힘이 됩니다.
+  <strong>Ophel Atlas</strong>가 여러분의 일이나 학습 효율을 높여 주었다면, <strong>Star</strong> 또는 <strong>Sponsor</strong>로 응원해 주세요.
 </p>
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/urzeye">urzeye</a>
+  <strong>널리 알려 주시는 것 역시 큰 힘이 됩니다</strong>: <strong>Linux.do, X, Xiaohongshu, Bilibili</strong> 등 더 많은 플랫폼에 공유해 주시면 정말 큰 도움이 됩니다. 여러분의 모든 피드백과 공유가 Ophel을 더 좋게 만듭니다.
 </p>
 
-## 📜 라이선스
+⭐ Star History
 
-이 프로젝트는 **GNU GPLv3** 라이선스를 따릅니다. 자세한 내용은 [LICENSE](../../LICENSE) 를 참조하세요.
+<div align="center">
+<a href="https://star-history.com/#urzeye/ophel&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=urzeye/ophel&type=Date" />
+ </picture>
+</a>
+<p>
+  Made with ❤️ by <a href="https://github.com/urzeye">urzeye</a>
+  <span aria-hidden="true"> · </span>
+  <a href="../../LICENSE"><strong>GPLv3 License</strong></a>
+</p>
+</div>
