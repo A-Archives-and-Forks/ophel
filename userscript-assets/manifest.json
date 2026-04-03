@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-04-01T16:15:28.588Z",
-  "version": "1.0.29",
+  "generatedAt": "2026-04-03T09:25:13.071Z",
+  "version": "1.0.30",
   "resources": {
     "ophelStyles": {
-      "fileName": "ophel.user.cae3cc3f78b7.css",
-      "relativePath": "userscript-assets/ophel.user.cae3cc3f78b7.css"
+      "fileName": "ophel.user.c97a8c847e4d.css",
+      "relativePath": "userscript-assets/ophel.user.c97a8c847e4d.css"
     },
     "ophelIcon": {
       "fileName": "ophel-icon.193ed41c2441.png",
