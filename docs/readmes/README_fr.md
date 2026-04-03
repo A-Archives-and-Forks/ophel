@@ -13,8 +13,8 @@
   
   <p align="center" style="font-size: 12px; color: #555;">👇 Démo : De "l'historique de chat à défilement infini" aux "documents IA navigables"</p>
 
-  ![Ophel Demo](../../assets/demo/outline.gif)
-  
+![Ophel Demo](../media/demo/outline.gif)
+
   <p>
     <strong><em>Faire du chat IA un flux de travail véritablement organisable pour la première fois</em></strong><br/>
   </p>
@@ -71,7 +71,7 @@
 </p>
 
 <p align="center">
-  🌐 <a href="../../README_EN.md">English</a> | <a href="../../README.md">简体中文</a> | <a href="./README_zh-TW.md">繁體中文</a> | <a href="./README_ja.md">日本語</a> | <a href="./README_ko.md">한국어</a> | <a href="./README_de.md">Deutsch</a> | <strong>Français</strong> | <a href="./README_es.md">Español</a> | <a href="./README_pt.md">Português</a> | <a href="./README_ru.md">Русский</a>
+  🌐 <a href="../../README.md">English</a> | <a href="../../README_zh-CN.md">简体中文</a> | <a href="./README_zh-TW.md">繁體中文</a> | <a href="./README_ja.md">日本語</a> | <a href="./README_ko.md">한국어</a> | <a href="./README_de.md">Deutsch</a> | <strong>Français</strong> | <a href="./README_es.md">Español</a> | <a href="./README_pt-BR.md">Português</a> | <a href="./README_ru.md">Русский</a>
 </p>
 
 ## 📹 Démo
@@ -146,7 +146,7 @@
 <details>
 <summary>Cliquez pour étendre les étapes de build</summary>
 
-**Prérequis**: Node.js >= 20.x, pnpm >= 9.x
+**Prérequis**: Node.js >= 18.x, pnpm >= 9.x
 
 ```bash
 git clone https://github.com/urzeye/ophel.git

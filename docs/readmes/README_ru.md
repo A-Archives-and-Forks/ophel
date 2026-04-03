@@ -13,8 +13,8 @@
   
   <p align="center" style="font-size: 12px; color: #555;">👇 Демо: От "Бесконечной прокрутки чата" к "Навигационным AI документам"</p>
 
-  ![Ophel Demo](../../assets/demo/outline.gif)
-  
+![Ophel Demo](../media/demo/outline.gif)
+
   <p>
     <strong><em>Делая AI-чат действительно организуемым рабочим процессом впервые</em></strong><br/>
   </p>
@@ -71,7 +71,7 @@
 </p>
 
 <p align="center">
-  🌐 <a href="../../README_EN.md">English</a> | <a href="../../README.md">简体中文</a> | <a href="./README_zh-TW.md">繁體中文</a> | <a href="./README_ja.md">日本語</a> | <a href="./README_ko.md">한국어</a> | <a href="./README_de.md">Deutsch</a> | <a href="./README_fr.md">Français</a> | <a href="./README_es.md">Español</a> | <a href="./README_pt.md">Português</a> | <strong>Русский</strong>
+  🌐 <a href="../../README.md">English</a> | <a href="../../README_zh-CN.md">简体中文</a> | <a href="./README_zh-TW.md">繁體中文</a> | <a href="./README_ja.md">日本語</a> | <a href="./README_ko.md">한국어</a> | <a href="./README_de.md">Deutsch</a> | <a href="./README_fr.md">Français</a> | <a href="./README_es.md">Español</a> | <a href="./README_pt-BR.md">Português</a> | <strong>Русский</strong>
 </p>
 
 ## 📹 Демо
@@ -146,7 +146,7 @@
 <details>
 <summary>Нажмите, чтобы развернуть шаги сборки</summary>
 
-**Требования**: Node.js >= 20.x, pnpm >= 9.x
+**Требования**: Node.js >= 18.x, pnpm >= 9.x
 
 ```bash
 git clone https://github.com/urzeye/ophel.git
