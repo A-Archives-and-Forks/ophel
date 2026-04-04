@@ -92,7 +92,7 @@
 
 ## ✨ Core Features
 
-### 🎯 Smart Navigation
+### 🧭 Smart Navigation
 
 - **Real-time Outline** — Auto-parse conversation structure, generate navigable table of contents with support for hierarchical collapse/expand/search, one-click jump
 - **Anchor System** — One-click navigation to top, bottom, or last jump position
