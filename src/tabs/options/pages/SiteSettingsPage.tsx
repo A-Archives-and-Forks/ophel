@@ -3,10 +3,10 @@
  * 包含：页面布局、模型锁定、内容处理
  * 这些设置与具体站点相关，按站点存储配置
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 
 import { PageContentIcon as LayoutIcon, RefreshIcon } from "~components/icons"
-import { NumberInput, Switch, Tooltip } from "~components/ui"
+import { NumberInput, Slider, Switch, Tooltip } from "~components/ui"
 import { LAYOUT_CONFIG, SITE_IDS, SITE_SETTINGS_TAB_IDS } from "~constants"
 import { platform } from "~platform"
 import { useSettingsStore } from "~stores/settings-store"
@@ -286,7 +286,8 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
       setActiveTab(initialTab)
     }
   }, [initialTab])
-  const { settings, setSettings, updateNestedSetting } = useSettingsStore()
+  const { settings, setSettings, setPreviewSettings, clearPreviewSettings, updateNestedSetting } =
+    useSettingsStore()
   const prerequisiteToastTemplate = t("enablePrerequisiteToast") || "请先开启「{setting}」"
   const showPrerequisiteToast = (label: string) =>
     showToastThrottled(prerequisiteToastTemplate.replace("{setting}", label), 2000, {}, 1500, label)
@@ -302,192 +303,56 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
     settings?.layout?.userQueryWidth?.[siteId as keyof typeof settings.layout.userQueryWidth] ||
     settings?.layout?.userQueryWidth?._default
 
-  const [tempWidth, setTempWidth] = useState(
-    currentPageWidth?.value || LAYOUT_CONFIG.PAGE_WIDTH.DEFAULT_PERCENT,
+  const parseWidthValue = (value: string | undefined, fallback: string) => {
+    const parsed = Number.parseInt(value ?? fallback, 10)
+    return Number.isNaN(parsed) ? Number.parseInt(fallback, 10) : parsed
+  }
+
+  const currentPageWidthValue = parseWidthValue(
+    currentPageWidth?.value,
+    LAYOUT_CONFIG.PAGE_WIDTH.DEFAULT_PERCENT,
   )
-  const [tempUserQueryWidth, setTempUserQueryWidth] = useState(
-    currentUserQueryWidth?.value || LAYOUT_CONFIG.USER_QUERY_WIDTH.DEFAULT_PX,
+  const currentUserQueryWidthValue = parseWidthValue(
+    currentUserQueryWidth?.value,
+    LAYOUT_CONFIG.USER_QUERY_WIDTH.DEFAULT_PERCENT,
   )
 
-  // 焦点状态追踪，防止 Store 同步覆盖用户输入
-  const [focusedInput, setFocusedInput] = useState<string | null>(null)
+  const buildPercentWidthSettings = (key: "pageWidth" | "userQueryWidth", value: number) => {
+    if (!settings) return
 
-  // 防抖定时器和输入框引用
-  const widthBlurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const userQueryWidthBlurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const widthInputRef = useRef<HTMLInputElement>(null)
-  const userQueryWidthInputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (currentPageWidth?.value && focusedInput !== "pageWidth") {
-      setTempWidth(currentPageWidth.value)
+    const config = key === "pageWidth" ? LAYOUT_CONFIG.PAGE_WIDTH : LAYOUT_CONFIG.USER_QUERY_WIDTH
+    const current = (key === "pageWidth" ? currentPageWidth : currentUserQueryWidth) || {
+      enabled: false,
+      value: config.DEFAULT_PERCENT,
+      unit: "%",
     }
-  }, [currentPageWidth?.value, focusedInput])
+    const nextValue = Math.min(config.MAX_PERCENT, Math.max(config.MIN_PERCENT, value))
 
-  useEffect(() => {
-    if (currentUserQueryWidth?.value && focusedInput !== "userQueryWidth") {
-      setTempUserQueryWidth(currentUserQueryWidth.value)
-    }
-  }, [currentUserQueryWidth?.value, focusedInput])
-
-  // 清理防抖定时器
-  useEffect(() => {
-    return () => {
-      if (widthBlurTimerRef.current) clearTimeout(widthBlurTimerRef.current)
-      if (userQueryWidthBlurTimerRef.current) clearTimeout(userQueryWidthBlurTimerRef.current)
-    }
-  }, [])
-
-  // 页面宽度更新
-  const commitWidth = useCallback(() => {
-    let val = parseInt(tempWidth)
-    const unit = currentPageWidth?.unit || "%"
-
-    if (isNaN(val)) {
-      val =
-        unit === "%"
-          ? parseInt(LAYOUT_CONFIG.PAGE_WIDTH.DEFAULT_PERCENT)
-          : parseInt(LAYOUT_CONFIG.PAGE_WIDTH.DEFAULT_PX)
-    }
-
-    if (unit === "%") {
-      if (val < LAYOUT_CONFIG.PAGE_WIDTH.MIN_PERCENT) val = LAYOUT_CONFIG.PAGE_WIDTH.MIN_PERCENT
-      if (val > LAYOUT_CONFIG.PAGE_WIDTH.MAX_PERCENT) val = LAYOUT_CONFIG.PAGE_WIDTH.MAX_PERCENT
-    } else {
-      if (val <= 0) val = LAYOUT_CONFIG.PAGE_WIDTH.MIN_PX
-    }
-
-    const finalVal = val.toString()
-    setTempWidth(finalVal)
-    if (finalVal !== currentPageWidth?.value && settings) {
-      const current = currentPageWidth || { enabled: true, value: finalVal, unit: "%" }
-      setSettings({
-        layout: {
-          ...settings.layout,
-          pageWidth: {
-            ...settings.layout?.pageWidth,
-            [siteId]: { ...current, value: finalVal },
+    return {
+      layout: {
+        ...settings.layout,
+        [key]: {
+          ...settings.layout?.[key],
+          [siteId]: {
+            ...current,
+            value: String(nextValue),
+            unit: "%",
           },
         },
-      })
-    }
-  }, [tempWidth, currentPageWidth, settings, siteId, setSettings])
-
-  const handleWidthFocus = () => {
-    if (widthBlurTimerRef.current) {
-      clearTimeout(widthBlurTimerRef.current)
-      widthBlurTimerRef.current = null
-    }
-    setFocusedInput("pageWidth")
-  }
-
-  const handleWidthBlur = () => {
-    widthBlurTimerRef.current = setTimeout(() => {
-      if (document.activeElement !== widthInputRef.current) {
-        setFocusedInput(null)
-        commitWidth()
-      }
-    }, 100)
-  }
-
-  const handleUnitChange = (newUnit: string) => {
-    const newValue =
-      newUnit === "px"
-        ? LAYOUT_CONFIG.PAGE_WIDTH.DEFAULT_PX
-        : LAYOUT_CONFIG.PAGE_WIDTH.DEFAULT_PERCENT
-    setTempWidth(newValue)
-
-    if (settings) {
-      const newPageWidth = {
-        ...currentPageWidth,
-        unit: newUnit,
-        value: newValue,
-        enabled: currentPageWidth?.enabled ?? false,
-      }
-      setSettings({
-        layout: {
-          ...settings.layout,
-          pageWidth: {
-            ...settings.layout?.pageWidth,
-            [siteId]: newPageWidth,
-          },
-        },
-      })
+      },
     }
   }
 
-  // 用户问题宽度更新
-  const commitUserQueryWidth = useCallback(() => {
-    let val = parseInt(tempUserQueryWidth)
-    const unit = currentUserQueryWidth?.unit || "px"
-
-    if (isNaN(val)) {
-      val =
-        unit === "%"
-          ? parseInt(LAYOUT_CONFIG.USER_QUERY_WIDTH.DEFAULT_PERCENT)
-          : parseInt(LAYOUT_CONFIG.USER_QUERY_WIDTH.DEFAULT_PX)
-    }
-
-    if (unit === "%") {
-      if (val < LAYOUT_CONFIG.USER_QUERY_WIDTH.MIN_PERCENT)
-        val = LAYOUT_CONFIG.USER_QUERY_WIDTH.MIN_PERCENT
-      if (val > LAYOUT_CONFIG.USER_QUERY_WIDTH.MAX_PERCENT)
-        val = LAYOUT_CONFIG.USER_QUERY_WIDTH.MAX_PERCENT
-    } else {
-      if (val <= 0) val = LAYOUT_CONFIG.USER_QUERY_WIDTH.MIN_PX
-    }
-
-    const finalVal = val.toString()
-    setTempUserQueryWidth(finalVal)
-    if (finalVal !== currentUserQueryWidth?.value && settings) {
-      const current = currentUserQueryWidth || { enabled: true, value: finalVal, unit: "px" }
-      setSettings({
-        layout: {
-          ...settings.layout,
-          userQueryWidth: {
-            ...settings.layout?.userQueryWidth,
-            [siteId]: { ...current, value: finalVal },
-          },
-        },
-      })
-    }
-  }, [tempUserQueryWidth, currentUserQueryWidth, settings, siteId, setSettings])
-
-  const handleUserQueryWidthFocus = () => {
-    if (userQueryWidthBlurTimerRef.current) {
-      clearTimeout(userQueryWidthBlurTimerRef.current)
-      userQueryWidthBlurTimerRef.current = null
-    }
-    setFocusedInput("userQueryWidth")
+  const updatePercentWidthPreview = (key: "pageWidth" | "userQueryWidth", value: number) => {
+    const nextSettings = buildPercentWidthSettings(key, value)
+    if (!nextSettings) return
+    setPreviewSettings(nextSettings)
   }
 
-  const handleUserQueryWidthBlur = () => {
-    userQueryWidthBlurTimerRef.current = setTimeout(() => {
-      if (document.activeElement !== userQueryWidthInputRef.current) {
-        setFocusedInput(null)
-        commitUserQueryWidth()
-      }
-    }, 100)
-  }
-
-  const handleUserQueryUnitChange = (newUnit: string) => {
-    const newValue =
-      newUnit === "px"
-        ? LAYOUT_CONFIG.USER_QUERY_WIDTH.DEFAULT_PX
-        : LAYOUT_CONFIG.USER_QUERY_WIDTH.DEFAULT_PERCENT
-    setTempUserQueryWidth(newValue)
-    if (settings) {
-      const current = currentUserQueryWidth || { enabled: false, value: newValue, unit: newUnit }
-      setSettings({
-        layout: {
-          ...settings.layout,
-          userQueryWidth: {
-            ...settings.layout?.userQueryWidth,
-            [siteId]: { ...current, unit: newUnit, value: newValue },
-          },
-        },
-      })
-    }
+  const updatePercentWidth = (key: "pageWidth" | "userQueryWidth", value: number) => {
+    const nextSettings = buildPercentWidthSettings(key, value)
+    if (!nextSettings) return
+    setSettings(nextSettings)
   }
 
   if (!settings) return null
@@ -539,33 +404,20 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
               settingId="layout-page-width-value"
               disabled={!currentPageWidth?.enabled}
               onDisabledClick={() => showPrerequisiteToast(enablePageWidthLabel)}>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <input
-                  ref={widthInputRef}
-                  type="text"
-                  className="settings-input"
-                  value={tempWidth}
-                  onFocus={handleWidthFocus}
-                  onChange={(e) => setTempWidth(e.target.value.replace(/[^0-9]/g, ""))}
-                  onBlur={handleWidthBlur}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      commitWidth()
-                      widthInputRef.current?.blur()
-                    }
-                  }}
-                  disabled={!currentPageWidth?.enabled}
-                  style={{ width: "80px" }}
-                />
-                <select
-                  className="settings-select"
-                  value={currentPageWidth?.unit || "%"}
-                  onChange={(e) => handleUnitChange(e.target.value)}
-                  disabled={!currentPageWidth?.enabled}>
-                  <option value="%">%</option>
-                  <option value="px">px</option>
-                </select>
-              </div>
+              <Slider
+                value={currentPageWidthValue}
+                onChange={(value) => updatePercentWidth("pageWidth", value)}
+                onPreviewChange={(value) => updatePercentWidthPreview("pageWidth", value)}
+                onCancelPreview={clearPreviewSettings}
+                min={LAYOUT_CONFIG.PAGE_WIDTH.MIN_PERCENT}
+                max={LAYOUT_CONFIG.PAGE_WIDTH.MAX_PERCENT}
+                step={1}
+                unit="%"
+                defaultValue={Number.parseInt(LAYOUT_CONFIG.PAGE_WIDTH.DEFAULT_PERCENT, 10)}
+                disabled={!currentPageWidth?.enabled}
+                formatValue={(value) => `${value}%`}
+                ariaLabel={t("pageWidthValueLabel") || "宽度值"}
+              />
             </SettingRow>
           </SettingCard>
 
@@ -579,8 +431,8 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
               onChange={() => {
                 const current = currentUserQueryWidth || {
                   enabled: false,
-                  value: "600",
-                  unit: "px",
+                  value: "81",
+                  unit: "%",
                 }
                 setSettings({
                   layout: {
@@ -599,33 +451,20 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
               settingId="layout-user-query-width-value"
               disabled={!currentUserQueryWidth?.enabled}
               onDisabledClick={() => showPrerequisiteToast(enableUserQueryWidthLabel)}>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <input
-                  ref={userQueryWidthInputRef}
-                  type="text"
-                  className="settings-input"
-                  value={tempUserQueryWidth}
-                  onFocus={handleUserQueryWidthFocus}
-                  onChange={(e) => setTempUserQueryWidth(e.target.value.replace(/[^0-9]/g, ""))}
-                  onBlur={handleUserQueryWidthBlur}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      commitUserQueryWidth()
-                      userQueryWidthInputRef.current?.blur()
-                    }
-                  }}
-                  disabled={!currentUserQueryWidth?.enabled}
-                  style={{ width: "80px" }}
-                />
-                <select
-                  className="settings-select"
-                  value={currentUserQueryWidth?.unit || "px"}
-                  onChange={(e) => handleUserQueryUnitChange(e.target.value)}
-                  disabled={!currentUserQueryWidth?.enabled}>
-                  <option value="px">px</option>
-                  <option value="%">%</option>
-                </select>
-              </div>
+              <Slider
+                value={currentUserQueryWidthValue}
+                onChange={(value) => updatePercentWidth("userQueryWidth", value)}
+                onPreviewChange={(value) => updatePercentWidthPreview("userQueryWidth", value)}
+                onCancelPreview={clearPreviewSettings}
+                min={LAYOUT_CONFIG.USER_QUERY_WIDTH.MIN_PERCENT}
+                max={LAYOUT_CONFIG.USER_QUERY_WIDTH.MAX_PERCENT}
+                step={1}
+                unit="%"
+                defaultValue={Number.parseInt(LAYOUT_CONFIG.USER_QUERY_WIDTH.DEFAULT_PERCENT, 10)}
+                disabled={!currentUserQueryWidth?.enabled}
+                formatValue={(value) => `${value}%`}
+                ariaLabel={t("userQueryWidthValueLabel") || "问题宽度"}
+              />
             </SettingRow>
           </SettingCard>
 
