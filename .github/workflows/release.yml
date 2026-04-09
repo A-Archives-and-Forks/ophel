@@ -198,6 +198,9 @@ jobs:
           mkdir -p build/userscript/docs/media
           cp -R docs/media/demo build/userscript/docs/media/
           cp -R docs/media/support build/userscript/docs/media/
+          # 将 demo 图替换为网络链接，避免 release 分支 README 在外部平台渲染异常
+          sed -i 's|!\[Ophel Demo\](./docs/media/demo/outline.gif)|<img src="https://github.com/user-attachments/assets/7161a37b-5fb3-4799-a6a9-25521e1a514f" alt="Ophel Demo" style="max-width:100%;">|g' build/userscript/README*.md
+          sed -i 's|!\[Ophel Demo\](../media/demo/outline.gif)|<img src="https://github.com/user-attachments/assets/7161a37b-5fb3-4799-a6a9-25521e1a514f" alt="Ophel Demo" style="max-width:100%;">|g' build/userscript/docs/readmes/README*.md 2>/dev/null || true
 
       - name: Deploy Userscript to release branch
         uses: peaceiris/actions-gh-pages@v4
