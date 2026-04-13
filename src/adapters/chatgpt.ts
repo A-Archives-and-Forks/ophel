@@ -1349,13 +1349,15 @@ export class ChatGPTAdapter extends SiteAdapter {
   // ==================== 生成状态检测 ====================
 
   isGenerating(): boolean {
-    // ChatGPT 生成时会显示 stop 按钮
-    const stopBtn = document.querySelector('[data-testid="stop-button"]')
-    return stopBtn !== null && (stopBtn as HTMLElement).offsetParent !== null
+    return this.findElementBySelectors(this.getStopButtonSelectors()) !== null
   }
 
   getStopButtonSelectors(): string[] {
-    return ['[data-testid="stop-button"]']
+    return [
+      '[data-testid="stop-button"]',
+      'button[aria-label*="Stop"]',
+      'button[aria-label*="停止"]',
+    ]
   }
 
   private findModelSelectorButton(): HTMLElement | null {
@@ -1531,6 +1533,15 @@ export class ChatGPTAdapter extends SiteAdapter {
       urlPatterns: ["backend-api/f/conversation"],
       urlPathEndsWith: ["backend-api/f/conversation"],
       silenceThreshold: 3000,
+      requestBodyRules: [
+        {
+          type: "json-field-exists",
+          field: "thinking_effort",
+          metadata: {
+            domCompletionRequired: true,
+          },
+        },
+      ],
     }
   }
 
