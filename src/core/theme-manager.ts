@@ -34,6 +34,7 @@ type Listener = () => void
 
 const DEFAULT_LIGHT_PRESET_ID = "google-gradient"
 const DEFAULT_DARK_PRESET_ID = "classic-dark"
+const NATIVE_THEME_STYLE_ID = "ophel-native-adaptive-style"
 
 export interface GlobalThemeManagerOptions {
   mode: ThemePreference | string
@@ -41,6 +42,7 @@ export interface GlobalThemeManagerOptions {
   adapter?: SiteAdapter | null
   lightPresetId?: string
   darkPresetId?: string
+  syncNativePageTheme?: boolean
   apply?: boolean
 }
 
@@ -53,6 +55,7 @@ export class ThemeManager {
   private themeObserver: MutationObserver | null = null
   private onModeChange?: ThemeModeChangeCallback
   private adapter?: SiteAdapter | null
+  private syncNativePageTheme: boolean
   private customStyles: CustomStyle[] = [] // 存储自定义样式列表
   private skipNextDetection = false // 标志：跳过下一次主题检测（用于 toggle 后避免被 monitorTheme 反悔）
   private listeners: Set<Listener> = new Set() // 订阅者集合
@@ -75,6 +78,7 @@ export class ThemeManager {
     adapter?: SiteAdapter | null,
     lightPresetId: string = "google-gradient",
     darkPresetId: string = "classic-dark",
+    syncNativePageTheme: boolean = true,
   ) {
     const normalizedPreference: ThemePreference =
       mode === "system" ? "system" : mode === "dark" ? "dark" : "light"
@@ -84,6 +88,7 @@ export class ThemeManager {
     this.darkPresetId = darkPresetId
     this.onModeChange = onModeChange
     this.adapter = adapter
+    this.syncNativePageTheme = syncNativePageTheme
 
     // 注入全局动画样式 (View Transitions 需要在主文档生效)
     this.injectGlobalStyles()
@@ -117,6 +122,11 @@ export class ThemeManager {
   }
 
   private syncPageTheme(targetMode: ThemeMode, preference: ThemePreference = targetMode) {
+    if (!this.syncNativePageTheme) {
+      this.apply(targetMode)
+      return
+    }
+
     if (preference === "system") {
       const handled = this.applySystemPreference(targetMode)
       if (!handled && this.adapter && typeof this.adapter.toggleTheme === "function") {
@@ -332,18 +342,30 @@ export class ThemeManager {
    * 由各站点 adapter 自行声明，初始化时一次性挂载。
    */
   private injectNativeSiteThemeAdapter() {
-    if (!this.adapter) return
+    if (!this.adapter || !this.syncNativePageTheme) return
 
     // 如果 adapter 未声明原生适配器样式或已注入，则跳过
     const cssContent = this.adapter.getNativeThemeCss()
-    if (!cssContent || document.getElementById("ophel-native-adaptive-style")) return
+    if (!cssContent || document.getElementById(NATIVE_THEME_STYLE_ID)) return
 
     const styleEl = document.createElement("style")
-    styleEl.id = "ophel-native-adaptive-style"
+    styleEl.id = NATIVE_THEME_STYLE_ID
     styleEl.textContent = cssContent
 
     // 添加到原生 head 当中发生全局覆盖作用
     document.head.appendChild(styleEl)
+  }
+
+  private removeNativeSiteThemeAdapter() {
+    document.getElementById(NATIVE_THEME_STYLE_ID)?.remove()
+  }
+
+  private syncNativeThemeAdapterState() {
+    if (!this.syncNativePageTheme) {
+      this.removeNativeSiteThemeAdapter()
+      return
+    }
+    this.injectNativeSiteThemeAdapter()
   }
 
   /**
@@ -352,7 +374,7 @@ export class ThemeManager {
   setAdapter(adapter: SiteAdapter | null) {
     this.adapter = adapter
     // 设置好适配器后，尝试注入对应的原生主题替换器
-    this.injectNativeSiteThemeAdapter()
+    this.syncNativeThemeAdapterState()
   }
 
   /**
@@ -361,6 +383,27 @@ export class ThemeManager {
    */
   setOnModeChange(callback: ThemeModeChangeCallback | undefined) {
     this.onModeChange = callback
+  }
+
+  setNativePageThemeSyncEnabled(enabled: boolean) {
+    const nextEnabled = enabled !== false
+    const hasChanged = this.syncNativePageTheme !== nextEnabled
+
+    this.syncNativePageTheme = nextEnabled
+    this.syncNativeThemeAdapterState()
+
+    if (!hasChanged) {
+      return
+    }
+
+    if (!nextEnabled) {
+      this.stopMonitoring()
+      this.syncPluginUITheme(this.mode)
+      return
+    }
+
+    this.syncPageTheme(this.mode, this.preference)
+    this.monitorTheme()
   }
 
   /**
@@ -377,6 +420,25 @@ export class ThemeManager {
       return
     }
     this.apply(this.mode)
+  }
+
+  private applyPageThemeFallback(mode: ThemeMode) {
+    const isGeminiStandard = this.adapter?.getSiteId() === SITE_IDS.GEMINI
+
+    if (mode === "dark") {
+      document.body.classList.add("dark-theme")
+      document.body.classList.remove("light-theme")
+      document.body.style.colorScheme = "dark"
+      return
+    }
+
+    document.body.classList.remove("dark-theme")
+    document.body.style.colorScheme = "light"
+    if (isGeminiStandard) {
+      document.body.classList.add("light-theme")
+    } else {
+      document.body.classList.remove("light-theme")
+    }
   }
 
   /**
@@ -507,18 +569,9 @@ export class ThemeManager {
    */
   apply(targetMode?: ThemeMode) {
     const mode = targetMode || this.mode
-    const isGeminiStandard = this.adapter.getSiteId() === SITE_IDS.GEMINI
 
-    if (mode === "dark") {
-      document.body.classList.add("dark-theme")
-      document.body.classList.remove("light-theme")
-      document.body.style.colorScheme = "dark"
-    } else {
-      document.body.classList.remove("dark-theme")
-      document.body.style.colorScheme = "light"
-      if (isGeminiStandard) {
-        document.body.classList.add("light-theme")
-      }
+    if (this.syncNativePageTheme) {
+      this.applyPageThemeFallback(mode)
     }
 
     // 同步插件 UI 主题
@@ -594,13 +647,11 @@ export class ThemeManager {
       this.themeObserver?.disconnect()
     }
 
-    // 设置 body 属性
+    // 设置 body 属性，供插件自身样式选择器使用
     if (currentMode === "dark") {
       document.body.dataset.ghMode = "dark"
-      document.body.style.colorScheme = "dark"
     } else {
       delete document.body.dataset.ghMode
-      document.body.style.colorScheme = "light"
     }
 
     // 在 :root 上设置变量（仅对预置主题有效）
@@ -673,6 +724,12 @@ ${cssVars}
    * 监听页面主题变化，自动同步到面板
    */
   monitorTheme() {
+    if (!this.syncNativePageTheme) {
+      this.stopMonitoring()
+      this.syncPluginUITheme(this.mode)
+      return
+    }
+
     const checkTheme = () => {
       // 如果是 toggle() 主动触发后的首次恢复，跳过检测以避免覆盖用户意图
       if (this.skipNextDetection) {
@@ -830,7 +887,10 @@ ${cssVars}
    */
   async toggle(event?: ThemeTransitionOrigin): Promise<ThemeMode> {
     // 使用 detectCurrentTheme 统一检测当前主题
-    const currentMode = this.preference === "system" ? this.mode : this.detectCurrentTheme()
+    const currentMode =
+      this.preference === "system" || !this.syncNativePageTheme
+        ? this.mode
+        : this.detectCurrentTheme()
     const nextMode: ThemeMode = currentMode === "dark" ? "light" : "dark"
     this.preference = nextMode
 
@@ -974,7 +1034,7 @@ ${cssVars}
       return { mode: resolved, animated }
     }
 
-    const currentMode = this.detectCurrentTheme()
+    const currentMode = this.syncNativePageTheme ? this.detectCurrentTheme() : this.mode
 
     // 如果已经是目标模式，仅更新偏好
     if (currentMode === normalizedPreference) {
@@ -1053,18 +1113,20 @@ export function ensureGlobalThemeManager(options: GlobalThemeManagerOptions): Th
     adapter,
     lightPresetId = DEFAULT_LIGHT_PRESET_ID,
     darkPresetId = DEFAULT_DARK_PRESET_ID,
+    syncNativePageTheme = true,
     apply = false,
   } = options
 
   const themeManager =
     window.__ophelThemeManager ||
-    new ThemeManager(mode, onModeChange, adapter, lightPresetId, darkPresetId)
+    new ThemeManager(mode, onModeChange, adapter, lightPresetId, darkPresetId, syncNativePageTheme)
 
   if (!window.__ophelThemeManager) {
     window.__ophelThemeManager = themeManager
   }
 
   themeManager.setAdapter(adapter ?? null)
+  themeManager.setNativePageThemeSyncEnabled(syncNativePageTheme)
   themeManager.setPresets(lightPresetId, darkPresetId)
 
   if (onModeChange !== undefined) {
