@@ -1,6 +1,7 @@
 import type { SiteAdapter } from "~adapters/base"
 import { useSettingsStore } from "~stores/settings-store"
 import { DOMToolkit } from "~utils/dom-toolkit"
+import { createSafeHTML } from "~utils/trusted-types"
 import { t } from "~utils/i18n"
 import type { PageWidthConfig } from "~utils/storage"
 
@@ -271,7 +272,7 @@ export class LayoutManager {
     const primary = this.siteAdapter.getThemeColors().primary || "#2563eb"
     const exitLabel = t("zenModeExitButton") || ZEN_MODE_EXIT_LABEL
     const shadowRoot = host.attachShadow({ mode: "open" })
-    shadowRoot.innerHTML = `
+    shadowRoot.innerHTML = createSafeHTML(`
       <style>
         :host {
           all: initial;
@@ -388,7 +389,7 @@ export class LayoutManager {
         </span>
         <span class="zen-exit-text">${exitLabel}</span>
       </button>
-    `
+    `)
 
     const button = shadowRoot.querySelector(".zen-exit-btn") as HTMLButtonElement | null
     button?.addEventListener("click", this.handleZenModeExit)
