@@ -16,7 +16,6 @@ import {
   type ModelSwitcherConfig,
   type NetworkMonitorConfig,
   type OutlineItem,
-  type ZenModeRule,
 } from "./base"
 
 const IMA_HOSTNAME = "ima.qq.com"
@@ -474,6 +473,11 @@ export class ImaAdapter extends SiteAdapter {
         extraCss: "width: 100% !important;",
         noCenter: true,
       },
+      {
+        selector: '[class*="_chatInputContainer_"] [class*="_editorContainer_"]',
+        property: "max-width",
+        extraCss: "width: 100vw !important; margin: 0 auto;",
+      },
     ]
   }
 
@@ -481,11 +485,14 @@ export class ImaAdapter extends SiteAdapter {
     return [{ selector: IMA_USER_BUBBLE_SELECTOR, property: "max-width" }]
   }
 
-  getZenModeSelectors(): ZenModeRule[] {
-    return [
-      { selector: "#historySideBar", action: "hide" },
-      { selector: IMA_FOOT_TIPS_SELECTOR, action: "hide" },
-    ]
+  getZenModeConfig() {
+    return {
+      hide: [
+        '[class*="_downloadContainer_"]',
+        ".expandable-sidebar-panel-sidebar",
+        IMA_FOOT_TIPS_SELECTOR,
+      ],
+    }
   }
 
   private getActiveHistoryTitle(): string | null {

@@ -837,8 +837,10 @@ export class ChatGPTAdapter extends SiteAdapter {
     ]
   }
 
-  getZenModeSelectors() {
-    return [{ selector: "div.select-none:has(> .pointer-events-auto)", action: "hide" as const }]
+  getZenModeConfig() {
+    return {
+      hide: ["#stage-slideover-sidebar", "div.select-none:has(> .pointer-events-auto)"],
+    }
   }
 
   getMarkdownFixerConfig(): MarkdownFixerConfig {

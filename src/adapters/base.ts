@@ -97,12 +97,6 @@ export interface AnchorData {
   textSignature?: string
 }
 
-/** Zen Mode 规则 */
-export interface ZenModeRule {
-  selector: string
-  action: "hide" | "click" // 未来可扩展 'resize' | 'collapse' 等
-}
-
 export interface MarkdownFixerConfig {
   /** 查找段落的选择器，如 "message-content p" */
   selector: string
@@ -110,6 +104,25 @@ export interface MarkdownFixerConfig {
   fixSpanContent?: boolean
   /** 判断是否应跳过当前元素的修复（例如正在流式生成时） */
   shouldSkip?: (element: HTMLElement) => boolean
+}
+
+export interface ZenModeStyleRule {
+  selector: string
+  property: string
+  value: string
+  globalSelector?: string
+  extraCss?: string
+}
+
+export interface ZenModeRootClassConfig {
+  selector: string
+  className: string
+}
+
+export interface ZenModeConfig {
+  hide?: string[]
+  rootClass?: ZenModeRootClassConfig
+  styles?: ZenModeStyleRule[]
 }
 
 export type AssistantMermaidSupportMode = "native" | "fallback" | "unsupported"
@@ -522,9 +535,9 @@ export abstract class SiteAdapter {
     return []
   }
 
-  /** 返回 Zen Mode 需要隐藏/调整的 CSS 选择器规则列表 */
-  getZenModeSelectors(): ZenModeRule[] {
-    return []
+  /** 返回 Zen Mode 配置 */
+  getZenModeConfig(): ZenModeConfig | null {
+    return null
   }
 
   /** 获取 Markdown 修复器配置（子类可覆盖） */

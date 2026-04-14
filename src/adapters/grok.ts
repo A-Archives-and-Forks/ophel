@@ -295,6 +295,12 @@ export class GrokAdapter extends SiteAdapter {
     return document.querySelector('[data-sidebar="content"]')
   }
 
+  getZenModeConfig() {
+    return {
+      hide: [".text-sidebar-foreground", '[data-sidebar="sidebar"]'],
+    }
+  }
+
   getConversationObserverConfig(): ConversationObserverConfig | null {
     return {
       // 同时匹配侧边栏和 cmdk 对话框中的会话链接

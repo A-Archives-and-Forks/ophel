@@ -1,5 +1,7 @@
 import type { SiteAdapter } from "~adapters/base"
+import { useSettingsStore } from "~stores/settings-store"
 import { DOMToolkit } from "~utils/dom-toolkit"
+import { t } from "~utils/i18n"
 import type { PageWidthConfig } from "~utils/storage"
 
 // ==================== 样式 ID 常量 ====================
@@ -11,6 +13,9 @@ const STYLE_IDS = {
   ZEN_MODE: "gh-zen-mode-styles",
   ZEN_MODE_SHADOW: "gh-zen-mode-shadow",
 } as const
+
+const ZEN_MODE_EXIT_HOST_ID = "gh-zen-mode-exit-host"
+const ZEN_MODE_EXIT_LABEL = "退出禅模式"
 
 /**
  * 页面布局管理器
@@ -24,10 +29,13 @@ export class LayoutManager {
   private pageWidthStyle: HTMLStyleElement | null = null
   private userQueryWidthStyle: HTMLStyleElement | null = null
   private zenModeStyle: HTMLStyleElement | null = null
-  private zenModeLastEnabled = false
-  private zenModeActionTimer: number | null = null
-  private zenModeActionAttempts = 0
   private zenModeEnabled = false
+  private zenModeExitHost: HTMLElement | null = null
+  private zenModeRootClassState: {
+    selector: string
+    className: string
+    removeOnDisable: boolean
+  } | null = null
 
   private processedShadowRoots = new WeakSet<ShadowRoot>()
   private shadowCheckInterval: NodeJS.Timeout | null = null
@@ -91,21 +99,20 @@ export class LayoutManager {
     this.zenModeStyle = null
 
     if (!this.zenModeEnabled) {
-      this.zenModeLastEnabled = false
+      this.cleanupZenModeRootClass()
+      this.unmountZenModeExitButton()
       this.refreshShadowInjection()
       return
     }
+
+    this.syncZenModeRootClass()
 
     const css = this.generateZenModeCSS()
     if (css) {
       this.zenModeStyle = this.injectStyle(STYLE_IDS.ZEN_MODE, css)
     }
+    this.mountZenModeExitButton()
     this.refreshShadowInjection()
-
-    if (this.zenModeEnabled && !this.zenModeLastEnabled) {
-      this.runZenModeActions()
-    }
-    this.zenModeLastEnabled = this.zenModeEnabled
   }
 
   // ==================== CSS 生成 ====================
@@ -127,45 +134,15 @@ export class LayoutManager {
   }
 
   private generateZenModeCSS(): string {
-    const rules = this.siteAdapter.getZenModeSelectors()
-    if (rules.length === 0) return ""
-    return rules
-      .filter((r) => r.action === "hide")
-      .map((r) => `${r.selector} { display: none !important; }`)
+    const config = this.siteAdapter.getZenModeConfig()
+    if (!config) return ""
+
+    const hideCss = (config.hide || [])
+      .map((selector) => `${selector} { display: none !important; }`)
       .join("\n")
-  }
+    const styleCss = this.buildZenModeStyleCSS(config.styles || [])
 
-  private runZenModeActions(): void {
-    const rules = this.siteAdapter.getZenModeSelectors().filter((r) => r.action === "click")
-    if (rules.length === 0) return
-
-    if (this.zenModeActionTimer) {
-      window.clearTimeout(this.zenModeActionTimer)
-      this.zenModeActionTimer = null
-    }
-
-    this.zenModeActionAttempts = 0
-    const maxAttempts = 6
-    const attempt = () => {
-      this.zenModeActionAttempts += 1
-      let didClick = false
-
-      rules.forEach((rule) => {
-        const el = document.querySelector(rule.selector) as HTMLElement | null
-        if (!el || el.offsetParent === null) return
-        const target =
-          (el.closest("button, [role='button'], .operation-btn") as HTMLElement | null) || el
-        if (typeof target.click !== "function") return
-        target.click()
-        didClick = true
-      })
-
-      if (!didClick && this.zenModeActionAttempts < maxAttempts) {
-        this.zenModeActionTimer = window.setTimeout(attempt, 400)
-      }
-    }
-
-    attempt()
+    return [hideCss, styleCss].filter(Boolean).join("\n")
   }
 
   private buildCSSFromSelectors(
@@ -211,6 +188,250 @@ export class LayoutManager {
     if (style) style.remove()
   }
 
+  private buildZenModeStyleCSS(
+    rules: Array<{
+      selector: string
+      property: string
+      value: string
+      globalSelector?: string
+      extraCss?: string
+    }>,
+  ): string {
+    return rules
+      .map((rule) => {
+        const targetSelector = rule.globalSelector || rule.selector
+        const extra = rule.extraCss || ""
+        return `${targetSelector} { ${rule.property}: ${rule.value} !important; ${extra} }`
+      })
+      .join("\n")
+  }
+
+  private syncZenModeRootClass() {
+    const rootClass = this.siteAdapter.getZenModeConfig()?.rootClass
+    if (!rootClass) return
+
+    const currentState = this.zenModeRootClassState
+    if (
+      !currentState ||
+      currentState.selector !== rootClass.selector ||
+      currentState.className !== rootClass.className
+    ) {
+      const element = document.querySelector(rootClass.selector)
+      if (!(element instanceof HTMLElement)) return
+
+      this.zenModeRootClassState = {
+        selector: rootClass.selector,
+        className: rootClass.className,
+        removeOnDisable: !element.classList.contains(rootClass.className),
+      }
+    }
+
+    document.querySelectorAll(rootClass.selector).forEach((element) => {
+      if (element instanceof HTMLElement && !element.classList.contains(rootClass.className)) {
+        element.classList.add(rootClass.className)
+      }
+    })
+  }
+
+  private cleanupZenModeRootClass() {
+    if (!this.zenModeRootClassState?.removeOnDisable) {
+      this.zenModeRootClassState = null
+      return
+    }
+
+    const { selector, className } = this.zenModeRootClassState
+    document.querySelectorAll(selector).forEach((element) => {
+      if (element instanceof HTMLElement) {
+        element.classList.remove(className)
+      }
+    })
+
+    this.zenModeRootClassState = null
+  }
+
+  private mountZenModeExitButton() {
+    if (!document.body) return
+
+    if (this.zenModeExitHost?.isConnected) {
+      return
+    }
+
+    const existingHost = document.getElementById(ZEN_MODE_EXIT_HOST_ID)
+    if (existingHost instanceof HTMLElement) {
+      existingHost.remove()
+    }
+
+    const host = document.createElement("div")
+    host.id = ZEN_MODE_EXIT_HOST_ID
+    // 使用 shadowRoot 内部样式控制，以便媒体查询可以完美覆盖
+    host.style.cssText = ["position: fixed", "z-index: 2147483647", "pointer-events: auto"].join(
+      ";",
+    )
+
+    const primary = this.siteAdapter.getThemeColors().primary || "#2563eb"
+    const exitLabel = t("zenModeExitButton") || ZEN_MODE_EXIT_LABEL
+    const shadowRoot = host.attachShadow({ mode: "open" })
+    shadowRoot.innerHTML = `
+      <style>
+        :host {
+          all: initial;
+          display: block; /* 必须是 block 或 flex，否则 transform 在 inline 元素上不生效 */
+          position: fixed;
+          top: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 2147483647;
+          pointer-events: auto;
+          animation: ghSlideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes ghSlideDown {
+          0% {
+            opacity: 0;
+            transform: translateY(-24px) translateX(-50%) scale(0.92);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) translateX(-50%) scale(1);
+          }
+        }
+
+        .zen-exit-btn {
+          appearance: none;
+          background: var(--gh-glass-bg, rgba(255, 255, 255, 0.25));
+          border: 1px solid var(--gh-border, rgba(255, 255, 255, 0.15));
+          border-radius: 9999px;
+          box-shadow: 
+            var(--gh-shadow-lg, 0 10px 40px rgba(0, 0, 0, 0.15)),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+          color: var(--gh-text, #1f2937);
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 1;
+          padding: 10px 18px 10px 12px;
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .zen-exit-btn:hover {
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 
+            var(--gh-shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.2)),
+            0 0 0 1px var(--gh-primary, ${primary}) inset,
+            0 0 20px rgba(255, 255, 255, 0.1) inset;
+          background: var(--gh-glass-bg-hover, rgba(255, 255, 255, 0.4));
+        }
+
+        .zen-exit-btn:active {
+          transform: translateY(1px) scale(0.98);
+          transition-duration: 0.1s;
+        }
+
+        .zen-exit-btn:focus-visible {
+          outline: 2px solid var(--gh-primary, ${primary});
+          outline-offset: 4px;
+        }
+
+        .zen-exit-icon {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--gh-primary, ${primary});
+          color: var(--gh-text-on-primary, #ffffff);
+          flex-shrink: 0;
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .zen-exit-btn:hover .zen-exit-icon {
+          transform: rotate(90deg) scale(1.1);
+        }
+
+        .zen-exit-text {
+          white-space: nowrap;
+          letter-spacing: 0.2px;
+        }
+
+        @media (max-width: 768px) {
+          :host {
+            top: auto !important;
+            bottom: 32px;
+            animation-name: ghSlideUp;
+            /* 必须重置 transform，否则动画覆盖不完美 */
+          }
+          
+          @keyframes ghSlideUp {
+            0% {
+              opacity: 0;
+              transform: translateY(24px) translateX(-50%) scale(0.92);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0) translateX(-50%) scale(1);
+            }
+          }
+        }
+      </style>
+      <button class="zen-exit-btn" type="button" aria-label="${exitLabel}">
+        <span class="zen-exit-icon" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </span>
+        <span class="zen-exit-text">${exitLabel}</span>
+      </button>
+    `
+
+    const button = shadowRoot.querySelector(".zen-exit-btn") as HTMLButtonElement | null
+    button?.addEventListener("click", this.handleZenModeExit)
+
+    document.body.appendChild(host)
+    this.zenModeExitHost = host
+  }
+
+  private unmountZenModeExitButton() {
+    if (this.zenModeExitHost?.shadowRoot) {
+      const button = this.zenModeExitHost.shadowRoot.querySelector(
+        ".zen-exit-btn",
+      ) as HTMLButtonElement | null
+      button?.removeEventListener("click", this.handleZenModeExit)
+    }
+
+    this.zenModeExitHost?.remove()
+    this.zenModeExitHost = null
+  }
+
+  private handleZenModeExit = () => {
+    const siteId = this.siteAdapter.getSiteId()
+    this.updateZenMode(false)
+    useSettingsStore.getState().updateDeepSetting("layout", "zenMode", siteId, { enabled: false })
+  }
+
+  // ==================== 国际化支持 ====================
+
+  refreshLocalizedTexts() {
+    if (!this.zenModeEnabled || !this.zenModeExitHost?.shadowRoot) return
+
+    const exitLabel = t("zenModeExitButton") || ZEN_MODE_EXIT_LABEL
+    const textSpan = this.zenModeExitHost.shadowRoot.querySelector(".zen-exit-text")
+    const btn = this.zenModeExitHost.shadowRoot.querySelector(".zen-exit-btn")
+
+    if (textSpan) {
+      textSpan.textContent = exitLabel
+    }
+    if (btn) {
+      btn.setAttribute("aria-label", exitLabel)
+    }
+  }
+
   // ==================== Shadow DOM 支持 ====================
 
   private refreshShadowInjection() {
@@ -245,6 +466,10 @@ export class LayoutManager {
 
   private injectToAllShadows() {
     if (!document.body) return
+
+    if (this.zenModeEnabled) {
+      this.syncZenModeRootClass()
+    }
 
     const siteAdapter = this.siteAdapter
 
@@ -282,6 +507,8 @@ export class LayoutManager {
         const css = this.generateZenModeCSS()
         if (css) {
           DOMToolkit.cssToShadow(shadowRoot, css, STYLE_IDS.ZEN_MODE_SHADOW)
+        } else {
+          this.removeStyleFromShadow(shadowRoot, STYLE_IDS.ZEN_MODE_SHADOW)
         }
       } else {
         this.removeStyleFromShadow(shadowRoot, STYLE_IDS.ZEN_MODE_SHADOW)

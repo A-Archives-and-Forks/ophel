@@ -14,7 +14,6 @@ import {
   type ModelSwitcherConfig,
   type NetworkMonitorConfig,
   type OutlineItem,
-  type ZenModeRule,
 } from "./base"
 
 const CHATGLM_HOSTS = new Set(["chatglm.cn"])
@@ -642,14 +641,21 @@ export class ChatGLMAdapter extends SiteAdapter {
         noCenter: true,
       },
       { selector: ".conversation-list", property: "width", value: "100%" },
+      {
+        selector: ".conversation-bottom[data-v-e5578310]",
+        property: "max-width",
+        extraCss: "flex: 1 !important;",
+      },
+      {
+        selector: ".component-box-new[data-v-fb010f38]",
+        property: "max-width",
+      },
     ]
   }
 
-  getZenModeSelectors(): ZenModeRule[] {
-    return [
-      { selector: ".footer", action: "hide" },
-      { selector: ".policy-wrap, .policy-wrap *", action: "hide" },
-      { selector: ".aside-header .operation-btn .expand-icon", action: "click" },
-    ]
+  getZenModeConfig() {
+    return {
+      hide: [".el-aside", ".policy-wrap, .policy-wrap *", ".vip-btn"],
+    }
   }
 }

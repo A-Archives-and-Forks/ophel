@@ -1589,8 +1589,16 @@ export class GeminiAdapter extends SiteAdapter {
     ]
   }
 
-  getZenModeSelectors() {
-    return [{ selector: "hallucination-disclaimer", action: "hide" as const }]
+  getZenModeConfig() {
+    return {
+      hide: [
+        "bard-sidenav",
+        "side-nav-menu-button",
+        ".top-bar-actions",
+        "bard-logo",
+        "hallucination-disclaimer",
+      ],
+    }
   }
 
   getMarkdownFixerConfig(): MarkdownFixerConfig {

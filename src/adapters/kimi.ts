@@ -828,11 +828,22 @@ export class KimiAdapter extends SiteAdapter {
         value: "100%",
         noCenter: true,
       },
+      {
+        // 输入框宽度
+        selector: ".chat-editor",
+        property: "max-width",
+      },
     ]
   }
 
-  getZenModeSelectors() {
-    return [{ selector: ".chat-bottom .legal-footer, .legal-footer", action: "hide" as const }]
+  getZenModeConfig() {
+    return {
+      hide: [".sidebar-placeholder", ".chat-bottom .legal-footer, .legal-footer"],
+      rootClass: {
+        selector: ".app.has-sidebar",
+        className: "fold",
+      },
+    }
   }
 
   getMarkdownFixerConfig(): MarkdownFixerConfig {

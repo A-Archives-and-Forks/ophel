@@ -12,7 +12,6 @@
  */
 import { SITE_IDS } from "~constants"
 import { useSettingsStore } from "~stores/settings-store"
-import { aistudioNativeThemeCss } from "~styles/native-theme-adapters/aistudio"
 import { htmlToMarkdown } from "~utils/exporter"
 import type { AIStudioSettings } from "~utils/storage"
 
@@ -178,10 +177,6 @@ export class AIStudioAdapter extends SiteAdapter {
   getThemeColors(): { primary: string; secondary: string } {
     // Google AI 蓝色主题
     return { primary: "#4285f4", secondary: "#1a73e8" }
-  }
-
-  getNativeThemeCss(): string | null {
-    return aistudioNativeThemeCss
   }
 
   getNewTabUrl(): string {
@@ -409,8 +404,10 @@ export class AIStudioAdapter extends SiteAdapter {
     ]
   }
 
-  getZenModeSelectors() {
-    return [{ selector: "ms-hallucinations-disclaimer", action: "hide" as const }]
+  getZenModeConfig() {
+    return {
+      hide: ["ms-navbar", "ms-hallucinations-disclaimer", "ms-right-side-panel"],
+    }
   }
 
   getMarkdownFixerConfig(): MarkdownFixerConfig {

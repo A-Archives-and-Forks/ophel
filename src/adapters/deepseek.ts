@@ -338,6 +338,12 @@ export class DeepSeekAdapter extends SiteAdapter {
     return firstLink?.closest(".ds-scroll-area") || null
   }
 
+  getZenModeConfig() {
+    return {
+      hide: [".dc04ec1d", "._0fcaa63"],
+    }
+  }
+
   getScrollContainer(): HTMLElement | null {
     const topLevelMessages = Array.from(document.querySelectorAll(MESSAGE_SELECTOR)).filter(
       (message) => !message.parentElement?.closest(MESSAGE_SELECTOR),
