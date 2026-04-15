@@ -812,6 +812,73 @@ export const App = () => {
     }
   }, [isSettingsHydrated, settings])
 
+  // 全局防遮挡状态 (防遮挡体验升级)
+  const [isPassThrough, setIsPassThrough] = useState(false)
+  const pressedKeys = useRef<Set<string>>(new Set())
+  const passThroughTimerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const PASS_THROUGH_HOLD_MS = 200
+    const passThroughModifierKey = isMacLike ? "Meta" : "Control"
+
+    const clearPassThroughTimer = () => {
+      if (passThroughTimerRef.current !== null) {
+        window.clearTimeout(passThroughTimerRef.current)
+        passThroughTimerRef.current = null
+      }
+    }
+
+    const checkPassThrough = () => {
+      const keys = pressedKeys.current
+      // 平台限定：Windows/Linux 仅保留 Ctrl，macOS 仅保留 Command，避免浏览器级 Alt 焦点劫持。
+      const shouldPassThrough = keys.size === 1 && keys.has(passThroughModifierKey)
+
+      if (!shouldPassThrough) {
+        clearPassThroughTimer()
+        setIsPassThrough(false)
+        return
+      }
+
+      if (isPassThrough || passThroughTimerRef.current !== null) {
+        return
+      }
+
+      passThroughTimerRef.current = window.setTimeout(() => {
+        passThroughTimerRef.current = null
+        const latestKeys = pressedKeys.current
+        if (latestKeys.size === 1 && latestKeys.has(passThroughModifierKey)) {
+          setIsPassThrough(true)
+        }
+      }, PASS_THROUGH_HOLD_MS)
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      pressedKeys.current.add(e.key)
+      checkPassThrough()
+    }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      pressedKeys.current.delete(e.key)
+      checkPassThrough()
+    }
+
+    const handleBlur = () => {
+      pressedKeys.current.clear()
+      checkPassThrough()
+    }
+
+    window.addEventListener("keydown", handleKeyDown, true)
+    window.addEventListener("keyup", handleKeyUp, true)
+    window.addEventListener("blur", handleBlur)
+
+    return () => {
+      clearPassThroughTimer()
+      window.removeEventListener("keydown", handleKeyDown, true)
+      window.removeEventListener("keyup", handleKeyUp, true)
+      window.removeEventListener("blur", handleBlur)
+    }
+  }, [isMacLike, isPassThrough])
+
   // 选中的提示词状态
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null)
 
@@ -2891,7 +2958,7 @@ export const App = () => {
   }
 
   return (
-    <div className="gh-root">
+    <div className={`gh-root ${isPassThrough ? "gh-pass-through" : ""}`}>
       <MainPanel
         isOpen={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}
