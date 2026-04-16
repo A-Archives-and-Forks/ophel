@@ -514,9 +514,16 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
       e?.stopPropagation()
       const siteId = adapter?.getSiteId() || "_default"
       const currentZenMode = settings?.layout?.zenMode?.[siteId]?.enabled || false
+      const newZenEnabled = !currentZenMode
       updateNestedSetting("layout", "zenMode", {
-        [siteId]: { enabled: !currentZenMode },
+        [siteId]: { enabled: newZenEnabled },
       })
+      // 开启禅模式时自动开启净化模式，关闭禅模式时不变净化模式
+      if (newZenEnabled) {
+        updateNestedSetting("layout", "cleanMode", {
+          [siteId]: { enabled: true },
+        })
+      }
     },
     settings: (e) => {
       e?.stopPropagation()

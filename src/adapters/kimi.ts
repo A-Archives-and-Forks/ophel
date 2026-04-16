@@ -838,11 +838,21 @@ export class KimiAdapter extends SiteAdapter {
 
   getZenModeConfig() {
     return {
-      hide: [".sidebar-placeholder", ".chat-bottom .legal-footer, .legal-footer"],
+      hide: [".sidebar-placeholder"],
       rootClass: {
         selector: ".app.has-sidebar",
         className: "fold",
       },
+    }
+  }
+
+  getCleanModeConfig() {
+    return {
+      hide: [
+        ".chat-bottom .legal-footer, .legal-footer",
+        ".membership-upgrade",
+        ".download-app-btn",
+      ],
     }
   }
 

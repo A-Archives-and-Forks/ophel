@@ -198,6 +198,7 @@ export interface Settings {
     pageWidth: Record<string, PageWidthConfig>
     userQueryWidth: Record<string, PageWidthConfig>
     zenMode?: Record<string, ZenModeConfig>
+    cleanMode?: Record<string, ZenModeConfig>
   }
 
   // 模型锁定（按站点独立）
@@ -327,6 +328,11 @@ const DEFAULT_ZEN_MODE: ZenModeConfig = {
   enabled: false,
 }
 
+// 默认净化模式配置
+const DEFAULT_CLEAN_MODE: ZenModeConfig = {
+  enabled: true,
+}
+
 const DEFAULT_COLLAPSED_BUTTONS: QuickButtonConfig[] = [
   { id: "panel", enabled: true },
   { id: "floatingToolbar", enabled: true },
@@ -438,6 +444,17 @@ export const DEFAULT_SETTINGS: Settings = {
       yuanbao: { ...DEFAULT_ZEN_MODE },
       zai: { ...DEFAULT_ZEN_MODE },
       _default: { ...DEFAULT_ZEN_MODE },
+    },
+    cleanMode: {
+      gemini: { ...DEFAULT_CLEAN_MODE },
+      "gemini-enterprise": { ...DEFAULT_CLEAN_MODE },
+      aistudio: { ...DEFAULT_CLEAN_MODE },
+      doubao: { ...DEFAULT_CLEAN_MODE },
+      ima: { ...DEFAULT_CLEAN_MODE },
+      deepseek: { ...DEFAULT_CLEAN_MODE },
+      yuanbao: { ...DEFAULT_CLEAN_MODE },
+      zai: { ...DEFAULT_CLEAN_MODE },
+      _default: { ...DEFAULT_CLEAN_MODE },
     },
   },
 
@@ -634,6 +651,14 @@ export function getSiteZenMode(settings: Settings, siteId: string): ZenModeConfi
     return zenMode[siteId]
   }
   return zenMode?._default ?? DEFAULT_ZEN_MODE
+}
+
+export function getSiteCleanMode(settings: Settings, siteId: string): ZenModeConfig {
+  const cleanMode = settings.layout?.cleanMode
+  if (cleanMode && siteId in cleanMode) {
+    return cleanMode[siteId]
+  }
+  return cleanMode?._default ?? DEFAULT_CLEAN_MODE
 }
 
 let clearAllFlagPromise: Promise<boolean> | null = null
