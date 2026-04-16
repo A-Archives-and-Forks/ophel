@@ -323,7 +323,7 @@ export default defineConfig({
         // WebDAV sync in userscript mode relies on GM_xmlhttpRequest against
         // user-configured arbitrary hosts, so @connect must stay open-ended.
         connect: ["*"],
-        "run-at": "document-idle",
+        "run-at": "document-start",
         noframes: true,
         homepageURL: "https://github.com/urzeye/ophel",
         supportURL: "https://github.com/urzeye/ophel/issues",

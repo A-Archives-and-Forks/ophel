@@ -115,6 +115,19 @@ export class ReadingHistoryManager {
         if (!scrollKeys.includes(key)) return
       }
 
+      // 忽略来自 Ophel 面板（Shadow DOM）内的 wheel/touchmove 事件
+      // 用户滚动大纲面板不应中断 Position Keeper
+      if (e.type === "wheel" || e.type === "touchmove") {
+        const source = e.composedPath?.()?.[0] as Element | undefined
+        if (source) {
+          const root = source.getRootNode?.()
+          // 事件来自 Shadow DOM（非 document），说明是 Ophel 面板内的滚动
+          if (root && root !== document) {
+            return
+          }
+        }
+      }
+
       if (this.ignoreScrollUntil > 0) {
         this.ignoreScrollUntil = 0
       }
