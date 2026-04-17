@@ -72,6 +72,16 @@ const areGroupPositionsEqual = (
   return left.xRatio === right.xRatio && left.yRatio === right.yRatio
 }
 
+// 交互常量（module-level 以避免 react-hooks/exhaustive-deps 噪音）
+const DRAG_LONG_PRESS_MS = 150
+const DRAG_THRESHOLD_PX = 6
+const DRAG_PADDING_PX = 8
+const POSITION_PERSIST_DEBOUNCE_MS = 220
+const PROXIMITY_RADIUS_PX = 150
+const PROXIMITY_RETAIN_MS = 3000
+const ACTIVITY_PROTECT_MS = 4000
+const LEAVE_WINDOW_RETAIN_MS = 1500
+
 export const QuickButtons: React.FC<QuickButtonsProps> = ({
   isPanelOpen,
   onPanelToggle,
@@ -118,11 +128,6 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
       : siteTheme.darkStyleId || "classic-dark"
   const panelSparkleColor = currentThemeStyleId === "google-gradient" ? "currentColor" : "brand"
 
-  const DRAG_LONG_PRESS_MS = 150
-  const DRAG_THRESHOLD_PX = 6
-  const DRAG_PADDING_PX = 8
-  const POSITION_PERSIST_DEBOUNCE_MS = 220
-
   // 工具菜单状态
   const groupRef = useRef<HTMLDivElement>(null)
   const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false)
@@ -165,65 +170,115 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
 
   // 悬浮隐藏状态
   const [_isHovered, setIsHovered] = useState(false)
+  const [_hasFocusWithin, setHasFocusWithin] = useState(false)
   // groupRef moved to top
 
-  // 闲置状态 (用于液态折叠)
-  const [isIdle, setIsIdle] = useState(false)
-  const idleTimerRef = useRef<number | null>(null)
+  // 局部失焦状态 (用于液态折叠)
+  const [isProximate, setIsProximate] = useState(true)
+  const activityTimerRef = useRef<number | null>(null)
+  const isActiveRef = useRef(false)
 
-  const resetIdleTimer = useCallback(() => {
-    setIsIdle(false)
-    if (idleTimerRef.current) {
-      window.clearTimeout(idleTimerRef.current)
+  const retainActivity = useCallback((durationMs: number = PROXIMITY_RETAIN_MS) => {
+    setIsProximate(true)
+    if (activityTimerRef.current !== null) {
+      window.clearTimeout(activityTimerRef.current)
     }
-    idleTimerRef.current = window.setTimeout(() => {
-      setIsIdle(true)
-    }, 5000)
+    activityTimerRef.current = window.setTimeout(() => {
+      setIsProximate(false)
+    }, durationMs)
   }, [])
 
-  useEffect(() => {
-    const handleActivity = (e: MouseEvent | KeyboardEvent) => {
-      if (e.type === "keydown") {
-        resetIdleTimer()
-        return
-      }
+  // 仅缩短已有的收缩倒计时，不唤醒已收缩态（避免 mouseleave / visibilitychange 产生闪烁）
+  const shortenCountdown = useCallback((durationMs: number) => {
+    if (activityTimerRef.current !== null) {
+      window.clearTimeout(activityTimerRef.current)
+      activityTimerRef.current = window.setTimeout(() => {
+        setIsProximate(false)
+      }, durationMs)
+    }
+  }, [])
 
-      // Proximity Check / 引力场检测
-      const mouseEvent = e as MouseEvent
-      if (groupRef.current) {
+  // 监听组件活跃状态：包括拖拽、按压、面板展开、工具菜单打开
+  useEffect(() => {
+    const isActive = isDragging || isPressing || isPanelOpen || isToolsMenuOpen
+    isActiveRef.current = isActive
+    if (isActive) {
+      setIsProximate(true)
+      if (activityTimerRef.current !== null) {
+        window.clearTimeout(activityTimerRef.current)
+        activityTimerRef.current = null
+      }
+    } else {
+      // 从活跃变成不活跃时，给保护时间（尤其是刚拖拽完）
+      retainActivity(ACTIVITY_PROTECT_MS)
+    }
+  }, [isDragging, isPressing, isPanelOpen, isToolsMenuOpen, retainActivity])
+
+  useEffect(() => {
+    let rafId: number | null = null
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (rafId !== null) return
+
+      rafId = requestAnimationFrame(() => {
+        rafId = null
+        if (!groupRef.current || isActiveRef.current) return
+
         const rect = groupRef.current.getBoundingClientRect()
         // 计算鼠标到组件包围盒边界的最小距离
-        const dx = Math.max(rect.left - mouseEvent.clientX, 0, mouseEvent.clientX - rect.right)
-        const dy = Math.max(rect.top - mouseEvent.clientY, 0, mouseEvent.clientY - rect.bottom)
+        const dx = Math.max(rect.left - e.clientX, 0, e.clientX - rect.right)
+        const dy = Math.max(rect.top - e.clientY, 0, e.clientY - rect.bottom)
         const distance = Math.sqrt(dx * dx + dy * dy)
 
-        const PROXIMITY_RADIUS = 150 // 改为 150px 的引力场
-
-        if (distance <= PROXIMITY_RADIUS) {
-          // 在 150px 引力场内，瞬间唤醒并重置倒计时
-          resetIdleTimer()
-        } else {
-          // 在引力场外：我们甚至可以不重置 idleTimer，这样如果一直在别处读文章，5秒后它照样收缩。
-          // 或者让它立即加速收缩（如果需要），这里我们保守一点，只在刚移出时维持正常倒计时，但不阻止它进入 Idle。
+        if (distance <= PROXIMITY_RADIUS_PX) {
+          // 在引力场内：保持唤醒并重置收缩倒计时
+          retainActivity(PROXIMITY_RETAIN_MS)
         }
-      } else {
-        resetIdleTimer()
+      })
+    }
+
+    const handleMouseLeaveWindow = () => {
+      // 鼠标离开窗口时，仅缩短已有倒计时，不唤醒已收缩态
+      shortenCountdown(LEAVE_WINDOW_RETAIN_MS)
+    }
+
+    const handleVisibilityChange = () => {
+      // 标签页切换或窗口最小化时，mouseleave 不触发，用 visibilitychange 兜底
+      if (document.hidden) {
+        shortenCountdown(LEAVE_WINDOW_RETAIN_MS)
       }
     }
 
-    document.addEventListener("mousemove", handleActivity, { passive: true })
-    document.addEventListener("keydown", handleActivity, { passive: true })
-    resetIdleTimer() // 初始唤醒
+    document.addEventListener("mousemove", handleMouseMove, { passive: true })
+    document.addEventListener("mouseleave", handleMouseLeaveWindow, { passive: true })
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    // 初始化时维持展开
+    retainActivity(PROXIMITY_RETAIN_MS)
 
     return () => {
-      document.removeEventListener("mousemove", handleActivity)
-      document.removeEventListener("keydown", handleActivity)
-      if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current)
+      document.removeEventListener("mousemove", handleMouseMove)
+      document.removeEventListener("mouseleave", handleMouseLeaveWindow)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+      if (activityTimerRef.current !== null) {
+        window.clearTimeout(activityTimerRef.current)
+      }
     }
-  }, [resetIdleTimer])
+  }, [retainActivity, shortenCountdown])
 
   const isLiquidCollapsed =
-    isIdle && !_isHovered && !isToolsMenuOpen && !isPanelOpen && !isDragging && !isPressing
+    !isProximate &&
+    !_isHovered &&
+    !_hasFocusWithin &&
+    !isToolsMenuOpen &&
+    !isPanelOpen &&
+    !isDragging &&
+    !isPressing
+
+  // 用 ref 追踪 isLiquidCollapsed，避免 ResizeObserver 的 useLayoutEffect 因它变化而反复 teardown/recreate
+  const isLiquidCollapsedRef = useRef(isLiquidCollapsed)
+  isLiquidCollapsedRef.current = isLiquidCollapsed
 
   // 跟踪是否处于 Flutter 模式（图文并茂）
   const [_isFlutterMode, setIsFlutterMode] = useState(false)
@@ -389,6 +444,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
       const rect = element.getBoundingClientRect()
       const nextMetrics = { width: rect.width, height: rect.height }
       const prevMetrics = groupMetricsRef.current
+      const isInitialMetricsSync = prevMetrics.width === 0 && prevMetrics.height === 0
       const metricsChanged =
         prevMetrics.width !== nextMetrics.width || prevMetrics.height !== nextMetrics.height
 
@@ -411,7 +467,12 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
         return
       }
 
-      if (draggingRef.current) return
+      if (draggingRef.current || isInitialMetricsSync) {
+        // 首次挂载时，持久化位置仍按 0x0 尺寸参与了首帧定位。
+        // 这时如果直接用当前 rect 反推 ratio，会把这个“临时偏低”的像素位置写回，
+        // 导致刷新一次就下移一点。先只更新 metrics，让下一帧用真实尺寸重算位置。
+        return
+      }
 
       const nextPosition = toLogicalGroupPosition(rect.left, rect.top, viewport, nextMetrics)
       const prevPosition = groupPositionRef.current
@@ -423,7 +484,14 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
         groupPositionRef.current = nextPosition
         setGroupPosition(nextPosition)
 
-        // ResizeObserver 会在液态收缩动画期间连续触发，这里只在尺寸稳定后回写一次。
+        if (isLiquidCollapsedRef.current) {
+          // 水滴态和展开态使用的尺寸不同，但这里的 ratio 是按“当前尺寸”反推出来的。
+          // 如果把水滴态 ratio 持久化，下一次刷新按展开态尺寸恢复时就会整体向上漂。
+          // 因此液态收缩期间只修正当前会话位置，不写回持久化设置。
+          return
+        }
+
+        // ResizeObserver 会在尺寸动画期间连续触发，这里只在尺寸稳定后回写一次。
         scheduleGroupPositionPersist(nextPosition)
       }
     }
@@ -1039,6 +1107,8 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
         onPointerCancel={handlePointerUp}
         onPointerLeave={handlePointerLeave}
         onClickCapture={handleClickCapture}
+        onFocusCapture={() => setHasFocusWithin(true)}
+        onBlurCapture={() => setHasFocusWithin(false)}
         style={{
           position: "fixed",
           top: resolvedGroupPosition
