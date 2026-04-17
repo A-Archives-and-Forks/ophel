@@ -64,6 +64,14 @@ const readViewportSize = (): ViewportSize => ({
   height: window.visualViewport?.height ?? window.innerHeight,
 })
 
+const areGroupPositionsEqual = (
+  left: GroupPosition | null | undefined,
+  right: GroupPosition | null | undefined,
+): boolean => {
+  if (!left || !right) return left === right
+  return left.xRatio === right.xRatio && left.yRatio === right.yRatio
+}
+
 export const QuickButtons: React.FC<QuickButtonsProps> = ({
   isPanelOpen,
   onPanelToggle,
@@ -113,6 +121,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   const DRAG_LONG_PRESS_MS = 150
   const DRAG_THRESHOLD_PX = 6
   const DRAG_PADDING_PX = 8
+  const POSITION_PERSIST_DEBOUNCE_MS = 220
 
   // 工具菜单状态
   const groupRef = useRef<HTMLDivElement>(null)
@@ -137,6 +146,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   const [isDragging, setIsDragging] = useState(false)
   const [isPressing, setIsPressing] = useState(false)
   const groupPositionRef = useRef<GroupPosition | null>(persistedGroupPosition)
+  const lastPersistedGroupPositionRef = useRef<GroupPosition | null>(persistedGroupPosition)
   const groupMetricsRef = useRef<GroupMetrics>({ width: 0, height: 0 })
   const [defaultTopPx, setDefaultTopPx] = useState<number | null>(null)
   const defaultTopPxRef = useRef<number | null>(null)
@@ -147,6 +157,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   const draggingRef = useRef(false)
   const pointerIdRef = useRef<number | null>(null)
   const suppressClickRef = useRef(false)
+  const positionPersistTimerRef = useRef<number | null>(null)
 
   // 锚点状态（使用全局存储）
   const anchorPosition = useSyncExternalStore(anchorStore.subscribe, anchorStore.getSnapshot)
@@ -222,11 +233,73 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   const [loadingText, setLoadingText] = useState("")
   const abortLoadingRef = useRef(false)
 
+  const clearPositionPersistTimer = useCallback(() => {
+    if (positionPersistTimerRef.current !== null) {
+      window.clearTimeout(positionPersistTimerRef.current)
+      positionPersistTimerRef.current = null
+    }
+  }, [])
+
+  const persistGroupPosition = useCallback(
+    (position: GroupPosition | null | undefined) => {
+      const nextPosition = position ?? null
+      clearPositionPersistTimer()
+
+      if (areGroupPositionsEqual(lastPersistedGroupPositionRef.current, nextPosition)) {
+        return
+      }
+
+      lastPersistedGroupPositionRef.current = nextPosition
+      updateNestedSetting("quickButtons", "position", nextPosition || undefined)
+    },
+    [clearPositionPersistTimer, updateNestedSetting],
+  )
+
+  const scheduleGroupPositionPersist = useCallback(
+    (position: GroupPosition) => {
+      if (areGroupPositionsEqual(lastPersistedGroupPositionRef.current, position)) {
+        return
+      }
+
+      clearPositionPersistTimer()
+
+      const queuedPosition = { ...position }
+      positionPersistTimerRef.current = window.setTimeout(() => {
+        positionPersistTimerRef.current = null
+
+        if (areGroupPositionsEqual(lastPersistedGroupPositionRef.current, queuedPosition)) {
+          return
+        }
+
+        lastPersistedGroupPositionRef.current = queuedPosition
+        updateNestedSetting("quickButtons", "position", queuedPosition)
+      }, POSITION_PERSIST_DEBOUNCE_MS)
+    },
+    [POSITION_PERSIST_DEBOUNCE_MS, clearPositionPersistTimer, updateNestedSetting],
+  )
+
   useEffect(() => {
-    if (draggingRef.current) return
+    const persistedChanged = !areGroupPositionsEqual(
+      lastPersistedGroupPositionRef.current,
+      persistedGroupPosition,
+    )
+
+    if (persistedChanged) {
+      clearPositionPersistTimer()
+    }
+
+    lastPersistedGroupPositionRef.current = persistedGroupPosition
+
+    if (!persistedChanged || draggingRef.current) return
     groupPositionRef.current = persistedGroupPosition
     setGroupPosition(persistedGroupPosition)
-  }, [persistedGroupPosition])
+  }, [clearPositionPersistTimer, persistedGroupPosition])
+
+  useEffect(() => {
+    return () => {
+      clearPositionPersistTimer()
+    }
+  }, [clearPositionPersistTimer])
 
   useEffect(() => {
     if (persistedGroupPosition) {
@@ -349,6 +422,9 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
       ) {
         groupPositionRef.current = nextPosition
         setGroupPosition(nextPosition)
+
+        // ResizeObserver 会在液态收缩动画期间连续触发，这里只在尺寸稳定后回写一次。
+        scheduleGroupPositionPersist(nextPosition)
       }
     }
 
@@ -363,7 +439,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     return () => {
       resizeObserver.disconnect()
     }
-  }, [clampPixelGroupPosition, toLogicalGroupPosition])
+  }, [clampPixelGroupPosition, scheduleGroupPositionPersist, toLogicalGroupPosition])
 
   // 滚动到顶部（支持图文并茂模式）
   const scrollToTop = useCallback(async () => {
@@ -854,6 +930,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     dragOffsetRef.current = null
 
     if (draggingRef.current) {
+      clearPositionPersistTimer()
       draggingRef.current = false
       setIsDragging(false)
     }
@@ -866,7 +943,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     pointerIdRef.current = null
 
     if (shouldPersist) {
-      updateNestedSetting("quickButtons", "position", groupPositionRef.current || undefined)
+      persistGroupPosition(groupPositionRef.current)
     }
   }
 
@@ -886,6 +963,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     dragTimerRef.current = window.setTimeout(() => {
       if (!groupRef.current || pointerIdRef.current === null) return
 
+      clearPositionPersistTimer()
       groupRef.current.setPointerCapture(pointerIdRef.current)
       setIsPressing(false)
       draggingRef.current = true
