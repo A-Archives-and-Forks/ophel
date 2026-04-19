@@ -66,14 +66,20 @@ function decodeNotifId(notifId: string): { tabId: number; windowId: number } | n
 }
 
 // 点击通知时激活对应标签页并聚焦窗口
-chrome.notifications.onClicked.addListener((notifId) => {
-  const tab = decodeNotifId(notifId)
-  if (tab) {
-    chrome.tabs.update(tab.tabId, { active: true }).catch(() => {})
-    chrome.windows.update(tab.windowId, { focused: true }).catch(() => {})
-  }
-  chrome.notifications.clear(notifId)
-})
+// 注意：notifications 是可选权限，需要安全访问以避免 Service Worker 初始化失败
+if (chrome.notifications?.onClicked) {
+  chrome.notifications.onClicked.addListener((notifId) => {
+    const tab = decodeNotifId(notifId)
+    if (tab) {
+      chrome.tabs.update(tab.tabId, { active: true }).catch(() => {})
+      chrome.windows.update(tab.windowId, { focused: true }).catch(() => {})
+    }
+    // MV3 returns Promise at runtime; cast to handle both callback/Promise signatures
+    void Promise.resolve(chrome.notifications.clear(notifId)).catch(() => {
+      // ignore: permission may have been revoked
+    })
+  })
+}
 
 async function queryOphelTabs() {
   return chrome.tabs.query({ url: OPHEL_TARGET_URLS })
@@ -234,21 +240,23 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
           ? encodeNotifId(tabId, windowId)
           : `ophel|${crypto.randomUUID()}`
 
-      chrome.notifications.create(
-        notifId,
-        {
-          type: "basic",
-          iconUrl: chrome.runtime.getURL("assets/icon.png"),
-          title: message.title || APP_DISPLAY_NAME,
-          message: message.body || "",
-          silent: true, // 禁用系统默认通知声音，由扩展自行播放自定义声音
-        },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.error("[Ophel] Notification create failed:", chrome.runtime.lastError.message)
-          }
-        },
-      )
+      if (chrome.notifications?.create) {
+        chrome.notifications.create(
+          notifId,
+          {
+            type: "basic",
+            iconUrl: chrome.runtime.getURL("assets/icon.png"),
+            title: message.title || APP_DISPLAY_NAME,
+            message: message.body || "",
+            silent: true, // 禁用系统默认通知声音，由扩展自行播放自定义声音
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              console.error("[Ophel] Notification create failed:", chrome.runtime.lastError.message)
+            }
+          },
+        )
+      }
       sendResponse({ success: true })
       break
     }
@@ -383,12 +391,33 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
       break
 
     // 请求权限：打开最小化权限请求页面
+    // 注意：chrome.permissions.request() 不能在 Service Worker 中调用，需要用户手势+可见页面
+    // 此处通过打开独立弹窗让用户在弹窗中完成授权
     case MSG_REQUEST_PERMISSIONS:
       ;(async () => {
         try {
-          // 从消息中获取权限类型，默认为 allUrls
-          const permType = (message as any).permType || "allUrls"
-          const url = chrome.runtime.getURL(`tabs/perm-request.html?type=${permType}`)
+          // 支持 permType 或从 origins/permissions 推断类型
+          const VALID_PERM_TYPES = ["allUrls", "notifications", "cookies"] as const
+          let permType: string = (message as any).permType
+          if (!permType) {
+            const { origins, permissions } = message as any
+            if (origins?.includes("<all_urls>")) {
+              permType = "allUrls"
+            } else if (permissions?.includes("notifications")) {
+              permType = "notifications"
+            } else if (permissions?.includes("cookies")) {
+              permType = "cookies"
+            } else {
+              permType = "allUrls"
+            }
+          }
+          // 白名单校验，防止非法值
+          if (!VALID_PERM_TYPES.includes(permType as any)) {
+            permType = "allUrls"
+          }
+          const url = chrome.runtime.getURL(
+            `tabs/perm-request.html?type=${encodeURIComponent(permType)}`,
+          )
 
           // 获取当前窗口信息以计算居中位置
           const currentWindow = await chrome.windows.getCurrent()
