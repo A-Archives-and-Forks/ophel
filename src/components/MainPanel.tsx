@@ -1,22 +1,32 @@
-import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react"
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react"
 
 import type { SiteAdapter } from "~adapters/base"
 import {
   AnchorIcon,
   ConversationIcon,
+  FloatingModeIcon,
   MinimizeIcon,
   NewTabIcon,
   OutlineIcon,
   PromptIcon,
-  RefreshIcon,
+  // RefreshIcon, (刷新按钮已注释掉)
   ScrollBottomIcon,
   ScrollTopIcon,
   SettingsIcon,
+  SnapToEdgeIcon,
   ThemeDarkIcon,
   ThemeLightIcon,
 } from "~components/icons"
 import { SparkleIcon } from "~components/icons/SparkleIcon"
 import { TAB_IDS } from "~constants"
+import { DEFAULT_KEYBINDINGS, formatShortcut, isMacOS } from "~constants/shortcuts"
 import type { ConversationManager } from "~core/conversation-manager"
 import type { OutlineManager } from "~core/outline-manager"
 import type { PromptManager } from "~core/prompt-manager"
@@ -88,7 +98,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [])
 
-  const { settings } = useSettingsStore()
+  const { settings, updateNestedSetting } = useSettingsStore()
   const currentSettings = settings || DEFAULT_SETTINGS
   const tabOrder = currentSettings.features?.order || DEFAULT_SETTINGS.features.order
   const siteId = adapter?.getSiteId() || "_default"
@@ -105,12 +115,117 @@ export const MainPanel: React.FC<MainPanelProps> = ({
 
   // 拖拽功能（高性能版本：直接 DOM 操作，不触发 React 渲染）
   const { panelRef, headerRef } = useDraggable({
-    edgeSnapHide: currentSettings.panel?.edgeSnap,
+    edgeSnapHide: currentSettings.panel?.panelMode === "edge-snap",
     edgeSnapState, // 传递当前吸附状态
     snapThreshold: currentSettings.panel?.edgeSnapThreshold ?? 30,
     onEdgeSnap,
     onUnsnap,
   })
+
+  // 模式切换时重置面板 DOM 位置
+  // useDraggable 通过直接 DOM 操作设置了 left/top/right/transform，React 无法感知这些变化，
+  // 所以需要在模式切换时手动重置
+  const prevPanelModeRef = useRef(currentSettings.panel?.panelMode)
+  // 保存面板当前位置，用于 header 按钮触发的"原地固定"
+  const savedPeekingRectRef = useRef<DOMRect | null>(null)
+  // 标题 tooltip 随机 tips（动态读取实际快捷键配置 + 平台检测）
+  const isMac = useMemo(() => isMacOS(), [])
+  const keybindings = currentSettings.shortcuts?.keybindings ?? DEFAULT_KEYBINDINGS
+  const getTips = useCallback(() => {
+    const fmt = (id: string) => {
+      const shortcut = keybindings[id] ?? DEFAULT_KEYBINDINGS[id]
+      return shortcut ? formatShortcut(shortcut, isMac) : ""
+    }
+    return [
+      t("tip1", { modifier: isMac ? "⌘" : "Ctrl" }),
+      t("tip2"),
+      t("tip3", { shortcut: fmt("showShortcuts") }),
+      t("tip4", { shortcut: fmt("openGlobalSearch") }),
+      t("tip5", { shortcut: fmt("copyLatestReply") }),
+      t("tip6", {
+        shortcut: fmt("prevHeading") + "/" + fmt("nextHeading"),
+      }),
+    ]
+  }, [keybindings, isMac])
+  const [currentTip, setCurrentTip] = useState(() => {
+    const kb = currentSettings.shortcuts?.keybindings ?? DEFAULT_KEYBINDINGS
+    const fmt = (id: string) => {
+      const shortcut = kb[id] ?? DEFAULT_KEYBINDINGS[id]
+      return shortcut ? formatShortcut(shortcut, isMacOS()) : ""
+    }
+    const tips = [
+      t("tip1", { modifier: isMacOS() ? "⌘" : "Ctrl" }),
+      t("tip2"),
+      t("tip3", { shortcut: fmt("showShortcuts") }),
+      t("tip4", { shortcut: fmt("openGlobalSearch") }),
+      t("tip5", { shortcut: fmt("copyLatestReply") }),
+      t("tip6", { shortcut: fmt("prevHeading") + "/" + fmt("nextHeading") }),
+    ]
+    return tips[Math.floor(Math.random() * tips.length)]
+  })
+  const pointerEventsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    const currentMode = currentSettings.panel?.panelMode
+    const prevMode = prevPanelModeRef.current
+    prevPanelModeRef.current = currentMode
+
+    if (prevMode === currentMode || !panelRef.current) return
+
+    const panel = panelRef.current
+    panel.classList.remove("dragging")
+
+    if (prevMode === "edge-snap" && currentMode === "floating") {
+      const savedRect = savedPeekingRectRef.current
+      savedPeekingRectRef.current = null
+
+      if (savedRect && savedRect.right > 0 && savedRect.left < window.innerWidth) {
+        // 面板从 header 按钮切换且当前可见（peeking）：原地固定
+        panel.style.left = `${savedRect.left}px`
+        panel.style.top = `${savedRect.top}px`
+        panel.style.right = "auto"
+        panel.style.transform = "none"
+      } else {
+        // 面板不可见或从设置页切换：重置为默认悬浮位置
+        const edge = currentSettings.panel?.defaultEdgeDistance ?? 40
+        const pos = currentSettings.panel?.defaultPosition ?? "right"
+
+        panel.style.top = "50%"
+        panel.style.transform = "translateY(-50%)"
+        if (pos === "left") {
+          panel.style.left = `${edge}px`
+          panel.style.right = "auto"
+        } else {
+          panel.style.right = `${edge}px`
+          panel.style.left = "auto"
+        }
+      }
+    } else if (prevMode === "floating" && currentMode === "edge-snap") {
+      // 悬浮 → 吸附：重置垂直位置（水平由 CSS edge-snapped-* !important 接管）
+      panel.style.top = "50%"
+      panel.style.transform = "translateY(-50%)"
+      panel.style.left = ""
+      panel.style.right = ""
+      // 临时禁用 pointer-events，防止 CSS :hover 在鼠标仍在面板区域时阻止收缩动画
+      panel.style.pointerEvents = "none"
+      if (pointerEventsTimerRef.current) clearTimeout(pointerEventsTimerRef.current)
+      pointerEventsTimerRef.current = setTimeout(() => {
+        panel.style.pointerEvents = ""
+        pointerEventsTimerRef.current = null
+      }, 400)
+    }
+
+    return () => {
+      if (pointerEventsTimerRef.current) {
+        clearTimeout(pointerEventsTimerRef.current)
+        pointerEventsTimerRef.current = null
+      }
+    }
+  }, [
+    currentSettings.panel?.panelMode,
+    currentSettings.panel?.defaultEdgeDistance,
+    currentSettings.panel?.defaultPosition,
+    panelRef,
+  ])
 
   // 计算默认位置样式
   const defaultPosition = currentSettings.panel?.defaultPosition ?? "right"
@@ -368,9 +483,13 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             userSelect: "none",
           }}>
           {/* 左侧：图标 + 标题（双击切换隐私模式） */}
-          <Tooltip content={t("aboutPageDesc")}>
+          <Tooltip content={currentTip}>
             <div
               style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
+              onMouseEnter={() => {
+                const tips = getTips()
+                setCurrentTip(tips[Math.floor(Math.random() * tips.length)])
+              }}
               onDoubleClick={() => {
                 // 发送隐私模式切换事件给 TabManager
                 window.postMessage({ type: "GH_PRIVACY_TOGGLE" }, "*")
@@ -384,6 +503,54 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           <div
             className="gh-panel-controls"
             style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+            {/* 面板模式切换按钮 */}
+            <Tooltip
+              content={
+                (currentSettings.panel?.panelMode ?? "edge-snap") === "edge-snap"
+                  ? t("pinPanel")
+                  : t("snapToEdge")
+              }>
+              <button
+                type="button"
+                aria-label={
+                  (currentSettings.panel?.panelMode ?? "edge-snap") === "edge-snap"
+                    ? t("pinPanel")
+                    : t("snapToEdge")
+                }
+                onClick={() => {
+                  const current = currentSettings.panel?.panelMode ?? "edge-snap"
+                  // 从吸附切换到悬浮时，保存当前面板位置用于"原地固定"
+                  if (current === "edge-snap" && panelRef.current) {
+                    savedPeekingRectRef.current = panelRef.current.getBoundingClientRect()
+                  }
+                  updateNestedSetting(
+                    "panel",
+                    "panelMode",
+                    current === "edge-snap" ? "floating" : "edge-snap",
+                  )
+                }}
+                style={{
+                  background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
+                  border: "none",
+                  color: "var(--gh-glass-text, white)",
+                  width: "24px",
+                  height: "24px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "14px",
+                  transition: "all 0.2s",
+                }}>
+                {(currentSettings.panel?.panelMode ?? "edge-snap") === "edge-snap" ? (
+                  <FloatingModeIcon size={24} />
+                ) : (
+                  <SnapToEdgeIcon size={24} />
+                )}
+              </button>
+            </Tooltip>
+
             {/* 主题切换按钮 */}
             {onThemeToggle && (
               <Tooltip content={t("toggleTheme")}>
@@ -410,27 +577,29 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               </Tooltip>
             )}
 
-            {/* 新标签页按钮 */}
-            <Tooltip content={t("newTabTooltip") || "新标签页打开"}>
-              <button
-                onClick={() => window.open(window.location.origin, "_blank")}
-                style={{
-                  background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
-                  border: "none",
-                  color: "var(--gh-glass-text, white)",
-                  width: "24px",
-                  height: "24px",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "16px",
-                  transition: "all 0.2s",
-                }}>
-                <NewTabIcon size={14} />
-              </button>
-            </Tooltip>
+            {/* 新标签页按钮 - 受 openInNewTab 设置控制 */}
+            {currentSettings.tab?.openInNewTab && (
+              <Tooltip content={t("newTabTooltip") || "新标签页打开"}>
+                <button
+                  onClick={() => window.open(window.location.origin, "_blank")}
+                  style={{
+                    background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
+                    border: "none",
+                    color: "var(--gh-glass-text, white)",
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    transition: "all 0.2s",
+                  }}>
+                  <NewTabIcon size={14} />
+                </button>
+              </Tooltip>
+            )}
 
             {/* 设置按钮 - 打开设置模态框 */}
             <Tooltip content={t("tabSettings")}>
@@ -456,8 +625,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               </button>
             </Tooltip>
 
-            {/* 刷新按钮 - 根据当前 Tab 智能刷新 */}
-            <Tooltip
+            {/* 刷新按钮 - 暂时隐藏，数据已是响应式自动更新 */}
+            {/* <Tooltip
               content={
                 activeTab === TAB_IDS.OUTLINE
                   ? t("refreshOutline")
@@ -469,18 +638,13 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               }>
               <button
                 onClick={() => {
-                  // 根据当前 Tab 执行对应的刷新逻辑
                   if (activeTab === TAB_IDS.OUTLINE) {
                     outlineManager?.refresh()
                   } else if (activeTab === TAB_IDS.PROMPTS) {
-                    // 提示词由 Zustand store 管理，自动响应数据变化，无需手动刷新
-                    // 触发 UI 重新获取数据
                     promptManager?.init()
                   } else if (activeTab === TAB_IDS.CONVERSATIONS) {
-                    // 触发数据变更通知，刷新 UI
                     conversationManager?.notifyDataChange()
                   }
-                  // settings 不需要刷新
                 }}
                 style={{
                   background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
@@ -498,7 +662,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                 }}>
                 <RefreshIcon size={14} />
               </button>
-            </Tooltip>
+            </Tooltip> */}
 
             {/* 折叠按钮（收起面板） */}
             <Tooltip content={t("collapse")}>

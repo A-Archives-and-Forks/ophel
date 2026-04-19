@@ -299,6 +299,14 @@ export const zhCN = {
   drag: "拖动",
   refresh: "刷新",
   collapse: "收起",
+  pinPanel: "固定面板",
+  snapToEdge: "吸附到边缘",
+  tip1: "长按 {modifier} 进入穿透模式，可穿透面板操作下方内容",
+  tip2: "双击标题栏快速切换隐私模式",
+  tip3: "按 {shortcut} 查看全部快捷键",
+  tip4: "{shortcut} 打开全局搜索，支持 folder: tag: site: 语法",
+  tip5: "{shortcut} 一键复制最新 AI 回复",
+  tip6: "{shortcut} 在大纲标题间快速跳转",
   copy: "复制",
   addBookmark: "添加收藏",
   removeBookmark: "移除收藏",
@@ -664,7 +672,13 @@ export const zhCN = {
   preventAutoScrollLabel: "防止自动滚动",
   preventAutoScrollDesc: "当 AI 生成长内容时，阻止页面自动滚动到底部，方便阅读上文",
 
-  // 界面排版开关
+  // 面板模式
+  panelModeLabel: "面板模式",
+  panelModeDesc: "控制面板的显示和隐藏行为",
+  panelModeEdgeSnap: "自动吸附",
+  panelModeFloating: "悬浮",
+
+  // 界面排版开关（旧字段保留兼容）
   defaultPanelStateLabel: "默认展开面板",
   defaultPanelStateDesc: "刷新页面后面板默认保持展开状态",
   autoHidePanelLabel: "点击外部收起",

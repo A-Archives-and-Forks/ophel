@@ -146,6 +146,14 @@ export const zhTW = {
   dangerZoneDesc: "破壞性操作（不可恢復）",
   refresh: "刷新",
   collapse: "收起",
+  pinPanel: "固定面板",
+  snapToEdge: "吸附到邊緣",
+  tip1: "長按 {modifier} 進入穿透模式，可穿透面板操作下方內容",
+  tip2: "雙擊標題列快速切換隱私模式",
+  tip3: "按 {shortcut} 查看全部快捷鍵",
+  tip4: "{shortcut} 開啟全域搜尋，支援 folder: tag: site: 語法",
+  tip5: "{shortcut} 一鍵複製最新 AI 回覆",
+  tip6: "{shortcut} 在大綱標題間快速跳轉",
   copy: "複製",
   addBookmark: "加入收藏",
   removeBookmark: "移除收藏",
@@ -518,6 +526,12 @@ export const zhTW = {
   collapsedButtonsOrderDesc: "調整折疊面板按鈕的顯示順序",
   preventAutoScrollLabel: "防止自動滾動",
   preventAutoScrollDesc: "當 AI 生成長內容時，阻止頁面自動滾動到底部，方便閱讀上文",
+
+  // 面板模式
+  panelModeLabel: "面板模式",
+  panelModeDesc: "控制面板的顯示和隱藏行為",
+  panelModeEdgeSnap: "自動吸附",
+  panelModeFloating: "懸浮",
 
   // 介面排版開關
   defaultPanelStateLabel: "預設展開面板",

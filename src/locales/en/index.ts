@@ -251,6 +251,14 @@ export const en = {
   scrollBottom: "Bottom",
   refresh: "Refresh",
   collapse: "Collapse",
+  pinPanel: "Pin panel",
+  snapToEdge: "Snap to edge",
+  tip1: "Long press {modifier} to enter passthrough mode and interact with content beneath the panel",
+  tip2: "Double-click the title bar to toggle privacy mode",
+  tip3: "Press {shortcut} to view all keyboard shortcuts",
+  tip4: "{shortcut} opens global search with folder: tag: site: syntax",
+  tip5: "{shortcut} to quickly copy the latest AI response",
+  tip6: "{shortcut} to jump between outline headings",
   edit: "Edit",
   delete: "Delete",
   copy: "Copy",
@@ -651,7 +659,12 @@ export const en = {
   collapsedButtonsOrderDesc: "Adjust the display order of collapsed panel buttons",
   preventAutoScrollLabel: "Prevent auto-scroll",
   preventAutoScrollDesc: "Stop page from auto-scrolling to bottom during AI generation",
-  // Panel Settings
+  // Panel Mode
+  panelModeLabel: "Panel Mode",
+  panelModeDesc: "Control panel display and hide behavior",
+  panelModeEdgeSnap: "Auto Snap",
+  panelModeFloating: "Floating",
+  // Panel Settings (legacy)
   defaultPanelStateLabel: "Default Expand Panel",
   defaultPanelStateDesc: "Keep panel expanded after page refresh",
   autoHidePanelLabel: "Collapse on Click Outside",
