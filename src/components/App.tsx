@@ -144,6 +144,15 @@ const isLikelyMacPlatform = () => {
 
 const PASS_THROUGH_META_KEY_ALIASES = new Set(["Meta", "OS", "Command", "Cmd"])
 const PASS_THROUGH_CONTROL_KEY_ALIASES = new Set(["Control", "Ctrl"])
+const EDGE_PEEK_OVERLAY_SELECTOR = [
+  ".conversations-dialog-overlay",
+  ".conversations-folder-menu",
+  ".conversations-tag-filter-menu",
+  ".prompt-modal",
+  ".gh-dialog-overlay",
+  ".settings-modal-overlay",
+  ".settings-search-overlay",
+].join(", ")
 
 const GLOBAL_SEARCH_CATEGORY_DEFINITIONS: GlobalSearchCategoryDefinition[] = [
   {
@@ -1010,6 +1019,85 @@ export const App = () => {
   const isInputFocusedRef = useRef(false)
   // 追踪是否已完成初始化，防止重复执行
   const isInitializedRef = useRef(false)
+  // 模式刚切换到 edge-snap，压制 MutationObserver 的初始 overlay 检查
+  // 让面板先收缩作为预览，而不是因为设置模态框仍在打开而强制 peek
+  const suppressEdgePeekInitRef = useRef(false)
+
+  const getEdgePeekQueryRoots = useCallback((): Array<Element | ShadowRoot> => {
+    const roots: Array<Element | ShadowRoot> = []
+    const shadowHosts = document.querySelectorAll("plasmo-csui, #ophel-userscript-root")
+
+    for (const shadowHost of shadowHosts) {
+      if (shadowHost.shadowRoot) {
+        roots.push(shadowHost.shadowRoot)
+      }
+    }
+
+    if (document.body) {
+      roots.push(document.body)
+    }
+
+    return roots
+  }, [])
+
+  const findUiElement = useCallback(
+    (selector: string): HTMLElement | null => {
+      for (const root of getEdgePeekQueryRoots()) {
+        const element = root.querySelector(selector)
+        if (element instanceof HTMLElement) {
+          return element
+        }
+      }
+
+      return null
+    },
+    [getEdgePeekQueryRoots],
+  )
+
+  const hasOpenEdgePeekOverlay = useCallback(
+    () =>
+      getEdgePeekQueryRoots().some((root) =>
+        Boolean(root.querySelector(EDGE_PEEK_OVERLAY_SELECTOR)),
+      ),
+    [getEdgePeekQueryRoots],
+  )
+
+  const syncEdgePeekWithPanelHover = useCallback(() => {
+    const currentSettings = settingsRef.current
+
+    if (!edgeSnapState || currentSettings?.panel?.panelMode !== "edge-snap") {
+      return
+    }
+
+    if (isSettingsOpenRef.current || isInteractionActiveRef.current || isInputFocusedRef.current) {
+      return
+    }
+
+    if (hasOpenEdgePeekOverlay()) {
+      return
+    }
+
+    const panel = findUiElement(".gh-main-panel")
+    if (!panel) {
+      return
+    }
+
+    setIsEdgePeeking(panel.matches(":hover"))
+  }, [edgeSnapState, findUiElement, hasOpenEdgePeekOverlay])
+
+  const scheduleEdgePeekHoverSync = useCallback(
+    (delayMs: number = 0) => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current)
+      }
+
+      hideTimerRef.current = setTimeout(() => {
+        hideTimerRef.current = null
+        syncEdgePeekWithPanelHover()
+      }, delayMs)
+    },
+    [syncEdgePeekWithPanelHover],
+  )
 
   // 接收到设置导航事件时，自动打开设置弹窗
   useEffect(() => {
@@ -1398,14 +1486,7 @@ export const App = () => {
     const currentSettings = settingsRef.current
     if (currentSettings?.panel?.panelMode !== "edge-snap") return
 
-    let panel: HTMLElement | null = null
-    const shadowHost = document.querySelector("plasmo-csui, #ophel-userscript-root")
-    if (shadowHost?.shadowRoot) {
-      panel = shadowHost.shadowRoot.querySelector(".gh-main-panel") as HTMLElement
-    }
-    if (!panel) {
-      panel = document.querySelector(".gh-main-panel") as HTMLElement
-    }
+    const panel = findUiElement(".gh-main-panel")
 
     if (!panel) return
 
@@ -1413,17 +1494,19 @@ export const App = () => {
       panel.classList.contains("edge-snapped-left") ||
       panel.classList.contains("edge-snapped-right")
 
-    if (isAlreadySnapped) return
+    if (!isAlreadySnapped) {
+      const rect = panel.getBoundingClientRect()
+      const snapThreshold = currentSettings?.panel?.edgeSnapThreshold ?? 30
 
-    const rect = panel.getBoundingClientRect()
-    const snapThreshold = currentSettings?.panel?.edgeSnapThreshold ?? 30
-
-    if (rect.left < snapThreshold) {
-      setEdgeSnapState("left")
-    } else if (window.innerWidth - rect.right < snapThreshold) {
-      setEdgeSnapState("right")
+      if (rect.left < snapThreshold) {
+        setEdgeSnapState("left")
+      } else if (window.innerWidth - rect.right < snapThreshold) {
+        setEdgeSnapState("right")
+      }
     }
-  }, [])
+
+    scheduleEdgePeekHoverSync()
+  }, [findUiElement, scheduleEdgePeekHoverSync])
 
   const openGlobalSettingsSearch = useCallback(
     (source: GlobalSearchOpenSource = "ui") => {
@@ -1495,6 +1578,8 @@ export const App = () => {
         return
       }
 
+      scheduleEdgePeekHoverSync()
+
       if (!shouldRestoreFocus || !restoreElement || !restoreElement.isConnected) {
         return
       }
@@ -1511,7 +1596,7 @@ export const App = () => {
         }
       })
     },
-    [clearSettingsSearchInputDebounceTimer, edgeSnapState],
+    [clearSettingsSearchInputDebounceTimer, edgeSnapState, scheduleEdgePeekHoverSync],
   )
 
   const openSettingsModal = useCallback(() => {
@@ -2441,9 +2526,11 @@ export const App = () => {
     prevPanelModeForSwitchRef.current = panelMode
 
     if (panelMode === "edge-snap") {
-      // 切换到吸附模式：初始化吸附到默认位置
+      // 切换到吸附模式：初始化吸附到默认位置，立即收缩作为预览
       const defaultPosition = settings?.panel?.defaultPosition ?? "right"
+      suppressEdgePeekInitRef.current = true
       setEdgeSnapState(defaultPosition)
+      setIsEdgePeeking(false)
       setIsPanelOpen(true)
     } else {
       // 切换离开吸附模式：清除吸附状态，恢复悬浮模式的上次开关记忆
@@ -2482,15 +2569,8 @@ export const App = () => {
     const panelMode = settings?.panel?.panelMode ?? "edge-snap"
     if (!edgeSnapState || panelMode !== "edge-snap") return
 
-    const portalSelector =
-      ".conversations-dialog-overlay, .conversations-folder-menu, .conversations-tag-filter-menu, .prompt-modal, .gh-dialog-overlay, .settings-modal-overlay"
-
     // 检查当前是否有 Portal 元素存在
-    const checkPortalExists = () => {
-      const portals = document.body.querySelectorAll(portalSelector)
-      const searchOverlays = document.body.querySelectorAll(".settings-search-overlay")
-      return portals.length > 0 || searchOverlays.length > 0
-    }
+    const checkPortalExists = () => hasOpenEdgePeekOverlay()
 
     // 追踪之前的 Portal 状态，用于检测 Portal 关闭
     let prevHasPortal = checkPortalExists()
@@ -2511,33 +2591,38 @@ export const App = () => {
         }
       } else if (!hasPortal && prevHasPortal) {
         // Portal 元素刚消失，延迟后检查是否需要隐藏
-        if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
-        hideTimerRef.current = setTimeout(() => {
-          // 500ms 后检查：如果没有新的 Portal，且没有活跃交互，则隐藏
-          if (!checkPortalExists() && !isInteractionActiveRef.current) {
-            setIsEdgePeeking(false)
-          }
-        }, 500)
+        scheduleEdgePeekHoverSync(500)
       }
 
       prevHasPortal = hasPortal
     })
 
-    // 开始观察 document.body 的直接子元素变化
-    observer.observe(document.body, {
-      childList: true,
-      subtree: false,
-    })
+    for (const root of getEdgePeekQueryRoots()) {
+      observer.observe(root, {
+        childList: true,
+        // ShadowRoot 内 overlay 嵌套较深需要 subtree；body 上的 portal 是直接子节点，无需 subtree 避免聊天页频繁 DOM 变动触发回调
+        subtree: root !== document.body,
+      })
+    }
 
-    // 初始检查
-    if (checkPortalExists()) {
+    // 初始检查（模式刚切换到 edge-snap 时跳过，让面板先收缩作为预览）
+    if (suppressEdgePeekInitRef.current) {
+      suppressEdgePeekInitRef.current = false
+    } else if (checkPortalExists()) {
       setIsEdgePeeking(true)
     }
 
     return () => {
       observer.disconnect()
+      suppressEdgePeekInitRef.current = false
     }
-  }, [edgeSnapState, settings?.panel?.panelMode])
+  }, [
+    edgeSnapState,
+    getEdgePeekQueryRoots,
+    hasOpenEdgePeekOverlay,
+    scheduleEdgePeekHoverSync,
+    settings?.panel?.panelMode,
+  ])
 
   // 监听面板内输入框的聚焦状态
   // 解决问题：当用户在输入框中打字时，IME 输入法弹出会导致浏览器丢失 CSS :hover 状态
@@ -2601,13 +2686,7 @@ export const App = () => {
             !isSettingsOpenRef.current &&
             !isInteractionActiveRef.current
           ) {
-            const portalElements = document.body.querySelectorAll(
-              ".conversations-dialog-overlay, .conversations-folder-menu, .conversations-tag-filter-menu, .prompt-modal, .gh-dialog-overlay, .settings-modal-overlay",
-            )
-            const searchOverlays = document.body.querySelectorAll(".settings-search-overlay")
-            if (portalElements.length === 0 && searchOverlays.length === 0) {
-              setIsEdgePeeking(false)
-            }
+            syncEdgePeekWithPanelHover()
           }
         }, 300)
       }
@@ -2621,7 +2700,7 @@ export const App = () => {
       shadowRoot.removeEventListener("focusin", handleFocusIn, true)
       shadowRoot.removeEventListener("focusout", handleFocusOut, true)
     }
-  }, [edgeSnapState, settings?.panel?.panelMode])
+  }, [edgeSnapState, settings?.panel?.panelMode, syncEdgePeekWithPanelHover])
 
   const showAiStudioSubmitShortcutSyncToast = useCallback(
     (submitShortcut: "enter" | "ctrlEnter") => {
@@ -3010,21 +3089,7 @@ export const App = () => {
             // 检查是否有输入框正在聚焦（防止 IME 输入法弹出时隐藏）
             if (isInputFocusedRef.current) return
 
-            // 检查是否有任何菜单/对话框/弹窗处于打开状态
-            const interactionActive = isInteractionActiveRef.current
-            const portalElements = document.body.querySelectorAll(
-              ".conversations-dialog-overlay, .conversations-folder-menu, .conversations-tag-filter-menu, .prompt-modal, .gh-dialog-overlay, .settings-modal-overlay",
-            )
-            const searchOverlays = document.body.querySelectorAll(".settings-search-overlay")
-            const hasPortal = portalElements.length > 0 || searchOverlays.length > 0
-
-            // 如果有活跃交互或 Portal 元素，不隐藏面板
-            if (interactionActive || hasPortal) return
-
-            // 安全检查后隐藏面板
-            if (edgeSnapState && settings?.panel?.panelMode === "edge-snap" && isEdgePeeking) {
-              setIsEdgePeeking(false)
-            }
+            syncEdgePeekWithPanelHover()
           }, 200)
         }}
       />
@@ -3086,45 +3151,7 @@ export const App = () => {
       {/* 设置模态框 */}
       <SettingsModal
         isOpen={isSettingsOpen}
-        onClose={() => {
-          isSettingsOpenRef.current = false
-          setIsSettingsOpen(false)
-
-          // 关闭设置模态框后，检测面板位置，如果在边缘且自动吸附已开启则自动吸附
-          // 使用 settingsRef 确保读取到最新的设置值
-          const currentSettings = settingsRef.current
-          if (currentSettings?.panel?.panelMode !== "edge-snap") return
-
-          // 查询面板元素（在 Plasmo Shadow DOM 内部）
-          // 先尝试在 Shadow DOM 内查找，再尝试普通 DOM
-          let panel: HTMLElement | null = null
-          const shadowHost = document.querySelector("plasmo-csui, #ophel-userscript-root")
-          if (shadowHost?.shadowRoot) {
-            panel = shadowHost.shadowRoot.querySelector(".gh-main-panel") as HTMLElement
-          }
-          if (!panel) {
-            panel = document.querySelector(".gh-main-panel") as HTMLElement
-          }
-
-          if (!panel) return
-
-          // 通过检查类名判断当前是否已吸附（避免闭包捕获问题）
-          const isAlreadySnapped =
-            panel.classList.contains("edge-snapped-left") ||
-            panel.classList.contains("edge-snapped-right")
-
-          if (isAlreadySnapped) return
-
-          // 检测面板位置
-          const rect = panel.getBoundingClientRect()
-          const snapThreshold = currentSettings?.panel?.edgeSnapThreshold ?? 30
-
-          if (rect.left < snapThreshold) {
-            setEdgeSnapState("left")
-          } else if (window.innerWidth - rect.right < snapThreshold) {
-            setEdgeSnapState("right")
-          }
-        }}
+        onClose={closeSettingsModal}
         siteId={adapter.getSiteId()}
       />
       <GlobalSearchOverlay
