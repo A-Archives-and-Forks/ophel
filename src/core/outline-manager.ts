@@ -37,6 +37,15 @@ interface TreeState {
   hadChildren: boolean
 }
 
+/** djb2 hash：将任意长度字符串压缩为 8 位十六进制字符串 */
+function djb2Hash(str: string): string {
+  let hash = 5381
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) >>> 0
+  }
+  return hash.toString(16).padStart(8, "0")
+}
+
 export class OutlineManager {
   private siteAdapter: SiteAdapter
   private settings: Settings["features"]["outline"]
@@ -76,6 +85,7 @@ export class OutlineManager {
   // 生成状态追踪（用于检测生成完成后刷新）
   private wasGenerating: boolean = false
   private postGenerationScheduled: boolean = false // 防止重复触发
+  private pendingPostGenerationRefresh: boolean = false // 切 Tab 时暂存待刷新标记
 
   // 兜底方案：基于内容变化检测
   private lastTreeChangeTime: number = 0
@@ -127,6 +137,12 @@ export class OutlineManager {
   setActive(active: boolean) {
     this.isActive = active
     this.updateAutoUpdateState()
+    // 切回时如果有待处理的生成完成刷新，立即执行
+    if (active && this.pendingPostGenerationRefresh) {
+      this.pendingPostGenerationRefresh = false
+      this.treeKey = ""
+      this.refresh()
+    }
   }
 
   // 根据条件启动/停止自动更新
@@ -184,9 +200,10 @@ export class OutlineManager {
       this.triggerAutoUpdate()
     })
 
-    // 观察 document.body，虽然范围大但为了确保捕获所有变化
-    // legacy 使用的是 document.body
-    this.observer.observe(document.body, {
+    // 优先观察适配器指定的容器（比整个 document.body 范围更小），
+    // 若适配器未提供则 fallback 到 document.body
+    const observeTarget = this.siteAdapter.getObserveTarget() ?? document.body
+    this.observer.observe(observeTarget, {
       childList: true,
       subtree: true,
       characterData: true,
@@ -231,6 +248,11 @@ export class OutlineManager {
       // 生成完成后延迟 500ms 再刷新，确保 DOM 稳定
       setTimeout(() => {
         this.postGenerationScheduled = false
+        if (!this.isActive) {
+          // Tab 已切走，标记为待刷新，切回时再执行
+          this.pendingPostGenerationRefresh = true
+          return
+        }
         // 清空 treeKey 强制重建树，获取新的 DOM 元素引用
         this.treeKey = ""
         this.refresh()
@@ -243,20 +265,25 @@ export class OutlineManager {
     const oldTreeKey = this.treeKey
     this.refresh()
 
-    // 兆底方案：检测内容变化
+    // 兜底方案：检测内容变化
     if (this.treeKey !== oldTreeKey) {
       // 有新内容，记录时间并重置计时器
       this.lastTreeChangeTime = Date.now()
       if (this.fallbackRefreshTimer) {
         clearTimeout(this.fallbackRefreshTimer)
       }
-      // 设置兆底计时器：如果 3 秒内没有新变化，触发强制刷新
+      // 记录触发 timer 时的 treeKey，用于判断后续是否已自然更新
+      const keyAtSchedule = this.treeKey
+      // 设置兜底计时器：如果 3 秒内没有新变化，触发强制刷新
       this.fallbackRefreshTimer = setTimeout(() => {
         this.fallbackRefreshTimer = null
         // 确保确实 3 秒没有变化
         if (Date.now() - this.lastTreeChangeTime >= OutlineManager.FALLBACK_DELAY - 100) {
-          this.treeKey = "" // 强制重建
-          this.refresh()
+          // 只有 treeKey 没有自然更新时才强制重建，避免打断正常状态恢复
+          if (this.treeKey === keyAtSchedule) {
+            this.treeKey = "" // 强制重建
+            this.refresh()
+          }
         }
       }, OutlineManager.FALLBACK_DELAY)
     }
@@ -711,12 +738,13 @@ export class OutlineManager {
     const sessionIdForKey = this.siteAdapter.getSessionId() || "no-session"
     const pathname = typeof window !== "undefined" ? window.location.pathname : ""
     const sessionScopeKey = `${this.siteAdapter.getSiteId()}:${sessionIdForKey}:${pathname}`
-    const outlineKey =
+    const rawKey =
       sessionScopeKey +
       "|" +
       showWordCountFlag +
       "|" +
       outlineData.map((i) => `${i.text}:${(i as ExtendedOutlineItem).isBookmarked}`).join("|")
+    const outlineKey = djb2Hash(rawKey)
     const currentStateMap: Record<string, TreeState> = {}
     if (this.tree.length > 0) {
       this.captureTreeState(this.tree, currentStateMap)
@@ -933,7 +961,8 @@ export class OutlineManager {
   // State Management
   private captureTreeState(nodes: OutlineNode[], stateMap: Record<string, TreeState>) {
     nodes.forEach((node) => {
-      const key = `${node.level}_${node.text}`
+      // 优先使用稳定 ID 避免同文本同级标题 key 碰撞
+      const key = node.id ? `id:${node.id}` : `${node.level}_${node.text}`
       const hasChildren = node.children && node.children.length > 0
       stateMap[key] = {
         collapsed: node.collapsed,
@@ -948,7 +977,8 @@ export class OutlineManager {
 
   private restoreTreeState(nodes: OutlineNode[], stateMap: Record<string, TreeState>) {
     nodes.forEach((node) => {
-      const key = `${node.level}_${node.text}`
+      // 与 captureTreeState 保持相同的 key 生成逻辑
+      const key = node.id ? `id:${node.id}` : `${node.level}_${node.text}`
       const state = stateMap[key]
       if (state) {
         const hasChildrenNow = node.children && node.children.length > 0
