@@ -11,14 +11,43 @@ const toastCooldowns = new Map<string, number>()
 export const EXPORT_START_TOAST_DURATION = 5000
 
 export function showToast(message: string, duration = 2000, options: ToastOptions = {}) {
-  // 移除现有的 toast
-  const existing = document.getElementById("gh-toast")
-  if (existing) {
-    existing.remove()
+  let targetContainer: Node = document.body
+  let shadowHost: Element | null = null
+
+  // 遍历所有可能的 shadow host，找到真正挂载了应用容器的那个，优先使用 .gh-root
+  const hosts = document.querySelectorAll("plasmo-csui, #ophel-userscript-root")
+  for (const host of hosts) {
+    if (host.shadowRoot) {
+      const container = host.shadowRoot.querySelector(
+        ".gh-root, #plasmo-shadow-container, .plasmo-csui-container, #ophel-app-container",
+      )
+      if (container) {
+        targetContainer = container
+        shadowHost = host
+        break
+      }
+      // 如果还没渲染具体容器，但有 shadowRoot，退而求其次用 shadowRoot 自己
+      targetContainer = host.shadowRoot
+      shadowHost = host
+    }
+  }
+
+  // 使用 targetContainer 所在的根节点作为样式容器
+  const rootNode = targetContainer.getRootNode()
+  const styleContainer = rootNode instanceof ShadowRoot ? rootNode : document.head
+
+  // 移除所有可能存在的旧 toast (遍历所有 DOM 树)
+  const existingInBody = document.getElementById("gh-toast")
+  if (existingInBody) existingInBody.remove()
+  for (const host of hosts) {
+    if (host.shadowRoot) {
+      const existingInShadow = host.shadowRoot.querySelector("#gh-toast")
+      if (existingInShadow) existingInShadow.remove()
+    }
   }
 
   // 确保样式已注入
-  if (!document.getElementById("gh-toast-style")) {
+  if (!styleContainer.querySelector("#gh-toast-style")) {
     const style = document.createElement("style")
     style.id = "gh-toast-style"
     style.textContent = `
@@ -32,7 +61,7 @@ export function showToast(message: string, duration = 2000, options: ToastOption
         border-radius: 9999px !important;
         font-size: 14px !important;
         font-weight: 500 !important;
-        box-shadow: 
+        box-shadow:
           var(--gh-shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.1)),
           0 0 0 1px inset rgba(255, 255, 255, 0.1) !important;
         z-index: 2147483646 !important; /* 刚好在一级最高层（禅模式按钮 2147483647）之下 */
@@ -56,7 +85,7 @@ export function showToast(message: string, duration = 2000, options: ToastOption
         max-width: 360px !important;
       }
     `
-    document.head.appendChild(style)
+    styleContainer.appendChild(style)
   }
 
   const toast = document.createElement("div")
@@ -64,7 +93,10 @@ export function showToast(message: string, duration = 2000, options: ToastOption
   toast.className = "gh-toast"
 
   // 动态避让：检测禅模式退出按钮是否存在，以决定 top 位置
-  const isZenMode = !!document.getElementById("gh-zen-mode-exit-host")
+  const isZenMode = !!(
+    document.getElementById("gh-zen-mode-exit-host") ||
+    shadowHost?.shadowRoot?.querySelector("#gh-zen-mode-exit-host")
+  )
   toast.style.setProperty("top", isZenMode ? "84px" : "32px", "important")
 
   if (options.className) {
@@ -75,7 +107,8 @@ export function showToast(message: string, duration = 2000, options: ToastOption
   }
   toast.textContent = message
 
-  document.body.appendChild(toast)
+  // 挂载到最高层级容器，如果不存在则使用 body
+  targetContainer.appendChild(toast)
 
   // 触发重绘以应用过渡效果
   requestAnimationFrame(() => {
