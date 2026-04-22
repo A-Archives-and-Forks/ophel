@@ -20,8 +20,6 @@ body:
     attributes:
       label: 前置检查 | Essential Checklist
       options:
-        - label: 我已阅读并理解项目的功能请求与边界说明 | I have read and understood the project's instructions
-          required: true
         - label: 我已在 Issue 中搜索过类似需求，确认这不是一个重复提议 | I have searched for existing requests and confirmed this is not a duplicate
           required: true
         - label: 我已为项目点了 Star 🌟 | I have starred the project 🌟

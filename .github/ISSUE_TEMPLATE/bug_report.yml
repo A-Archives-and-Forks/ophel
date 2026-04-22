@@ -20,13 +20,9 @@ body:
     attributes:
       label: 前置检查 | Essential Checklist
       options:
-        - label: 我已阅读并理解项目的问题反馈与边界说明 | I have read and understood the project's instructions
-          required: true
         - label: 我已在 Issue 中搜索过类似问题，确认这不是一个重复问题 | I have searched for existing issues and confirmed this is not a duplicate
           required: true
         - label: 我理解如果未提供清晰的复现步骤或环境信息，Issue 可能会被关闭 | I understand that the issue may be closed if missing reproduction steps or environment info
-          required: true
-        - label: 我确认使用的是插件的最新版本 | I confirm I am using the latest version of the extension
           required: true
         - label: 我已为项目点了 Star 🌟 | I have starred the project 🌟
           required: false
