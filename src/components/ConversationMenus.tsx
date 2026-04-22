@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
-import { CopyIcon, PageContentIcon } from "~components/icons"
+import {
+  CopyIcon,
+  ExportIcon,
+  JSONFileIcon,
+  MarkdownIcon,
+  PageContentIcon,
+  TXTFileIcon,
+} from "~components/icons"
 import { DeleteIcon } from "~components/icons/DeleteIcon"
 import { FolderMoveIcon } from "~components/icons/FolderMoveIcon"
 import { PinIcon } from "~components/icons/PinIcon"
@@ -235,6 +242,7 @@ interface ConversationMenuProps {
   onTogglePin: () => void
   onSetTags: () => void
   onMoveTo: () => void
+  onExport: () => void
   onDelete: () => void
 }
 
@@ -246,6 +254,7 @@ export const ConversationMenu: React.FC<ConversationMenuProps> = ({
   onTogglePin,
   onSetTags,
   onMoveTo,
+  onExport,
   onDelete,
 }) => {
   return (
@@ -319,6 +328,22 @@ export const ConversationMenu: React.FC<ConversationMenuProps> = ({
         </span>
       </MenuButton>
       <MenuButton
+        onClick={() => {
+          onClose()
+          onExport()
+        }}>
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+          }}>
+          <span>{t("export") || "导出"}</span>
+          <ExportIcon size={13} />
+        </span>
+      </MenuButton>
+      <MenuButton
         danger
         onClick={() => {
           onClose()
@@ -364,7 +389,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({
           onExportMarkdown()
         }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <PageContentIcon size={14} />
+          <MarkdownIcon size={14} />
           <span>{t("exportToMarkdown") || "Markdown"}</span>
         </div>
       </MenuButton>
@@ -374,7 +399,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({
           onExportJSON()
         }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <CopyIcon size={14} />
+          <JSONFileIcon size={14} />
           <span>{t("exportToJSON") || "JSON"}</span>
         </div>
       </MenuButton>
@@ -384,7 +409,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({
           onExportTXT()
         }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <PageContentIcon size={14} />
+          <TXTFileIcon size={14} />
           <span>{t("exportToTXT") || "TXT"}</span>
         </div>
       </MenuButton>

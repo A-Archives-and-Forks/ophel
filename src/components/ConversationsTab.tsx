@@ -27,8 +27,6 @@ import "~styles/conversations.css"
 const PROGRESSIVE_BATCH_SIZE = 30
 
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
   BatchIcon,
   ClearIcon,
   CopyIcon,
@@ -39,6 +37,7 @@ import {
   HourglassIcon,
   LocateIcon,
   MoreHorizontalIcon,
+  DragIcon,
   PinIcon,
   SyncIcon,
   TagIcon,
@@ -80,6 +79,7 @@ type MenuType =
   | { type: "folder"; folder: Folder; anchorEl: HTMLElement }
   | { type: "conversation"; conv: Conversation; anchorEl: HTMLElement }
   | { type: "export"; anchorEl: HTMLElement }
+  | { type: "export-conv"; conv: Conversation; anchorEl: HTMLElement }
   | null
 
 const getInboxDisplayName = (): string => {
@@ -178,6 +178,10 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   // 对话框和菜单
   const [dialog, setDialog] = useState<DialogType>(null)
   const [menu, setMenu] = useState<MenuType>(null)
+
+  // 文件夹拖拽排序
+  const [draggedFolderId, setDraggedFolderId] = useState<string | null>(null)
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
 
   // Refs
   const contentRef = useRef<HTMLDivElement>(null)
@@ -885,10 +889,64 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                 <React.Fragment key={folder.id}>
                   {/* 文件夹项 */}
                   <div
-                    className={`conversations-folder-item ${isExpanded ? "expanded" : ""} ${folder.isDefault ? "default" : ""}`}
+                    className={[
+                      "conversations-folder-item",
+                      isExpanded ? "expanded" : "",
+                      folder.isDefault ? "default" : "",
+                      draggedFolderId === folder.id ? "is-dragging" : "",
+                      dragOverFolderId === folder.id && draggedFolderId !== folder.id
+                        ? "is-drag-over"
+                        : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     data-folder-id={folder.id}
                     style={{ background: bgVar }}
-                    onClick={() => handleFolderClick(folder.id)}>
+                    onClick={() => handleFolderClick(folder.id)}
+                    onDragEnter={
+                      !folder.isDefault
+                        ? (e) => {
+                            if (!draggedFolderId || folder.id === draggedFolderId) return
+                            e.preventDefault()
+                            setDragOverFolderId(folder.id)
+                          }
+                        : undefined
+                    }
+                    onDragOver={
+                      !folder.isDefault
+                        ? (e) => {
+                            if (!draggedFolderId || folder.id === draggedFolderId) return
+                            e.preventDefault()
+                            e.dataTransfer.dropEffect = "move"
+                          }
+                        : undefined
+                    }
+                    onDrop={
+                      !folder.isDefault
+                        ? (e) => {
+                            e.preventDefault()
+                            if (!draggedFolderId || folder.id === draggedFolderId) return
+                            const displayedNonDefault = folders
+                              .filter(shouldShowFolder)
+                              .filter((f) => !f.isDefault)
+                            const fromIdx = displayedNonDefault.findIndex(
+                              (f) => f.id === draggedFolderId,
+                            )
+                            const toIdx = displayedNonDefault.findIndex((f) => f.id === folder.id)
+                            if (fromIdx === -1 || toIdx === -1) return
+                            const reordered = [...displayedNonDefault]
+                            const [moved] = reordered.splice(fromIdx, 1)
+                            reordered.splice(toIdx, 0, moved)
+                            const notDisplayed = folders
+                              .filter((f) => !f.isDefault)
+                              .filter((f) => !reordered.some((r) => r.id === f.id))
+                            manager.reorderFolders([...reordered, ...notDisplayed].map((f) => f.id))
+                            loadData()
+                            setDraggedFolderId(null)
+                            setDragOverFolderId(null)
+                          }
+                        : undefined
+                    }>
                     <div className="conversations-folder-info">
                       {/* 批量模式复选框 */}
                       {batchMode && (
@@ -915,38 +973,33 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                             : folderName}
                         </span>
                       </Tooltip>
-
-                      {/* 排序按钮 */}
-                      {!folder.isDefault && (
-                        <div
-                          className="conversations-folder-order-btns"
-                          style={{ userSelect: "none" }}>
-                          <button
-                            className="conversations-folder-order-btn"
-                            title={t("moveUp") || "上移"}
-                            disabled={index <= 1}
-                            onClick={() => {
-                              manager.moveFolder(folder.id, "up")
-                              loadData()
-                            }}>
-                            <ArrowUpIcon size={12} />
-                          </button>
-                          <button
-                            className="conversations-folder-order-btn"
-                            title={t("moveDown") || "下移"}
-                            disabled={index >= folders.length - 1}
-                            onClick={() => {
-                              manager.moveFolder(folder.id, "down")
-                              loadData()
-                            }}>
-                            <ArrowDownIcon size={12} />
-                          </button>
-                        </div>
-                      )}
                     </div>
 
                     <div className="conversations-folder-controls">
+                      {/* 拖拽排序手柄 */}
+                      {!folder.isDefault && (
+                        <div
+                          className="conversations-folder-drag-handle"
+                          draggable
+                          onDragStart={(e) => {
+                            e.stopPropagation()
+                            setDraggedFolderId(folder.id)
+                            e.dataTransfer.effectAllowed = "move"
+                            e.dataTransfer.setData("text/plain", folder.id)
+                          }}
+                          onDragEnd={(e) => {
+                            e.stopPropagation()
+                            setDraggedFolderId(null)
+                            setDragOverFolderId(null)
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          title={t("drag")}>
+                          <DragIcon size={17} />
+                        </div>
+                      )}
+
                       <span className="conversations-folder-count">({count})</span>
+
                       <button
                         className="conversations-folder-menu-btn"
                         style={{
@@ -959,7 +1012,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                           onInteractionStateChange?.(true)
                           setMenu({ type: "folder", folder, anchorEl: e.currentTarget })
                         }}>
-                        <MoreHorizontalIcon size={16} />
+                        <MoreHorizontalIcon size={20} />
                       </button>
                     </div>
                   </div>
@@ -1277,6 +1330,11 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             setMenu(null)
             setDialog({ type: "folderSelect", conv: menu.conv })
           }}
+          onExport={() => {
+            const conv = menu.conv
+            const anchorEl = menu.anchorEl
+            setMenu({ type: "export-conv", conv, anchorEl })
+          }}
           onDelete={() => {
             setMenu(null)
             setDialog({
@@ -1328,6 +1386,24 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             const convId =
               selectedIds.size > 0 ? Array.from(selectedIds)[0] : manager.siteAdapter.getSessionId()
             await manager.exportConversation(convId, "txt")
+          }}
+        />
+      )}
+      {menu?.type === "export-conv" && (
+        <ExportMenu
+          anchorEl={menu.anchorEl}
+          onClose={() => setMenu(null)}
+          onExportMarkdown={async () => {
+            setMenu(null)
+            await manager.exportConversation(menu.conv.id, "markdown")
+          }}
+          onExportJSON={async () => {
+            setMenu(null)
+            await manager.exportConversation(menu.conv.id, "json")
+          }}
+          onExportTXT={async () => {
+            setMenu(null)
+            await manager.exportConversation(menu.conv.id, "txt")
           }}
         />
       )}
@@ -1409,6 +1485,7 @@ const ConversationItem = React.memo<ConversationItemProps>(
                 {conv.pinned && (
                   <PinIcon
                     size={12}
+                    color="var(--gh-primary, #3b82f6)"
                     style={{
                       display: "inline-block",
                       marginRight: "4px",
@@ -1468,7 +1545,7 @@ const ConversationItem = React.memo<ConversationItemProps>(
               onInteractionStateChange?.(true)
               onMenuChange({ type: "conversation", conv, anchorEl: e.currentTarget })
             }}>
-            <MoreHorizontalIcon size={16} />
+            <MoreHorizontalIcon size={20} />
           </button>
         </div>
       </div>

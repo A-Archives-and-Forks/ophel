@@ -339,7 +339,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
             description={t("defaultEdgeDistanceDesc") || "面板距离屏幕边缘的初始距离"}
             settingId="panel-edge-distance">
             <Slider
-              value={settings.panel?.defaultEdgeDistance ?? 25}
+              value={settings.panel?.defaultEdgeDistance ?? 0}
               onChange={handleEdgeDistanceChange}
               onPreviewChange={handleEdgeDistancePreview}
               onCancelPreview={clearPreviewSettings}
@@ -347,7 +347,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
               max={400}
               step={5}
               unit="px"
-              defaultValue={25}
+              defaultValue={0}
               formatValue={(value) => `${value}px`}
               ariaLabel={t("defaultEdgeDistanceLabel") || "默认边距"}
             />
@@ -359,11 +359,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
             description={t("panelWidthDesc") || "面板的宽度 (px)"}
             settingId="panel-width">
             <Slider
-              value={settings.panel?.width ?? 320}
+              value={Math.max(settings.panel?.width ?? 320, 240)}
               onChange={handleWidthChange}
               onPreviewChange={handleWidthPreview}
               onCancelPreview={clearPreviewSettings}
-              min={200}
+              min={240}
               max={600}
               step={10}
               unit="px"
