@@ -1,5 +1,5 @@
 name: ✨ 功能需求 Feature Request
-description: 提出新功能需求或改进建议 | Suggest an feature or improvement
+description: 提出新功能需求或改进建议 | Suggest a feature or improvement
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
@@ -10,11 +10,10 @@ body:
         Thanks for your suggestion! If Ophel helps you, please give it a Star 🌟（Star helps support the project）
 
         > [!NOTE]
-        > - ⚠️ 本项目由个人维护，**功能请求不等于一定会实现**。
-        > - ⚠️ 功能优先级会综合评估项目整体情况。
-        > - ⚠️ **情绪化或命令式表达**不会提高需求优先级。
-        >
-        > 请确认你理解以上说明后再提交 Issue。
+        > - 本项目由个人维护，**功能请求不保证一定实现**。
+        >   This project is personally maintained — feature requests are not guaranteed to be implemented.
+        > - 功能优先级会根据项目整体情况综合评估。
+        >   Feature priority is evaluated based on the overall project status.
 
   - type: checkboxes
     id: checklist
@@ -79,7 +78,7 @@ body:
     attributes:
       label: 问题背景 | Problem or Use Case
       description: 您希望解决什么问题？ | What problem are you trying to solve?
-      placeholder: 我在使用...功能时，经常遇到...的问题 | I'm always frustrated when...
+      placeholder: 我在使用...功能时，经常遇到...的问题 | When using [...], I find that...
     validations:
       required: true
 

@@ -10,11 +10,10 @@ body:
         Thanks for taking the time to fill out this bug report! If Ophel helps you, please give it a Star 🌟
 
         > [!NOTE]
-        > - ⚠️ 本项目由个人维护，**问题修复不等于一定会实现**（取决于复现难度和精力）。
-        > - ⚠️ 修复优先级会综合评估项目整体情况。
-        > - ⚠️ **情绪化或命令式表达**不会提高优先级。
-        >
-        > 请确认你理解以上说明后再提交 Issue。
+        > - 本项目由个人维护，**问题修复不保证一定实现**（取决于复现难度与精力）。
+        >   This project is personally maintained — bug fixes are not guaranteed and depend on reproducibility and bandwidth.
+        > - 修复优先级会根据项目整体情况综合评估。
+        >   Fix priority is evaluated based on the overall project status.
 
   - type: checkboxes
     id: checklist
@@ -65,13 +64,8 @@ body:
     attributes:
       label: Ophel 版本 | Ophel Version
       description: |
-        ⚠️ 请填写 **Ophel 本身的版本号**，不是浏览器或脚本管理器的版本号！
-        - 扩展用户：在浏览器扩展管理页面 (chrome://extensions) 查看 Ophel 版本
-        - 油猴用户：在脚本管理器中找到 Ophel Atlas 脚本，查看脚本的版本号（非 Tampermonkey/Violentmonkey 版本）
-
-        ⚠️ Please enter the **Ophel version**, NOT the browser or script manager version!
-        - Extension users: Check Ophel version in browser extension page (chrome://extensions)
-        - Userscript users: Find the Ophel Atlas script in your script manager and check its version (NOT the Tampermonkey/Violentmonkey version)
+        填写 Ophel 本身的版本号（非浏览器 / 脚本管理器版本）。
+        Enter the Ophel version number (not your browser or script manager version).
       placeholder: "e.g. 1.0.39"
     validations:
       required: true
