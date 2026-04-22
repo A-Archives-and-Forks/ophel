@@ -14,6 +14,8 @@ body:
         >   This project is personally maintained — feature requests are not guaranteed to be implemented.
         > - 功能优先级会根据项目整体情况综合评估。
         >   Feature priority is evaluated based on the overall project status.
+        > - 提交前请确认您使用的是 Ophel **最新版本**，您需要的功能可能已在新版中实现。
+        >   Please verify you are using the **latest version** of Ophel before submitting — the feature you need may already exist.
 
   - type: checkboxes
     id: checklist
