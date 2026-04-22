@@ -436,9 +436,8 @@
   /* 背景适配：使用 var(--gh-bg) 混合，确保亮暗模式都自然 */
   background: color-mix(in srgb, var(--gh-primary, #4285f4) 12%, var(--gh-bg));
 
-  /* 边框适配：混合主色与文字颜色，增强深色模式可见度 */
+  /* 边框适配：四边完整，消除左侧断裂感 */
   border: 1px solid color-mix(in srgb, var(--gh-primary, #4285f4) 30%, transparent);
-  border-left: none;
 
   /* 阴影：移除硬编码的白色内发光, 使用通用阴影变量 */
   box-shadow: var(--gh-shadow-sm);
@@ -911,8 +910,11 @@
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
+  align-items: center; /* 确保所有子按钮严格居中对齐 */
   gap: 4px;
   padding: 6px;
+  width: 52px; /* 强制两端状态宽度一致，消除横向抖动 */
+  box-sizing: border-box;
   z-index: 9998;
 
   /* Modern Glassmorphism Pill */
@@ -941,16 +943,25 @@
 
 /* ============= 液态折叠 (Liquid Collapse) ============= */
 .quick-btn-group.liquid-collapsed {
-  height: 48px;
-  width: 48px;
-  border-radius: 24px;
+  height: 52px;
+  width: 52px;
+  border-radius: 26px;
   overflow: hidden;
-  padding: 6px;
+  padding: 6px; /* 恢复原有的内边距，保持内部元素排列结构恒定，消除动画碰撞 */
   gap: 0;
-  background: color-mix(in srgb, var(--gh-bg) 60%, transparent);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+  /* 容器收缩时，接管主按钮的视觉特征（品牌色底色与高光边框） */
+  background: color-mix(in srgb, var(--gh-primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--gh-primary) 20%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--gh-primary) 15%, transparent);
   box-sizing: border-box;
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.quick-btn-group.liquid-collapsed:hover {
+  background: color-mix(in srgb, var(--gh-primary) 20%, transparent);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--gh-primary) 30%, transparent);
+  transform: translateY(-50%) scale(1.02);
 }
 
 .quick-btn-group.liquid-collapsed .divider,
@@ -962,6 +973,17 @@
   margin: 0;
   height: 0;
   padding: 0;
+}
+
+/* 折叠时，内部 Logo 按钮把背景色交给外层容器，自身变透明，消除双环效果 */
+.quick-btn-group.liquid-collapsed .quick-prompt-btn.panel-btn {
+  background: transparent !important;
+  box-shadow: none !important;
+  /* 保持自身默认的 38x38 尺寸，避免缩放跳变 */
+}
+
+.quick-btn-group.liquid-collapsed .quick-prompt-btn.panel-btn:hover {
+  transform: none; /* 外层容器已经响应 hover，内部按钮不再二次缩放 */
 }
 
 .quick-btn-group.liquid-collapsed .quick-btn-drag-handle {
@@ -1057,7 +1079,31 @@
   color: var(--gh-primary);
 }
 
-/* 面板主控制按钮默认跟随 Primary 色以强调主入口身份 */
+/* 面板主控制按钮强化视觉层级，与主题色融合并更显眼 */
+.quick-prompt-btn.panel-btn {
+  background: color-mix(in srgb, var(--gh-primary) 12%, transparent);
+  color: var(--gh-primary) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--gh-primary) 15%, transparent);
+}
+
+.quick-prompt-btn.panel-btn svg {
+  /* 容器物理尺寸修复后，由于星芒图案本身的非对称性（左下角视觉重心较重），
+     视觉上会显得偏向左下。需要向右上（X正，Y负）进行微调补偿 */
+  transform: translate(1px, -1px);
+}
+
+.quick-prompt-btn.panel-btn:hover {
+  /* 悬浮时不再使用刺眼的深色实心背景，而是适度加深透明度，保持琉璃感和呼吸感 */
+  background: color-mix(in srgb, var(--gh-primary) 24%, transparent);
+  color: var(--gh-primary) !important;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--gh-primary) 35%, transparent);
+  transform: scale(1.05); /* 稍微收敛膨胀比例，显得更精致 */
+}
+
+.quick-prompt-btn.panel-btn:hover svg {
+  transform: translate(1px, -1px);
+}
+
 .quick-prompt-btn:has(svg[color="currentColor"]) {
   color: var(--gh-text-secondary);
 }
@@ -1357,12 +1403,20 @@
 /* 悬停时显示操作按钮 */
 .prompt-item:hover .prompt-item-actions {
   display: flex !important;
+  /* 渐变辮色道：左侧透明渐变至背景色，避免长标题防穿图标 */
+  background: linear-gradient(to right, transparent, var(--gh-bg, #fff) 20px);
+  padding-left: 20px;
+  margin-left: -20px;
+  border-radius: 0 4px 4px 0;
 }
 
 /* 操作按钮悬停效果 */
 .prompt-action-btn:hover {
   background: var(--gh-hover, #f3f4f6) !important;
-  transform: scale(1.1);
+}
+
+.prompt-action-btn.danger:hover {
+  background: var(--gh-bg-danger, #fef2f2) !important;
 }
 
 /* 拖拽状态 */
@@ -1429,7 +1483,30 @@
 }
 
 .prompt-action-btn {
-  background: var(--gh-bg, #ffffff) !important;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  border-radius: 5px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--gh-text-secondary, #6b7280);
+  transition:
+    background 0.12s,
+    color 0.12s;
+  flex-shrink: 0;
+}
+
+.prompt-action-btn.danger {
+  color: var(--gh-text-danger, #ef4444);
+}
+
+.prompt-action-btn.active {
+  background: var(--gh-primary, #4285f4) !important;
+  color: white;
 }
 
 .prompt-modal-content {
@@ -1444,6 +1521,11 @@
 .prompt-list {
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+/* 分类标签栏横向滚动 - 隐藏滚动条 */
+.prompt-category-bar::-webkit-scrollbar {
+  display: none;
 }
 
 /* ============= 加载历史遮罩样式 ============= */

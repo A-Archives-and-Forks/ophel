@@ -237,7 +237,7 @@ export const de = {
   addPrompt: "Neuer Prompt",
   allCategory: "Alle",
   uncategorized: "Unkategorisiert",
-  manageCategory: "⚙ Verwalten",
+  manageCategory: "Verwalten",
   currentPrompt: "Aktuell: ",
   scrollTop: "Oben",
   scrollBottom: "Unten",
@@ -573,7 +573,7 @@ export const de = {
   grokSyncingConversations: "Chats werden geladen, bitte warten...",
   // Tab Order Settings
   tabOrderSettings: "UI-Anordnung",
-  tabOrderDesc: "Reihenfolge der Panels",
+  tabOrderDesc: "Reihenfolge der Panels (zum Neuordnen ziehen)",
   moveUp: "Hoch",
   moveDown: "Runter",
   // Reading Navigation Settings
@@ -619,7 +619,7 @@ export const de = {
     "Sollen {count} ungültige Lesezeichen in dieser Sitzung gelöscht werden?",
   floatingToolbarClearGhostEmpty: "Keine ungültigen Lesezeichen zum Löschen.",
   showCollapsedThemeDesc: "Theme-Wechsel in Sidebar",
-  collapsedButtonsOrderDesc: "Button-Reihenfolge in Sidebar",
+  collapsedButtonsOrderDesc: "Button-Reihenfolge in Sidebar (zum Neuordnen ziehen)",
   preventAutoScrollLabel: "Auto-Scroll verhindern",
   preventAutoScrollDesc: "Nicht automatisch nach unten springen",
   // Panel Mode

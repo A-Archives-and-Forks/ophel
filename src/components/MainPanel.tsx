@@ -109,7 +109,9 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     resolvedThemeMode === "light"
       ? siteTheme.lightStyleId || "google-gradient"
       : siteTheme.darkStyleId || "classic-dark"
-  const panelSparkleColor = currentThemeStyleId === "google-gradient" ? "currentColor" : "brand"
+  // 浅色模式：所有彩色 header 背景 → currentColor（白色），永远可见
+  // 深色模式：深色纯色 header → 品牌渐变，美观且对比鲜明
+  const panelSparkleColor = resolvedThemeMode === "dark" ? "brand" : "currentColor"
   const currentCustomStyle = Array.isArray(currentSettings.theme?.customStyles)
     ? currentSettings.theme.customStyles.find((style) => style.id === currentThemeStyleId)
     : null
@@ -447,10 +449,10 @@ export const MainPanel: React.FC<MainPanelProps> = ({
   const getThemeIcon = () => {
     if (themeMode === "dark") {
       // 深色模式时显示太阳图标（点击切换到浅色）
-      return <ThemeLightIcon size={14} />
+      return <ThemeLightIcon size={22} />
     }
     // 浅色模式时显示月亮图标（点击切换到深色）
-    return <ThemeDarkIcon size={14} />
+    return <ThemeDarkIcon size={22} />
   }
 
   return (
@@ -497,7 +499,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           ref={headerRef}
           className="gh-panel-header"
           style={{
-            padding: "12px 14px",
+            padding: "10px 14px",
             borderRadius: "12px 12px 0 0",
             display: "flex",
             alignItems: "center",
@@ -506,7 +508,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             userSelect: "none",
           }}>
           {/* 左侧：图标 + 标题（双击切换隐私模式） */}
-          <Tooltip content={currentTip}>
+          <Tooltip content={currentTip} triggerStyle={{ flex: 1, minWidth: 0 }}>
             <div
               style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
               onMouseEnter={() => {
@@ -518,7 +520,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                 window.postMessage({ type: "GH_PRIVACY_TOGGLE" }, "*")
               }}>
               <SparkleIcon size={18} color={panelSparkleColor} />
-              <span data-tip-target="header-title" style={{ fontSize: "15px", fontWeight: 600 }}>
+              <span data-tip-target="header-title" style={{ fontSize: "18px", fontWeight: 600 }}>
                 {t("panelTitle")}
               </span>
             </div>
@@ -558,8 +560,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                   background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
                   border: "none",
                   color: "var(--gh-glass-text, white)",
-                  width: "24px",
-                  height: "24px",
+                  width: "28px",
+                  height: "28px",
                   borderRadius: "6px",
                   cursor: "pointer",
                   display: "flex",
@@ -569,9 +571,9 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                   transition: "all 0.2s",
                 }}>
                 {(currentSettings.panel?.panelMode ?? "edge-snap") === "edge-snap" ? (
-                  <FloatingModeIcon size={24} />
+                  <FloatingModeIcon size={22} />
                 ) : (
-                  <SnapToEdgeIcon size={24} />
+                  <SnapToEdgeIcon size={22} />
                 )}
               </button>
             </Tooltip>
@@ -587,8 +589,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                     background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
                     border: "none",
                     color: "var(--gh-glass-text, white)",
-                    width: "24px",
-                    height: "24px",
+                    width: "28px",
+                    height: "28px",
                     borderRadius: "6px",
                     cursor: "pointer",
                     display: "flex",
@@ -611,8 +613,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                     background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
                     border: "none",
                     color: "var(--gh-glass-text, white)",
-                    width: "24px",
-                    height: "24px",
+                    width: "28px",
+                    height: "28px",
                     borderRadius: "6px",
                     cursor: "pointer",
                     display: "flex",
@@ -621,7 +623,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                     fontSize: "16px",
                     transition: "all 0.2s",
                   }}>
-                  <NewTabIcon size={14} />
+                  <NewTabIcon size={22} />
                 </button>
               </Tooltip>
             )}
@@ -637,8 +639,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                   background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
                   border: "none",
                   color: "var(--gh-glass-text, white)",
-                  width: "24px",
-                  height: "24px",
+                  width: "28px",
+                  height: "28px",
                   borderRadius: "6px",
                   cursor: "pointer",
                   display: "flex",
@@ -647,7 +649,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                   fontSize: "14px",
                   transition: "all 0.2s",
                 }}>
-                <SettingsIcon size={14} />
+                <SettingsIcon size={22} />
               </button>
             </Tooltip>
 
@@ -698,8 +700,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                   background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
                   border: "none",
                   color: "var(--gh-glass-text, white)",
-                  width: "24px",
-                  height: "24px",
+                  width: "28px",
+                  height: "28px",
                   borderRadius: "6px",
                   cursor: "pointer",
                   display: "flex",
@@ -709,7 +711,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                   fontWeight: 600,
                   transition: "all 0.2s",
                 }}>
-                <MinimizeIcon size={14} />
+                <MinimizeIcon size={22} />
               </button>
             </Tooltip>
           </div>
@@ -745,7 +747,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                 onClick={() => setActiveTab(tab)}
                 style={{
                   flex: 1,
-                  padding: "10px 8px",
+                  padding: "7px 8px",
                   border: "none",
                   background: "transparent",
                   borderBottom:
@@ -810,7 +812,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             display: "flex",
             justifyContent: "space-around",
             alignItems: "center",
-            padding: "10px 16px",
+            padding: "8px 16px",
             borderTop: "1px solid var(--gh-border, #e5e7eb)",
             background: "var(--gh-bg-secondary, #f9fafb)",
           }}>

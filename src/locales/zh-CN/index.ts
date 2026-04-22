@@ -269,7 +269,7 @@ export const zhCN = {
   addPrompt: "添加提示词",
   allCategory: "全部",
   uncategorized: "未分类",
-  manageCategory: "⚙ 管理",
+  manageCategory: "管理",
   currentPrompt: "当前提示词：",
   scrollTop: "顶部",
   scrollBottom: "底部",
@@ -577,7 +577,7 @@ export const zhCN = {
   refreshSettings: "刷新设置",
   // Tab 顺序设置
   tabOrderSettings: "界面排版",
-  tabOrderDesc: "调整面板 Tab 的显示顺序",
+  tabOrderDesc: "调整面板 Tab 的显示顺序（拖动手柄可排序）",
   moveUp: "上移",
   moveDown: "下移",
   // 阅读导航设置
@@ -668,7 +668,7 @@ export const zhCN = {
   floatingToolbarClearGhostConfirm: "是否清除当前会话中 {count} 条无效收藏？",
   floatingToolbarClearGhostEmpty: "没有需要清理的无效收藏",
   showCollapsedThemeDesc: "当面板收起时，在侧边浮动条中显示主题切换按钮",
-  collapsedButtonsOrderDesc: "调整折叠面板按钮的显示顺序",
+  collapsedButtonsOrderDesc: "调整折叠面板按钮的显示顺序（拖动手柄可排序）",
   preventAutoScrollLabel: "防止自动滚动",
   preventAutoScrollDesc: "当 AI 生成长内容时，阻止页面自动滚动到底部，方便阅读上文",
 
