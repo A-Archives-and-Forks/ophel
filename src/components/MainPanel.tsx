@@ -26,8 +26,10 @@ import {
   ThemeLightIcon,
 } from "~components/icons"
 import { SparkleIcon } from "~components/icons/SparkleIcon"
+import { MagicCodex } from "~components/MagicCodex"
 import { TAB_IDS } from "~constants"
-import { DEFAULT_KEYBINDINGS, formatShortcut, isMacOS } from "~constants/shortcuts"
+import { isMacOS } from "~constants/shortcuts"
+import { buildStructuredTips } from "~utils/build-structured-tips"
 import type { ConversationManager } from "~core/conversation-manager"
 import type { OutlineManager } from "~core/outline-manager"
 import type { PromptManager } from "~core/prompt-manager"
@@ -99,7 +101,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [])
 
-  const { settings, updateNestedSetting } = useSettingsStore()
+  const { settings, updateNestedSetting, setSettings } = useSettingsStore()
   const currentSettings = settings || DEFAULT_SETTINGS
   const tabOrder = currentSettings.features?.order || DEFAULT_SETTINGS.features.order
   const siteId = adapter?.getSiteId() || "_default"
@@ -131,41 +133,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
   const prevPanelModeRef = useRef(currentSettings.panel?.panelMode)
   // 保存面板当前位置，用于 header 按钮触发的"原地固定"
   const savedPeekingRectRef = useRef<DOMRect | null>(null)
-  // 标题 tooltip 随机 tips（动态读取实际快捷键配置 + 平台检测）
-  const isMac = useMemo(() => isMacOS(), [])
-  const keybindings = currentSettings.shortcuts?.keybindings ?? DEFAULT_KEYBINDINGS
-  const getTips = useCallback(() => {
-    const fmt = (id: string) => {
-      const shortcut = keybindings[id] ?? DEFAULT_KEYBINDINGS[id]
-      return shortcut ? formatShortcut(shortcut, isMac) : ""
-    }
-    return [
-      t("tip1", { modifier: isMac ? "⌘" : "Ctrl" }),
-      t("tip2"),
-      t("tip3", { shortcut: fmt("showShortcuts") }),
-      t("tip4", { shortcut: fmt("openGlobalSearch") }),
-      t("tip5", { shortcut: fmt("copyLatestReply") }),
-      t("tip6", {
-        shortcut: fmt("prevHeading") + "/" + fmt("nextHeading"),
-      }),
-    ]
-  }, [keybindings, isMac])
-  const [currentTip, setCurrentTip] = useState(() => {
-    const kb = currentSettings.shortcuts?.keybindings ?? DEFAULT_KEYBINDINGS
-    const fmt = (id: string) => {
-      const shortcut = kb[id] ?? DEFAULT_KEYBINDINGS[id]
-      return shortcut ? formatShortcut(shortcut, isMacOS()) : ""
-    }
-    const tips = [
-      t("tip1", { modifier: isMacOS() ? "⌘" : "Ctrl" }),
-      t("tip2"),
-      t("tip3", { shortcut: fmt("showShortcuts") }),
-      t("tip4", { shortcut: fmt("openGlobalSearch") }),
-      t("tip5", { shortcut: fmt("copyLatestReply") }),
-      t("tip6", { shortcut: fmt("prevHeading") + "/" + fmt("nextHeading") }),
-    ]
-    return tips[Math.floor(Math.random() * tips.length)]
-  })
+  // (Generic tips have moved to MagicCodex)
   const pointerEventsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // 使用 useLayoutEffect 保证在浏览器绘制前完成定位，避免模式切换时闪烁
   useLayoutEffect(() => {
@@ -181,6 +149,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     if (prevMode === "edge-snap" && currentMode === "floating") {
       // 恢复 pointer-events：floating→edge-snap 会临时禁用，
       // 若快速切回 floating，cleanup 已取消恢复定时器，需在此处手动恢复
+      panel.removeAttribute("data-edge-snap-transitioning")
       panel.style.pointerEvents = ""
 
       const savedRect = savedPeekingRectRef.current
@@ -226,6 +195,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
       // 悬浮 → 吸附：先添加 CSS 吸附类，确保 !important 定位在清除 inline style 前生效
       const pos = currentSettings.panel?.defaultPosition ?? "right"
       panel.classList.add(`edge-snapped-${pos}`)
+      panel.setAttribute("data-edge-snap-transitioning", "true")
       panel.style.top = "50%"
       panel.style.transform = "translateY(-50%)"
       panel.style.left = ""
@@ -234,6 +204,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
       panel.style.pointerEvents = "none"
       if (pointerEventsTimerRef.current) clearTimeout(pointerEventsTimerRef.current)
       pointerEventsTimerRef.current = setTimeout(() => {
+        panel.removeAttribute("data-edge-snap-transitioning")
         panel.style.pointerEvents = ""
         pointerEventsTimerRef.current = null
       }, 400)
@@ -244,6 +215,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
         clearTimeout(pointerEventsTimerRef.current)
         pointerEventsTimerRef.current = null
       }
+      panel.removeAttribute("data-edge-snap-transitioning")
+      panel.style.pointerEvents = ""
     }
   }, [
     currentSettings.panel?.panelMode,
@@ -255,6 +228,63 @@ export const MainPanel: React.FC<MainPanelProps> = ({
   // 计算默认位置样式
   const defaultPosition = currentSettings.panel?.defaultPosition ?? "right"
   const defaultEdgeDistance = currentSettings.panel?.defaultEdgeDistance ?? 40
+  const isEdgeSnapMode = (currentSettings.panel?.panelMode ?? "edge-snap") === "edge-snap"
+
+  const [showCodex, setShowCodex] = useState(false)
+  const [isHeaderPressed, setIsHeaderPressed] = useState(false)
+  const hasSeenCodex = currentSettings.hasSeenOphelAdvancedGuide ?? false
+  const shortcutNotSetKey = "shortcutNotSet"
+  const translatedShortcutNotSetLabel = t(shortcutNotSetKey)
+  const shortcutNotSetLabel =
+    translatedShortcutNotSetLabel === shortcutNotSetKey ? "未设置" : translatedShortcutNotSetLabel
+  const setHasSeenCodex = (val: boolean) => {
+    if (val && !hasSeenCodex && setSettings) {
+      setSettings({ hasSeenOphelAdvancedGuide: true })
+    }
+  }
+
+  const shouldShowHeaderPressHint = useCallback((target: EventTarget | null) => {
+    if (!(target instanceof Element)) {
+      return true
+    }
+
+    return !target.closest('.gh-panel-controls, [data-no-header-press-hint="true"]')
+  }, [])
+
+  const resetHeaderPressHint = useCallback(() => {
+    setIsHeaderPressed(false)
+  }, [])
+
+  const handleHeaderPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (!shouldShowHeaderPressHint(event.target)) {
+        resetHeaderPressHint()
+        return
+      }
+
+      setIsHeaderPressed(true)
+    },
+    [resetHeaderPressHint, shouldShowHeaderPressHint],
+  )
+
+  const structuredTips = useMemo(
+    () =>
+      buildStructuredTips(currentSettings.shortcuts?.keybindings, isMacOS(), shortcutNotSetLabel),
+    [currentSettings.shortcuts?.keybindings, currentSettings.language, shortcutNotSetLabel],
+  )
+
+  const closeCodex = useCallback(() => {
+    setShowCodex(false)
+  }, [])
+
+  const toggleCodex = useCallback(
+    (event?: React.SyntheticEvent) => {
+      event?.stopPropagation()
+      setShowCodex((prev) => !prev)
+      setHasSeenCodex(true)
+    },
+    [setHasSeenCodex],
+  )
 
   // 获取排序后的首个 tab
   // tabOrder 是 string[]，数组顺序就是显示顺序
@@ -467,10 +497,14 @@ export const MainPanel: React.FC<MainPanelProps> = ({
         style={{
           position: "fixed",
           top: "50%",
-          // 根据默认位置设置 left 或 right
-          ...(defaultPosition === "left"
-            ? { left: `${defaultEdgeDistance}px`, right: "auto" }
-            : { right: `${defaultEdgeDistance}px`, left: "auto" }),
+          // 仅在 floating 模式下通过 React style prop 设置位置；
+          // edge-snap 模式下由 useLayoutEffect + CSS class 控制，避免切换首帧
+          // 与后续重渲染写回 inline style 覆盖 CSS transition，导致动画抖动
+          ...(!isEdgeSnapMode
+            ? defaultPosition === "left"
+              ? { left: `${defaultEdgeDistance}px`, right: "auto" }
+              : { right: `${defaultEdgeDistance}px`, left: "auto" }
+            : { left: "", right: "" }),
           transform: "translateY(-50%)",
           width: `${currentSettings.panel?.width ?? 320}px`,
           height: `${currentSettings.panel?.height ?? 85}vh`,
@@ -497,8 +531,13 @@ export const MainPanel: React.FC<MainPanelProps> = ({
         {/* Header - 拖拽区域 */}
         <div
           ref={headerRef}
+          onPointerDown={handleHeaderPointerDown}
+          onPointerUp={resetHeaderPressHint}
+          onPointerLeave={resetHeaderPressHint}
+          onPointerCancel={resetHeaderPressHint}
           className="gh-panel-header"
           style={{
+            position: "relative",
             padding: "10px 14px",
             borderRadius: "12px 12px 0 0",
             display: "flex",
@@ -507,28 +546,54 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             // cursor 由 CSS (.gh-panel-header) 统一控制为 pointer
             userSelect: "none",
           }}>
-          {/* 左侧：图标 + 标题（双击切换隐私模式） */}
-          <Tooltip content={currentTip} triggerStyle={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
-              onMouseEnter={() => {
-                const tips = getTips()
-                setCurrentTip(tips[Math.floor(Math.random() * tips.length)])
+          {/* 左侧：图标 + 标题（点击弹出法典） */}
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              className="gh-interactive"
+              aria-label={t("panelTitle")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                cursor: "pointer",
+                position: "relative",
+                border: "none",
+                background: "transparent",
+                padding: 0,
+                color: "inherit",
               }}
-              onDoubleClick={() => {
-                // 发送隐私模式切换事件给 TabManager
-                window.postMessage({ type: "GH_PRIVACY_TOGGLE" }, "*")
-              }}>
-              <SparkleIcon size={18} color={panelSparkleColor} />
-              <span data-tip-target="header-title" style={{ fontSize: "18px", fontWeight: 600 }}>
+              onClick={toggleCodex}>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <SparkleIcon size={18} color={panelSparkleColor} />
+                {!hasSeenCodex && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "-2px",
+                      right: "-2px",
+                      width: "6px",
+                      height: "6px",
+                      backgroundColor: "var(--gh-danger, #ef4444)",
+                      borderRadius: "50%",
+                      boxShadow: "0 0 0 2px var(--gh-bg, #ffffff)",
+                      animation: "pulse-red 2s infinite",
+                    }}
+                  />
+                )}
+              </div>
+              <span style={{ fontSize: "18px", fontWeight: 600, userSelect: "none" }}>
                 {t("panelTitle")}
               </span>
-            </div>
-          </Tooltip>
+            </button>
+
+            <MagicCodex isOpen={showCodex} onClose={closeCodex} tips={structuredTips} />
+          </div>
 
           {/* 右侧：按钮组 - 需要 gh-panel-controls 以排除拖拽 */}
           <div
             className="gh-panel-controls"
+            data-no-header-press-hint="true"
             style={{ display: "flex", gap: "1px", alignItems: "center" }}>
             {/* 面板模式切换按钮 */}
             <Tooltip
@@ -636,7 +701,39 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           </div>
         </div>
 
-        {/* Tabs - 标签栏 */}
+        {/* 拖拽/悬停 即时提示层 (幽灵模式) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "56px",
+            left: "50%",
+            width: "max-content",
+            maxWidth: "85%",
+            transform: `translate(-50%, ${isHeaderPressed ? "8px" : "-4px"})`,
+            opacity: isHeaderPressed ? 1 : 0,
+            pointerEvents: "none",
+            transition: "all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
+            background: "var(--gh-bg-secondary, rgba(255, 255, 255, 0.85))",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            color: "var(--gh-text, #1f2937)",
+            border: "1px solid var(--gh-border, rgba(0,0,0,0.1))",
+            padding: "6px 12px",
+            borderRadius: "12px",
+            fontSize: "12px",
+            fontWeight: 500,
+            display: "flex",
+            textAlign: "left",
+            alignItems: "flex-start",
+            gap: "8px",
+            boxShadow: "var(--gh-shadow-lg, 0 8px 24px rgba(0,0,0,0.12))",
+            zIndex: 10,
+          }}>
+          <span style={{ fontSize: "14px", flexShrink: 0, marginTop: "1px" }}>👻</span>
+          <span style={{ lineHeight: "1.5" }}>
+            {t("tip1", { modifier: isMacOS() ? "⌘ Cmd" : "Ctrl" })}
+          </span>
+        </div>
         <div
           className="gh-panel-tabs"
           style={{
@@ -720,7 +817,11 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             />
           )}
           {activeTab === TAB_IDS.OUTLINE && (
-            <OutlineTab manager={outlineManager} onJumpBefore={saveAnchor} />
+            <OutlineTab
+              manager={outlineManager}
+              onJumpBefore={saveAnchor}
+              isCodexOpen={showCodex}
+            />
           )}
         </div>
 

@@ -1,3 +1,6 @@
+import { MagicCodex } from "~components/MagicCodex"
+import { isMacOS } from "~constants/shortcuts"
+import { buildStructuredTips } from "~utils/build-structured-tips"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import {
@@ -24,6 +27,7 @@ import { showToast } from "~utils/toast"
 interface OutlineTabProps {
   manager: OutlineManager
   onJumpBefore?: () => void
+  isCodexOpen?: boolean
 }
 
 const buildVisibilityMaps = (
@@ -375,9 +379,21 @@ const OutlineNodeView: React.FC<{
   )
 }
 
-export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore }) => {
+export const OutlineTab: React.FC<OutlineTabProps> = ({
+  manager,
+  onJumpBefore,
+  isCodexOpen = false,
+}) => {
   // 获取设置 - 使用 Zustand Store
   const { settings } = useSettingsStore()
+  const currentSettings = settings
+  const isMac = React.useMemo(() => isMacOS(), [])
+  const shortcutNotSetLabel = t("shortcutNotSet") || "未设置"
+
+  const structuredTips = React.useMemo(
+    () => buildStructuredTips(currentSettings.shortcuts?.keybindings, isMac, shortcutNotSetLabel),
+    [currentSettings.shortcuts?.keybindings, currentSettings.language, isMac, shortcutNotSetLabel],
+  )
 
   // Initialize state from manager to prevent flicker
   const initialState = manager.getState()
@@ -1438,6 +1454,23 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
                     <span className="outline-empty-state-desc-line">
                       {emptyDescriptionSecondLine}
                     </span>
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "32px",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                  }}>
+                  {!isCodexOpen && (
+                    <MagicCodex
+                      isOpen={true}
+                      onClose={() => {}}
+                      tips={structuredTips}
+                      isStatic={true}
+                    />
                   )}
                 </div>
               </div>

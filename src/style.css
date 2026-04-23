@@ -818,6 +818,18 @@
   opacity: 0;
 }
 
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-left,
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-left:hover,
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-left.edge-peek {
+  left: calc(12px - var(--panel-width, 320px)) !important;
+  box-shadow: 2px 0 12px rgba(66, 133, 244, 0.4) !important;
+}
+
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-left:hover::after,
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-left.edge-peek::after {
+  opacity: 1;
+}
+
 /* 面板吸附到右边缘时隐藏 */
 .gh-main-panel.edge-snapped-right {
   right: calc(12px - var(--panel-width, 320px)) !important;
@@ -854,6 +866,30 @@
 .gh-main-panel.edge-snapped-right:hover::after,
 .gh-main-panel.edge-snapped-right.edge-peek::after {
   opacity: 0;
+}
+
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-right,
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-right:hover,
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-right.edge-peek {
+  right: calc(12px - var(--panel-width, 320px)) !important;
+  box-shadow: -2px 0 12px rgba(66, 133, 244, 0.4) !important;
+}
+
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-right:hover::after,
+.gh-main-panel[data-edge-snap-transitioning="true"].edge-snapped-right.edge-peek::after {
+  opacity: 1;
+}
+
+@keyframes gh-popover-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* 边缘触发条 */
@@ -1926,4 +1962,28 @@
 .gh-header-icon-btn:active {
   background: var(--gh-glass-bg, rgba(255, 255, 255, 0.15));
   transform: scale(0.96);
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* MagicCodex hidden scrollbar */
+.gh-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.gh-hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }

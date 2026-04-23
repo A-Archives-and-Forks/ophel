@@ -714,7 +714,6 @@ export class OutlineManager {
     }
 
     if (outlineData.length === 0) {
-      // ... existing clear logic
       if (this.tree.length > 0) {
         this.tree = []
         this.flatNodes = []
