@@ -980,6 +980,7 @@ export const ru = {
   shortcutScrollBottom: "В самый низ",
   shortcutGoToAnchor: "К якорю",
   shortcutTogglePanel: "Развернуть/свернуть панель",
+  shortcutTogglePanelMode: "Переключить режим панели (Прилипание/Свободное)",
   shortcutToggleTheme: "Смена темы",
   shortcutOpenSettings: "В настройки",
   shortcutSwitchTab1: "Таб 1",
@@ -1389,6 +1390,8 @@ export const ru = {
   "featureTip-panel-mode-toggle-desc":
     "Быстро переключаться между плавающим и прикреплённым режимом",
   "featureTip-panel-mode-toggle-path":
+    "Нажмите {shortcut} или дважды щёлкните по заголовку панели, чтобы быстро переключить режим отображения",
+  "featureTip-panel-mode-toggle-path-dblclick":
     "Дважды щёлкните по заголовку панели, чтобы быстро переключить режим отображения",
   "featureTip-shortcuts-title": "Обзор горячих клавиш",
   "featureTip-shortcuts-desc": "Просматривайте и настраивайте все горячие клавиши",

@@ -985,6 +985,7 @@ Donnez le code puis un résumé des améliorations.`,
   shortcutScrollBottom: "Tout en bas",
   shortcutGoToAnchor: "Aller à l'ancre",
   shortcutTogglePanel: "Développer/Réduire le Panneau",
+  shortcutTogglePanelMode: "Changer le mode du panneau (Ancré/Flottant)",
   shortcutToggleTheme: "Changer Thème",
   shortcutOpenSettings: "Ouvrir Réglages",
   shortcutSwitchTab1: "Onglet 1",
@@ -1403,6 +1404,8 @@ Donnez le code puis un résumé des améliorations.`,
   "featureTip-panel-mode-toggle-desc":
     "Basculer rapidement entre le mode flottant et le mode d'ancrage",
   "featureTip-panel-mode-toggle-path":
+    "Appuyez sur {shortcut} ou double-cliquez sur la barre de titre pour changer rapidement le mode d'affichage du panneau",
+  "featureTip-panel-mode-toggle-path-dblclick":
     "Double-cliquer sur la barre de titre pour changer rapidement le mode d'affichage du panneau",
   "featureTip-shortcuts-title": "Raccourcis clavier",
   "featureTip-shortcuts-desc": "Voir et personnaliser tous les raccourcis clavier",

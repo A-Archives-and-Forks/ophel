@@ -1113,6 +1113,7 @@ Dê o código e depois um resumo de melhorias.`,
   shortcutScrollBottom: "Descer tudo",
   shortcutGoToAnchor: "Ir para âncora",
   shortcutTogglePanel: "Expandir/Recolher Painel",
+  shortcutTogglePanelMode: "Alternar modo do painel (Ancorado/Flutuante)",
   shortcutToggleTheme: "Trocar Tema",
   shortcutOpenSettings: "Abrir Ajustes",
   shortcutSwitchTab1: "Aba 1",
@@ -1389,6 +1390,8 @@ Dê o código e depois um resumo de melhorias.`,
   "featureTip-panel-mode-toggle-desc":
     "Alterne rapidamente entre o modo flutuante e o modo de encaixe",
   "featureTip-panel-mode-toggle-path":
+    "Pressione {shortcut} ou clique duplo na barra de título para alternar rapidamente o modo do painel",
+  "featureTip-panel-mode-toggle-path-dblclick":
     "Clique duplo na barra de título para alternar rapidamente o modo de exibição do painel",
   "featureTip-shortcuts-title": "Visão Geral dos Atalhos",
   "featureTip-shortcuts-desc": "Visualize e personalize todos os atalhos de teclado",

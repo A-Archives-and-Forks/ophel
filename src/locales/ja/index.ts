@@ -1027,6 +1027,7 @@ export const ja = {
   shortcutScrollBottom: "一番下へ",
   shortcutGoToAnchor: "アンカーへ移動",
   shortcutTogglePanel: "パネルを展開/折りたたむ",
+  shortcutTogglePanelMode: "パネルモードを切り替える（スナップ/フロート）",
   shortcutToggleTheme: "テーマ切り替え",
   shortcutOpenSettings: "設定を開く",
   shortcutSwitchTab1: "第1タブへ",
@@ -1398,6 +1399,8 @@ export const ja = {
   "featureTip-panel-mode-toggle-desc":
     "フローティングモードとエッジスナップモードを素早く切り替える",
   "featureTip-panel-mode-toggle-path":
+    "{shortcut}を押すかタイトルバーをダブルクリックしてパネル表示モードを素早く切り替え",
+  "featureTip-panel-mode-toggle-path-dblclick":
     "タイトルバーをダブルクリックしてパネル表示モードを素早く切り替え",
   "featureTip-shortcuts-title": "キーボードショートカット一覧",
   "featureTip-shortcuts-desc": "すべてのキーボードショートカットを確認・カスタマイズ",

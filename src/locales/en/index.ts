@@ -1048,6 +1048,7 @@ Please output the optimized code block directly, followed by a brief summary of 
   shortcutScrollBottom: "Scroll to Bottom",
   shortcutGoToAnchor: "Go to Anchor",
   shortcutTogglePanel: "Expand/Collapse Panel",
+  shortcutTogglePanelMode: "Toggle Panel Mode (Snap/Float)",
   shortcutToggleTheme: "Toggle Theme",
   shortcutOpenSettings: "Open Settings",
   shortcutSwitchTab1: "Switch to 1st Tab",
@@ -1410,7 +1411,9 @@ Please output the optimized code block directly, followed by a brief summary of 
   "featureTip-panel-mode-toggle-title": "Switch Panel Mode",
   "featureTip-panel-mode-toggle-desc": "Quickly switch between floating and edge-snap mode",
   "featureTip-panel-mode-toggle-path":
-    "Double-click the title bar to quickly switch the panel display mode",
+    "Press {shortcut}, or double-click the title bar, to quickly switch the panel display mode",
+  "featureTip-panel-mode-toggle-path-dblclick":
+    "Double-click the panel title bar to quickly switch the panel display mode",
   "featureTip-shortcuts-title": "Keyboard Shortcuts Overview",
   "featureTip-shortcuts-desc": "View and customize all keyboard shortcuts",
   "featureTip-shortcuts-path": "{shortcut} to open shortcuts overview",
