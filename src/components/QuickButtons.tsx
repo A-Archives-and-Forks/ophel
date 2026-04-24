@@ -167,6 +167,13 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   // 锚点状态（使用全局存储）
   const anchorPosition = useSyncExternalStore(anchorStore.subscribe, anchorStore.getSnapshot)
   const hasAnchor = anchorPosition !== null
+  const [anchorTapId, setAnchorTapId] = useState(0)
+  // prefers-reduced-motion 下 animation 为 none，不会触发 animationend；用 timeout 充当兜底重置
+  useEffect(() => {
+    if (anchorTapId === 0) return
+    const timer = setTimeout(() => setAnchorTapId(0), 400)
+    return () => clearTimeout(timer)
+  }, [anchorTapId])
 
   // 悬浮隐藏状态
   const [_isHovered, setIsHovered] = useState(false)
@@ -576,6 +583,9 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     const savedAnchor = anchorStore.get()
     if (savedAnchor === null) return
 
+    // 触发弹性动画
+    setAnchorTapId((id) => id + 1)
+
     // 获取当前位置
     const scrollInfo = await getScrollInfo(adapter)
     const currentPos = scrollInfo.scrollTop
@@ -735,7 +745,18 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
             cursor: anchorDisabled ? "default" : "pointer",
           }}
           disabled={anchorDisabled}>
-          {icon}
+          {/* 锚点按鈕动画目标：key 递增保证每次点击都重播 */}
+          {isAnchorBtn ? (
+            <span
+              key={anchorTapId}
+              className={`anchor-tap-wrapper${anchorTapId > 0 ? " is-tapping" : ""}`}
+              onAnimationEnd={() => setAnchorTapId(0)}
+              style={{ display: "flex" }}>
+              {icon}
+            </span>
+          ) : (
+            icon
+          )}
         </button>
       </Tooltip>
     )

@@ -393,6 +393,14 @@ export const MainPanel: React.FC<MainPanelProps> = ({
   // === 锚点状态（使用全局存储） ===
   const anchorPosition = useSyncExternalStore(anchorStore.subscribe, anchorStore.getSnapshot)
   const hasAnchor = anchorPosition !== null
+  // 使用递增 id 而非 boolean，确保快速连续点击时每次都能重播动画
+  const [anchorTapId, setAnchorTapId] = useState(0)
+  // prefers-reduced-motion 下 animation 为 none，不会触发 animationend；用 timeout 充当兜底重置
+  useEffect(() => {
+    if (anchorTapId === 0) return
+    const timer = setTimeout(() => setAnchorTapId(0), 400)
+    return () => clearTimeout(timer)
+  }, [anchorTapId])
 
   // === 加载状态（遮罩） ===
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
@@ -469,6 +477,9 @@ export const MainPanel: React.FC<MainPanelProps> = ({
   const goToAnchor = useCallback(async () => {
     const savedAnchor = anchorStore.get()
     if (savedAnchor === null) return
+
+    // 触发按钮弹性动画
+    setAnchorTapId((id) => id + 1)
 
     // 获取当前位置
     const scrollInfo = await getScrollInfo(adapter || null)
@@ -924,7 +935,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
 
           {/* 锚点按钮（返回之前位置，双向跳转） */}
           <Tooltip
-            content={hasAnchor ? t("jumpToAnchor") : "暂无锚点"}
+            content={hasAnchor ? t("jumpToAnchor") : t("noAnchor")}
             triggerStyle={{ flex: "0 0 32px" }}>
             <button
               className="gh-interactive scroll-nav-btn anchor-btn"
@@ -951,7 +962,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                 if (hasAnchor) {
                   e.currentTarget.style.transform = "scale(1.1)"
                   e.currentTarget.style.boxShadow = "var(--gh-btn-shadow-hover)"
-                  // 旋转特效
+                  // 旋转特效（作用于内层 div）
                   const div = e.currentTarget.querySelector("div")
                   if (div) div.style.transform = "rotate(360deg)"
                 }
@@ -959,19 +970,25 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)"
                 e.currentTarget.style.boxShadow = hasAnchor ? "var(--gh-btn-shadow)" : "none"
-                // 恢复旋转
                 const div = e.currentTarget.querySelector("div")
                 if (div) div.style.transform = "rotate(0deg)"
               }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                }}>
-                <AnchorIcon size={14} />
-              </div>
+              {/* 动画目标：独立于按钮的 inline transform，key 变化强制重新挂载以重播动画 */}
+              <span
+                key={anchorTapId}
+                className={`anchor-tap-wrapper${anchorTapId > 0 ? " is-tapping" : ""}`}
+                onAnimationEnd={() => setAnchorTapId(0)}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  }}>
+                  <AnchorIcon size={14} />
+                </div>
+              </span>
             </button>
           </Tooltip>
 
