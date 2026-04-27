@@ -727,11 +727,13 @@ export class DoubaoAdapter extends SiteAdapter {
     }
     this.simulateClick(deleteMenuItem)
 
+    // The confirmation dialog is optional: try to find and click the confirm button;
+    // if it does not appear (e.g. future versions with no confirm step) but the
+    // conversation disappears anyway, treat it as success.
     const confirmButton = await this.waitForDeleteConfirmButton(2500)
-    if (!confirmButton) {
-      return false
+    if (confirmButton) {
+      this.simulateClick(confirmButton)
     }
-    this.simulateClick(confirmButton)
 
     return this.waitForConversationRemoved(id, 7000)
   }
@@ -815,16 +817,6 @@ export class DoubaoAdapter extends SiteAdapter {
     const start = Date.now()
 
     while (Date.now() - start < timeout) {
-      const direct = document.querySelector(
-        '[data-radix-popper-content-wrapper] [data-testid="chat_item_menu_remove_icon"]',
-      ) as HTMLElement | null
-      const directItem = direct?.closest(
-        '[role="menuitem"][data-slot="dropdown-menu-item"]',
-      ) as HTMLElement | null
-      if (this.isVisible(directItem)) {
-        return directItem
-      }
-
       const items = Array.from(
         document.querySelectorAll(
           '[data-radix-popper-content-wrapper] [role="menuitem"][data-slot="dropdown-menu-item"]',
@@ -833,7 +825,20 @@ export class DoubaoAdapter extends SiteAdapter {
 
       for (const item of items) {
         if (!this.isVisible(item)) continue
-        if (this.getSignalText(item).includes("删除")) {
+
+        // Primary: the delete item is styled in danger/red color (text-dbx-function-danger)
+        // This is the most reliable signal after data-testid attributes were removed from the new DOM
+        if (item.querySelector(".text-dbx-function-danger")) {
+          return item
+        }
+
+        // Fallback: text-based matching (Chinese "删除" or English "delete")
+        const signalText = this.getSignalText(item)
+        if (
+          signalText.includes("删除") ||
+          signalText.includes("刪除") ||
+          signalText.includes("delete")
+        ) {
           return item
         }
       }
@@ -850,15 +855,25 @@ export class DoubaoAdapter extends SiteAdapter {
     while (Date.now() - start < timeout) {
       const dialog = this.findVisibleDeleteDialog()
       if (dialog) {
-        const explicit = dialog.querySelector('button[aria-label="confirm"]') as HTMLElement | null
-        if (this.isVisible(explicit)) {
-          return explicit
+        // Primary: the confirm button has bg-dbx-function-danger (danger/red background)
+        // This is reliable regardless of locale (works for Simplified, Traditional, English)
+        const dangerBtn = dialog.querySelector(
+          'button[class*="bg-dbx-function-danger"]',
+        ) as HTMLElement | null
+        if (this.isVisible(dangerBtn)) {
+          return dangerBtn
         }
 
+        // Fallback: text-based matching for Simplified (\u5220\u9664), Traditional (\u5220\u9664 / \u522a\u9664) or English
         const buttons = Array.from(dialog.querySelectorAll("button")) as HTMLElement[]
         for (const button of buttons) {
           if (!this.isVisible(button)) continue
-          if (this.getSignalText(button).includes("删除")) {
+          const signalText = this.getSignalText(button)
+          if (
+            signalText.includes("\u5220\u9664") || // 删除 (Simplified)
+            signalText.includes("\u522a\u9664") || // 刪除 (Traditional)
+            signalText.includes("delete")
+          ) {
             return button
           }
         }
@@ -871,13 +886,27 @@ export class DoubaoAdapter extends SiteAdapter {
   }
 
   private findVisibleDeleteDialog(): HTMLElement | null {
+    // Primary: match by the new Radix dialog slot attribute and open state
+    const newDialogs = Array.from(
+      document.querySelectorAll('[role="dialog"][data-state="open"][data-slot="dialog-content"]'),
+    ) as HTMLElement[]
+    const newDialog = newDialogs.find((dialog) => this.isVisible(dialog))
+    if (newDialog) return newDialog
+
+    // Fallback: legacy structure — match by text content for Simplified, Traditional or English
     const dialogs = Array.from(
       document.querySelectorAll('[role="dialog"][aria-modal="true"], [role="dialog"]'),
     ) as HTMLElement[]
     return (
-      dialogs.find(
-        (dialog) => this.isVisible(dialog) && this.getSignalText(dialog).includes("删除"),
-      ) || null
+      dialogs.find((dialog) => {
+        if (!this.isVisible(dialog)) return false
+        const text = this.getSignalText(dialog)
+        return (
+          text.includes("\u5220\u9664") || // 删除 (Simplified)
+          text.includes("\u522a\u9664") || // 刪除 (Traditional)
+          text.includes("delete")
+        )
+      }) || null
     )
   }
 
