@@ -5,7 +5,16 @@
 import React, { useEffect, useRef, useState } from "react"
 
 import { GeminiAdapter } from "~adapters/gemini"
-import { CloudIcon } from "~components/icons"
+import {
+  CloudIcon,
+  SaveIcon,
+  LinkIcon,
+  CloudUploadIcon,
+  FileRestoreIcon,
+  DeleteIcon,
+  RefreshIcon,
+  InfoIcon,
+} from "~components/icons"
 import { ConfirmDialog, Tooltip } from "~components/ui"
 import { PRESET_EMOJIS, SITE_IDS, type Folder } from "~constants"
 import {
@@ -15,7 +24,14 @@ import {
   getDefaultPrompts,
 } from "~constants/defaults"
 import type { Conversation } from "~core/conversation/types"
-import { getWebDAVSyncManager, type BackupFile } from "~core/webdav-sync"
+import {
+  WEBDAV_PROVIDER_PRESETS,
+  detectProviderFromUrl,
+  isValidWebDAVProvider,
+  getWebDAVSyncManager,
+  type BackupFile,
+  type WebDAVProvider,
+} from "~core/webdav-sync"
 import { platform } from "~platform"
 import { useConversationsStore } from "~stores/conversations-store"
 import { useFoldersStore } from "~stores/folders-store"
@@ -41,6 +57,7 @@ interface WebDAVFormState {
   username: string
   password: string
   remoteDir: string
+  provider: WebDAVProvider
 }
 
 // 辅助函数：格式化文件大小
@@ -599,8 +616,9 @@ const RemoteBackupModal: React.FC<{
               <button
                 onClick={loadBackups}
                 className="settings-btn settings-btn-secondary"
-                style={{ padding: "6px" }}>
-                🔄
+                aria-label={t("refresh") || "刷新"}
+                style={{ padding: "6px", display: "flex", alignItems: "center" }}>
+                <RefreshIcon size={16} />
               </button>
             </Tooltip>
             <button
@@ -624,37 +642,108 @@ const RemoteBackupModal: React.FC<{
               {t("noBackupsFound") || "未找到备份文件"}
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {backups.map((file) => (
                 <div
                   key={file.name}
                   style={{
-                    padding: "12px",
-                    background: "var(--gh-bg-secondary, #f9fafb)",
+                    padding: "12px 14px",
+                    background: "var(--gh-bg, #ffffff)",
+                    border: "1px solid var(--gh-border, #e5e7eb)",
                     borderRadius: "8px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
+                    transition: "border-color 0.15s",
                   }}>
-                  <div>
-                    <div style={{ fontSize: "14px", fontWeight: 500 }}>{file.name}</div>
-                    <div style={{ fontSize: "12px", color: "var(--gh-text-secondary)" }}>
+                  <div style={{ minWidth: 0, flex: 1, marginRight: "12px" }}>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "var(--gh-text, #1f2937)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}>
+                      {file.name}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--gh-text-secondary)",
+                        marginTop: "2px",
+                      }}>
                       {formatSize(file.size)} • {file.lastModified.toLocaleString()}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button
-                      onClick={() => handleRestoreClick(file)}
-                      className="settings-btn settings-btn-primary"
-                      style={{ padding: "6px 12px", fontSize: "12px" }}>
-                      {t("restore") || "恢复"}
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(file)}
-                      className="settings-btn settings-btn-danger"
-                      style={{ padding: "6px 12px", fontSize: "12px" }}>
-                      🗑️
-                    </button>
+                  <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                    <Tooltip content={t("restore") || "恢复"}>
+                      <button
+                        onClick={() => handleRestoreClick(file)}
+                        aria-label={t("restore") || "恢复"}
+                        style={{
+                          padding: "7px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "7px",
+                          border:
+                            "1px solid color-mix(in srgb, var(--gh-primary, #4285f4) 25%, transparent)",
+                          background:
+                            "color-mix(in srgb, var(--gh-primary, #4285f4) 8%, transparent)",
+                          color: "var(--gh-primary, #4285f4)",
+                          cursor: "pointer",
+                          transition: "background 0.15s, border-color 0.15s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background =
+                            "color-mix(in srgb, var(--gh-primary, #4285f4) 16%, transparent)"
+                          e.currentTarget.style.borderColor =
+                            "color-mix(in srgb, var(--gh-primary, #4285f4) 40%, transparent)"
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background =
+                            "color-mix(in srgb, var(--gh-primary, #4285f4) 8%, transparent)"
+                          e.currentTarget.style.borderColor =
+                            "color-mix(in srgb, var(--gh-primary, #4285f4) 25%, transparent)"
+                        }}>
+                        <FileRestoreIcon size={16} color="currentColor" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip content={t("delete") || "删除"}>
+                      <button
+                        onClick={() => handleDeleteClick(file)}
+                        aria-label={t("delete") || "删除"}
+                        style={{
+                          padding: "7px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "7px",
+                          border:
+                            "1px solid color-mix(in srgb, var(--gh-danger, #ef4444) 20%, transparent)",
+                          background:
+                            "color-mix(in srgb, var(--gh-danger, #ef4444) 7%, transparent)",
+                          color: "var(--gh-danger, #ef4444)",
+                          cursor: "pointer",
+                          transition: "background 0.15s, border-color 0.15s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background =
+                            "color-mix(in srgb, var(--gh-danger, #ef4444) 14%, transparent)"
+                          e.currentTarget.style.borderColor =
+                            "color-mix(in srgb, var(--gh-danger, #ef4444) 35%, transparent)"
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background =
+                            "color-mix(in srgb, var(--gh-danger, #ef4444) 7%, transparent)"
+                          e.currentTarget.style.borderColor =
+                            "color-mix(in srgb, var(--gh-danger, #ef4444) 20%, transparent)"
+                        }}>
+                        <DeleteIcon size={16} color="currentColor" />
+                      </button>
+                    </Tooltip>
                   </div>
                 </div>
               ))}
@@ -684,14 +773,22 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
     username: "",
     password: "",
     remoteDir: "ophel",
+    provider: "custom",
   })
 
   // 初始化表单
   useEffect(() => {
     if (settings?.webdav) {
+      const webdav = settings.webdav
+      const resolvedProvider: WebDAVProvider = isValidWebDAVProvider(webdav.provider)
+        ? webdav.provider
+        : webdav.url
+          ? detectProviderFromUrl(webdav.url)
+          : "custom"
       setWebdavForm((prev) => ({
         ...prev,
-        ...settings.webdav,
+        ...webdav,
+        provider: resolvedProvider,
       }))
     }
   }, [settings?.webdav])
@@ -870,7 +967,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
             <div>{t("importConfirm") || "确定导入？"}</div>
             <div
               style={{
-                border: "1px solid var(--gh-border, #e5e7eb)",
+                border: "1px solid color-mix(in srgb, var(--gh-primary, #4285f4) 15%, transparent)",
                 background: "var(--gh-hover, #f8fafc)",
                 borderRadius: "8px",
                 padding: "10px 12px",
@@ -1047,7 +1144,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
             </div>
             <div
               style={{
-                border: "1px solid var(--gh-border, #e5e7eb)",
+                border: "1px solid color-mix(in srgb, var(--gh-primary, #4285f4) 15%, transparent)",
                 background: "var(--gh-hover, #f8fafc)",
                 borderRadius: "8px",
                 padding: "10px 12px",
@@ -1286,6 +1383,19 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
     })
   }
 
+  const isWebDAVUnsaved = (() => {
+    const base = settings.webdav ?? DEFAULT_SETTINGS.webdav
+    const normalizedBaseProvider =
+      base.provider ?? (base.url ? detectProviderFromUrl(base.url) : "custom")
+    return (
+      webdavForm.url !== base.url ||
+      webdavForm.username !== base.username ||
+      webdavForm.password !== base.password ||
+      webdavForm.remoteDir !== base.remoteDir ||
+      webdavForm.provider !== normalizedBaseProvider
+    )
+  })()
+
   return (
     <div className="settings-content">
       <PageTitle title={t("navBackup") || "备份与同步"} Icon={CloudIcon} />
@@ -1495,7 +1605,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
                 padding: "10px 12px",
                 borderRadius: "8px",
                 background: "var(--gh-bg-secondary)",
-                border: "1px solid var(--gh-border, #e5e7eb)",
+                border: "1px solid color-mix(in srgb, var(--gh-primary, #4285f4) 15%, transparent)",
               }}>
               {isGeminiPage
                 ? t("voyagerImportGeminiHint") ||
@@ -1512,7 +1622,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
                 padding: "10px 12px",
                 borderRadius: "8px",
                 background: "var(--gh-bg-secondary)",
-                border: "1px solid var(--gh-border, #e5e7eb)",
+                border: "1px solid color-mix(in srgb, var(--gh-primary, #4285f4) 15%, transparent)",
               }}>
               {t("voyagerImportMergeNotice") ||
                 "为避免覆盖现有整理结果，已在其他 Ophel 文件夹中的会话会保留原位；仅收件箱和已导入的 Voyager 文件夹会被重新归类。"}
@@ -1526,7 +1636,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
                 padding: "10px 12px",
                 borderRadius: "8px",
                 background: "var(--gh-bg-secondary)",
-                border: "1px solid var(--gh-border, #e5e7eb)",
+                border: "1px solid color-mix(in srgb, var(--gh-primary, #4285f4) 15%, transparent)",
               }}>
               {t("voyagerImportFlattenNotice") || "层级文件夹会压平成路径名称，例如“父级 / 子级”。"}
             </div>
@@ -1599,29 +1709,114 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
         {/* 提示信息 */}
         <div
           style={{
-            background: "var(--gh-primary-light-bg, rgba(66, 133, 244, 0.05))",
-            border: "1px solid var(--gh-primary-border, rgba(66, 133, 244, 0.2))",
+            background: "var(--gh-bg-secondary, #f8f9fa)",
+            border: "1px solid var(--gh-border, #e0e0e0)",
             borderRadius: "8px",
             padding: "12px",
             marginBottom: "20px",
             fontSize: "13px",
-            color: "var(--gh-primary, #4285f4)",
+            color: "var(--gh-text-secondary)",
           }}>
-          <div style={{ fontWeight: 600, marginBottom: "4px" }}>
-            ℹ️ {t("restoreTip") || "恢复提示"}
+          <div
+            style={{
+              fontWeight: 600,
+              marginBottom: "4px",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              color: "var(--gh-text)",
+            }}>
+            <InfoIcon size={14} color="var(--gh-primary, #4285f4)" />{" "}
+            {t("restoreTip") || "恢复提示"}
           </div>
-          <div style={{ lineHeight: 1.5, opacity: 0.9 }}>{t("restoreTipContent")}</div>
+          <div style={{ lineHeight: 1.5 }}>{t("restoreTipContent")}</div>
         </div>
 
+        <SettingRow label={t("webdavProvider") || "服务商"}>
+          <select
+            className="settings-input settings-select"
+            value={webdavForm.provider || "custom"}
+            onChange={(e) => {
+              const provider = e.target.value as WebDAVProvider
+              const preset = WEBDAV_PROVIDER_PRESETS.find((p) => p.id === provider)
+              setWebdavForm((prev) => ({
+                ...prev,
+                provider,
+                // 有固定 URL 的服务商自动预填（可编辑）
+                ...(preset?.urlTemplate ? { url: preset.urlTemplate } : {}),
+              }))
+            }}
+            style={{ width: "280px" }}>
+            {WEBDAV_PROVIDER_PRESETS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {t(p.labelKey) || p.id}
+              </option>
+            ))}
+          </select>
+        </SettingRow>
+
+        {/* 服务商专属提示 */}
+        {(() => {
+          const preset = WEBDAV_PROVIDER_PRESETS.find(
+            (p) => p.id === (webdavForm.provider || "custom"),
+          )
+          if (!preset?.hintKey) return null
+          return (
+            <div
+              style={{
+                background: "var(--gh-primary-light-bg, rgba(66, 133, 244, 0.05))",
+                border: "1px solid var(--gh-primary-border, rgba(66, 133, 244, 0.2))",
+                borderRadius: "8px",
+                padding: "10px 12px",
+                marginBottom: "4px",
+                fontSize: "12px",
+                color: "var(--gh-text-secondary)",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "8px",
+              }}>
+              <InfoIcon
+                size={14}
+                color="var(--gh-primary, #4285f4)"
+                style={{ flexShrink: 0, marginTop: "1px" }}
+              />
+              <div>
+                {t(preset.hintKey)}
+                {preset.helpUrl && (
+                  <a
+                    href={preset.helpUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    style={{
+                      marginLeft: "6px",
+                      color: "var(--gh-primary, #4285f4)",
+                      textDecoration: "underline",
+                    }}>
+                    {t("learnMore") || "了解更多"}
+                  </a>
+                )}
+              </div>
+            </div>
+          )
+        })()}
+
         <SettingRow label={t("webdavAddress") || "服务器地址"}>
-          <input
-            type="text"
-            className="settings-input"
-            placeholder="https://dav.example.com/dav/"
-            value={webdavForm.url}
-            onChange={(e) => setWebdavForm({ ...webdavForm, url: e.target.value })}
-            style={{ width: "280px" }}
-          />
+          {(() => {
+            const preset = WEBDAV_PROVIDER_PRESETS.find(
+              (p) => p.id === (webdavForm.provider || "custom"),
+            )
+            const placeholder = preset?.urlPlaceholder || "https://dav.example.com/dav/"
+            return (
+              <input
+                type="text"
+                className="settings-input"
+                placeholder={placeholder}
+                value={webdavForm.url}
+                onChange={(e) => setWebdavForm({ ...webdavForm, url: e.target.value })}
+                style={{ width: "280px" }}
+              />
+            )
+          })()}
         </SettingRow>
 
         <SettingRow label={t("username") || "用户名"}>
@@ -1635,16 +1830,29 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
         </SettingRow>
 
         <SettingRow label={t("password") || "密码"}>
-          <input
-            type="password"
-            className="settings-input"
-            value={webdavForm.password}
-            onChange={(e) => setWebdavForm({ ...webdavForm, password: e.target.value })}
-            style={{ width: "280px" }}
-          />
+          {(() => {
+            const preset = WEBDAV_PROVIDER_PRESETS.find(
+              (p) => p.id === (webdavForm.provider || "custom"),
+            )
+            const pwdPlaceholder = preset?.passwordPlaceholderKey
+              ? t(preset.passwordPlaceholderKey) || ""
+              : t("webdavPasswordPlaceholder") || "应用专用密码"
+            return (
+              <input
+                type="password"
+                className="settings-input"
+                placeholder={pwdPlaceholder}
+                value={webdavForm.password}
+                onChange={(e) => setWebdavForm({ ...webdavForm, password: e.target.value })}
+                style={{ width: "280px" }}
+              />
+            )
+          })()}
         </SettingRow>
 
-        <SettingRow label={t("defaultDir") || "默认目录"}>
+        <SettingRow
+          label={t("defaultDir") || "默认目录"}
+          description={t("defaultDirHint") || "默认: ophel"}>
           <input
             type="text"
             className="settings-input"
@@ -1655,50 +1863,68 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId, onNavigate: _onNavigate
           />
         </SettingRow>
 
+        {/* 操作按钮行：左=配置操作，右=数据同步 */}
         <div
           style={{
             marginTop: "16px",
-            paddingTop: "16px",
-            borderTop: "1px solid var(--gh-border)",
             display: "flex",
-            gap: "12px",
-            flexWrap: "wrap",
+            justifyContent: "space-between",
             alignItems: "center",
+            gap: "8px",
           }}>
-          <button
-            className="settings-btn settings-btn-primary"
-            onClick={handleSaveConfig}
-            style={{ padding: "6px 20px" }}>
-            💾 {t("saveConfig") || "保存配置"}
-          </button>
-          <div
-            style={{
-              width: "1px",
-              height: "20px",
-              background: "var(--gh-border)",
-              margin: "0 8px",
-            }}></div>
-          <button className="settings-btn settings-btn-secondary" onClick={testWebDAVConnection}>
-            🔗 {t("webdavTestBtn") || "测试连接"}
-          </button>
-          <button
-            className="settings-btn settings-btn-secondary"
-            onClick={async () => {
-              await checkAndRequestWebDAVPermission(async () => {
-                // 临时应用配置
-                const manager = getWebDAVSyncManager()
-                await manager.setConfig(webdavForm, false)
-                setShowRemoteBackups(true)
-              })
-            }}>
-            📂 {t("restore") || "恢复/下载"}
-          </button>
-          <button
-            className="settings-btn settings-btn-success"
-            onClick={uploadToWebDAV}
-            style={{ marginLeft: "auto" }}>
-            ☁️ {t("backupNow") || "立即上传备份"}
-          </button>
+          {/* 左侧：测试连接 + 保存配置 */}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button
+              className="settings-btn settings-btn-secondary"
+              onClick={testWebDAVConnection}
+              style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 16px" }}>
+              <LinkIcon size={16} /> {t("webdavTestBtn") || "测试连接"}
+            </button>
+            <div style={{ position: "relative" }}>
+              <button
+                className={`settings-btn ${isWebDAVUnsaved ? "settings-btn-primary" : "settings-btn-secondary"}`}
+                onClick={handleSaveConfig}
+                style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 16px" }}>
+                <SaveIcon size={16} /> {t("saveConfig") || "保存配置"}
+              </button>
+              {isWebDAVUnsaved && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "-4px",
+                    right: "-4px",
+                    width: "8px",
+                    height: "8px",
+                    backgroundColor: "var(--gh-warning, #f59e0b)",
+                    borderRadius: "50%",
+                    boxShadow: "0 0 0 2px var(--gh-bg, #ffffff)",
+                  }}
+                />
+              )}
+            </div>
+          </div>
+          {/* 右侧：恢复 + 立即备份 */}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button
+              className="settings-btn settings-btn-secondary"
+              style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 16px" }}
+              onClick={async () => {
+                await checkAndRequestWebDAVPermission(async () => {
+                  // 临时应用配置
+                  const manager = getWebDAVSyncManager()
+                  await manager.setConfig(webdavForm, false)
+                  setShowRemoteBackups(true)
+                })
+              }}>
+              <FileRestoreIcon size={16} color="currentColor" /> {t("restore") || "恢复"}
+            </button>
+            <button
+              className={`settings-btn ${!isWebDAVUnsaved ? "settings-btn-primary" : "settings-btn-secondary"}`}
+              style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 16px" }}
+              onClick={uploadToWebDAV}>
+              <CloudUploadIcon size={16} color="currentColor" /> {t("backupNow") || "立即备份"}
+            </button>
+          </div>
         </div>
       </SettingCard>
 
