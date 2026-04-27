@@ -535,7 +535,7 @@ export const DEFAULT_SETTINGS: Settings = {
   readingHistory: {
     persistence: true,
     autoRestore: true,
-    cleanupDays: 30,
+    cleanupDays: 3,
   },
 
   quickButtons: {
@@ -575,8 +575,8 @@ export const DEFAULT_SETTINGS: Settings = {
   },
 
   chatgpt: {
-    // 默认开启
-    markdownFix: true,
+    // 默认关闭
+    markdownFix: false,
   },
 }
 

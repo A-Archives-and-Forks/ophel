@@ -598,7 +598,8 @@ export const ru = {
   outlineFollowLatestDesc: "Скроллить вниз вместе с ИИ",
   outlineFollowManualDesc: "Без авто-скролла",
   outlineShowWordCountLabel: "Показать количество слов",
-  outlineShowWordCountDesc: "Отображать количество слов для каждого раздела в оглавлении",
+  outlineShowWordCountDesc:
+    "Отображать количество слов для каждого раздела в оглавлении. Может снижать производительность расширения в длинных диалогах.",
   words: "слов",
   // Page Display Settings
   pageDisplaySettings: "Отображение",
@@ -1041,6 +1042,8 @@ export const ru = {
   zenModeEnabledToast: "Дзен-режим включен",
   zenModeDisabledToast: "Дзен-режим выключен",
   browserNotSupported: "Браузер не потянет",
+  firefoxShortcutsGuide:
+    "Введите about:addons в адресную строку → нажмите на шестерёнку → Управление горячими клавишами расширений",
   inputFocused: "Пишите сейчас",
   generationStopped: "Стоп",
   notGenerating: "ИИ молчит",

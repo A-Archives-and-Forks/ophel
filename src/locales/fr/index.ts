@@ -601,7 +601,8 @@ export const fr = {
   outlineFollowLatestDesc: "Descendre avec les nouveaux messages",
   outlineFollowManualDesc: "Sans auto-descente, vous décidez",
   outlineShowWordCountLabel: "Afficher le nombre de mots",
-  outlineShowWordCountDesc: "Afficher le nombre de mots pour chaque section dans le sommaire",
+  outlineShowWordCountDesc:
+    "Afficher le nombre de mots pour chaque section dans le sommaire. Peut affecter les performances de l'extension dans les longues conversations.",
   words: "mots",
   // Page Display Settings
   pageDisplaySettings: "Affichage",
@@ -1046,6 +1047,8 @@ Donnez le code puis un résumé des améliorations.`,
   zenModeEnabledToast: "Mode Zen activé",
   zenModeDisabledToast: "Mode Zen désactivé",
   browserNotSupported: "Navigateur incompatible",
+  firefoxShortcutsGuide:
+    "Tapez about:addons dans la barre d'adresse → cliquez sur la roue dentée → Gérer les raccourcis d'extensions",
   inputFocused: "Saisie prête",
   generationStopped: "Arrêté",
   notGenerating: "IA muette",

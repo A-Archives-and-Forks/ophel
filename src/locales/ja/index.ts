@@ -618,7 +618,8 @@ export const ja = {
   outlineFollowLatestDesc: "新しいメッセージが来たら自動スクロールします",
   outlineFollowManualDesc: "自動スクロールせず、手動で操作します",
   outlineShowWordCountLabel: "文字数を表示",
-  outlineShowWordCountDesc: "ツールチップで各セクションの文字数を表示します",
+  outlineShowWordCountDesc:
+    "ツールチップで各セクションの文字数を表示します。長い会話では拡張機能のパフォーマンスに影響する場合があります。",
   words: "文字",
   // Page Display Settings
   pageDisplaySettings: "表示設定",
@@ -1087,6 +1088,8 @@ export const ja = {
   zenModeEnabledToast: "禅モードを有効化しました",
   zenModeDisabledToast: "禅モードを無効化しました",
   browserNotSupported: "このブラウザでは拡張機能のショートカット設定をサポートしていません",
+  firefoxShortcutsGuide:
+    "アドレスバーに about:addons と入力 → 歯車アイコンをクリック → 拡張機能のショートカットを管理",
   inputFocused: "入力欄へフォーカスしました",
   generationStopped: "生成を停止しました",
   notGenerating: "現在生成を行っていません",

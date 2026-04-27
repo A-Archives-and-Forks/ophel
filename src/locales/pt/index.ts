@@ -601,7 +601,8 @@ export const pt = {
   outlineFollowLatestDesc: "Rolar apenas com mensagens novas",
   outlineFollowManualDesc: "Sem auto-rolagem, você decide",
   outlineShowWordCountLabel: "Mostrar Contagem de Palavras",
-  outlineShowWordCountDesc: "Exibir contagem de palavras para cada seção no esboço",
+  outlineShowWordCountDesc:
+    "Exibir contagem de palavras para cada seção no esboço. Pode afetar o desempenho da extensão em conversas longas.",
   words: "palavras",
   // Page Display Settings
   pageDisplaySettings: "Exibição",
@@ -1174,6 +1175,8 @@ Dê o código e depois um resumo de melhorias.`,
   zenModeEnabledToast: "Modo Zen ativado",
   zenModeDisabledToast: "Modo Zen desativado",
   browserNotSupported: "Navegador incompatível",
+  firefoxShortcutsGuide:
+    "Digite about:addons na barra de endereços → clique no ícone de engrenagem → Gerenciar atalhos de extensões",
   inputFocused: "Já pode escrever",
   generationStopped: "Parado",
   notGenerating: "Não está falando",

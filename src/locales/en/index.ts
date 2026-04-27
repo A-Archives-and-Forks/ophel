@@ -638,7 +638,8 @@ export const en = {
   outlineFollowLatestDesc: "Auto-scroll to latest message",
   outlineFollowManualDesc: "No auto-scroll, user controls manually",
   outlineShowWordCountLabel: "Show Word Count",
-  outlineShowWordCountDesc: "Display word count for each section in outline tooltip",
+  outlineShowWordCountDesc:
+    "Display word count for each section in outline tooltip. May affect extension performance in long conversations.",
   words: "words",
   // Page Display Settings
   pageDisplaySettings: "Page Display",
@@ -1111,6 +1112,8 @@ Please output the optimized code block directly, followed by a brief summary of 
   zenModeEnabledToast: "Zen Mode enabled",
   zenModeDisabledToast: "Zen Mode disabled",
   browserNotSupported: "This browser does not support custom extension shortcuts",
+  firefoxShortcutsGuide:
+    "Type about:addons in the address bar → click the gear icon → Manage Extension Shortcuts",
   inputFocused: "Input focused",
   cleanup: "Clear Invalid Bookmarks",
   generationStopped: "Generation stopped",

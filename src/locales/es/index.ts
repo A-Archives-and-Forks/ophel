@@ -601,7 +601,8 @@ export const es = {
   outlineFollowLatestDesc: "Bajar solo con mensajes nuevos",
   outlineFollowManualDesc: "Sin auto-bajada, tú mandas",
   outlineShowWordCountLabel: "Mostrar recuento",
-  outlineShowWordCountDesc: "Mostrar número de palabras por sección en el tooltip",
+  outlineShowWordCountDesc:
+    "Mostrar número de palabras por sección en el tooltip. Puede afectar el rendimiento de la extensión en conversaciones largas.",
   words: "palabras",
   // Page Display Settings
   pageDisplaySettings: "Visualización",
@@ -1044,6 +1045,8 @@ Dame el código y luego un resumen de mejoras.`,
   zenModeEnabledToast: "Modo Zen activado",
   zenModeDisabledToast: "Modo Zen desactivado",
   browserNotSupported: "Navegador no compatible",
+  firefoxShortcutsGuide:
+    "Escribe about:addons en la barra de direcciones → haz clic en el engranaje → Gestionar accesos directos",
   inputFocused: "Escribiendo ya",
   generationStopped: "Parado",
   notGenerating: "No está hablando",

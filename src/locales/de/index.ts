@@ -601,7 +601,8 @@ export const de = {
   outlineFollowLatestDesc: "Nur bei neuen Nachrichten scrollen",
   outlineFollowManualDesc: "Kein Auto-Scroll, Sie steuern",
   outlineShowWordCountLabel: "Wortzahl anzeigen",
-  outlineShowWordCountDesc: "Wortzahl für jeden Abschnitt im Verzeichnis-Tooltip anzeigen",
+  outlineShowWordCountDesc:
+    "Wortzahl für jeden Abschnitt im Verzeichnis-Tooltip anzeigen. Bei langen Gesprächen kann dies die Erweiterungsleistung beeinträchtigen.",
   words: "Wörter",
   // Page Display Settings
   pageDisplaySettings: "Anzeige",
@@ -1046,6 +1047,8 @@ Gib den Code und eine Zusammenfassung der Verbesserungen aus.`,
   zenModeEnabledToast: "Zen-Modus aktiviert",
   zenModeDisabledToast: "Zen-Modus deaktiviert",
   browserNotSupported: "Browser inkompatibel",
+  firefoxShortcutsGuide:
+    "Gib about:addons in die Adressleiste ein → Zahnrad-Symbol klicken → Erweiterungskurzbefehle verwalten",
   inputFocused: "Bereit zum Tippen",
   generationStopped: "Gestoppt",
   notGenerating: "KI schweigt",

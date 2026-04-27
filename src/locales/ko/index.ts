@@ -601,7 +601,8 @@ export const ko = {
   outlineFollowLatestDesc: "최신 메시지로 자동 스크롤",
   outlineFollowManualDesc: "자동 스크롤 없음, 사용자가 수동으로 제어",
   outlineShowWordCountLabel: "단어 수 표시",
-  outlineShowWordCountDesc: "개요 툴팁에 각 섹션의 단어 수를 표시합니다",
+  outlineShowWordCountDesc:
+    "개요 툴팁에 각 섹션의 단어 수를 표시합니다. 긴 대화에서는 확장 프로그램 성능에 영향을 줄 수 있습니다.",
   words: "단어",
   // Page Display Settings
   pageDisplaySettings: "페이지 표시",
@@ -1045,6 +1046,8 @@ export const ko = {
   zenModeEnabledToast: "선 모드를 켰습니다",
   zenModeDisabledToast: "선 모드를 껐습니다",
   browserNotSupported: "이 브라우저는 사용자 정의 확장 프로그램 단축키를 지원하지 않습니다",
+  firefoxShortcutsGuide:
+    "주소창에 about:addons 입력 → 톱니바퀴 아이콘 클릭 → 확장 프로그램 단축키 관리",
   inputFocused: "입력창이 포커스되었습니다",
   generationStopped: "생성이 중지되었습니다",
   notGenerating: "현재 생성 중이 아닙니다",
