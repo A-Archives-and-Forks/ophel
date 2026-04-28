@@ -73,7 +73,8 @@
   <a href="#-功能演示">功能演示</a> •
   <a href="#-核心功能">核心功能</a> •
   <a href="#-快速開始">快速開始</a> •
-  <a href="#-支持項目">支持項目</a>
+  <a href="#-支持-ophel-atlas">支持 Ophel Atlas</a> •
+  <a href="#-參與共建">參與共建</a>
 </p>
 
 <p align="center">
@@ -106,20 +107,17 @@
 - 🎭 **Claude 增強** — Session Key 管理、多賬號切換
 - 🔒 **隱私優先** — 本地存儲、WebDAV 同步、無數據收集
 
-<details>
-<summary>隱私與資料（展開說明）</summary>
-
-**Ophel Atlas** 以隱私優先為原則：預設本地儲存，你的資料由你掌控。
-
-- **預設本地儲存：** 設定、Prompt、會話管理資料等預設保存在瀏覽器本地
-- **無需註冊帳號：** 不需要建立任何帳號即可使用
-- **按需授權：** 可選權限在需要時再授權，並可隨時撤銷（見擴充功能 Permissions 頁）
-- **可選 WebDAV 同步：** 如需多裝置一致，可使用你自己的 WebDAV 服務同步（可控、可遷移）
-- **可匯出備份：** 支援匯出與遷移，避免被平台綁定
-
-</details>
-
-> 提示：擴充功能對特定 AI 站點的支援取決於站點匹配與頁面結構變化
+> [!IMPORTANT]
+>
+> **Ophel Atlas** 以隱私優先為原則：預設本地儲存，你的資料由你掌控。
+>
+> - **預設本地儲存：** 設定、Prompt、會話管理資料等預設保存在瀏覽器本地
+> - **無需註冊帳號：** 不需要建立任何帳號即可使用
+> - **按需授權：** 可選權限在需要時再授權，並可隨時撤銷（見擴充功能 Permissions 頁）
+> - **可選 WebDAV 同步：** 如需多裝置一致，可使用你自己的 WebDAV 服務同步（可控、可遷移）
+> - **可匯出備份：** 支援匯出與遷移，避免被平台綁定
+>
+> _提示：擴充功能對特定 AI 站點的支援取決於站點匹配與頁面結構變化_
 
 ## 🚀 快速開始
 
@@ -127,13 +125,13 @@
 >
 > **推薦使用瀏覽器擴展（Extension）版本**，功能更全、體驗更佳、兼容性更好，油猴腳本版本功能受限。
 
-### 應用商店
-
 <a href="https://chromewebstore.google.com/detail/ophel-ai-%E5%AF%B9%E8%AF%9D%E5%A2%9E%E5%BC%BA%E5%B7%A5%E5%85%B7/lpcohdfbomkgepfladogodgeoppclakd"><img src="https://img.shields.io/chrome-web-store/users/lpcohdfbomkgepfladogodgeoppclakd?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store&color=4285F4&labelColor=4285F4" alt="Chrome Web Store"></a>
 <a href="https://addons.mozilla.org/zh-CN/firefox/addon/ophel-ai-chat-enhancer/"><img src="https://img.shields.io/amo/users/ophel-ai-chat-enhancer?logo=firefox&logoColor=white&label=Firefox%20Add-ons&color=FF7139&labelColor=FF7139" alt="Firefox Add-ons"></a>
 <a href="https://greasyfork.org/zh-CN/scripts/563646-ophel-ai-chat-page-enhancer"><img src="https://img.shields.io/greasyfork/dt/563646?logo=tampermonkey&logoColor=white&label=Greasy%20Fork&color=black&labelColor=black" alt="Greasy Fork"></a>
 
-### 手動安裝
+<details>
+<summary><strong>手動安裝 (適用於無法訪問商店或離線環境)</strong></summary>
+
 
 #### 瀏覽器擴展
 
@@ -147,48 +145,10 @@
 2. 從 [Releases](https://github.com/urzeye/ophel/releases) 下載 `.user.js` 文件
 3. 拖入瀏覽器或點擊鏈接即可安裝
 
-### 本地構建
-
-<details>
-<summary>展開查看構建步驟</summary>
-
-**環境要求**：Node.js >= 18.x, pnpm >= 9.x
-
-```bash
-git clone https://github.com/urzeye/ophel.git
-cd ophel
-
-pnpm install
-
-pnpm dev
-pnpm build
-pnpm build:firefox
-pnpm build:all
-
-pnpm build:userscript
-pnpm build:userscript:local
-pnpm serve:userscript:assets
-
-pnpm package
-pnpm package:firefox
-pnpm package:all
-```
 
 </details>
 
-### 🐛 問題反饋
-
-如有問題或建議，歡迎在 [GitHub Issues](https://github.com/urzeye/ophel/issues) 反饋。
-
-## 🙌 支持與致謝
-
-<p align="center">
-  <em>"一個人可以走得很快，但一群人可以走得更遠。"</em>
-</p>
-
-<p align="center">
-  感謝 <a href="https://linux.do/">Linux.do</a> 社群的交流與支持，專案的許多想法與改進都來自社群成員的回饋。
-</p>
+## 🙌 支持 Ophel Atlas
 
 <!-- supporters:start -->
 
@@ -197,95 +157,51 @@ pnpm package:all
 ### 💖 天使支持特別鳴謝
 
 <p align="center">
-  <a href="https://github.com/treasuresure"><img src="https://github.com/treasuresure.png?size=160" width="96" height="96" alt="treasuresure" /></a>
-  <br />
-  <a href="https://github.com/treasuresure"><strong>treasuresure</strong></a>
+  <a href="https://github.com/treasuresure">
+    <img src="https://github.com/treasuresure.png?size=160" width="100px;" alt="treasuresure" /><br />
+    <sub><b>treasuresure</b></sub>
+  </a>
 </p>
 
-### 🤝 支持者
+### 🌟 支持者
 
-<table align="center" border="0" cellpadding="0" cellspacing="0">
+<table align="center">
+  <tbody>
   <tr>
-    <td align="center" width="110">
-      <img src="https://lh3.googleusercontent.com/a-/ALV-UjVwv0jFS2TRGiNOMB4xl4BXF5j1D5jRIlR6t-4xgaUSpNIsYWc=s96-w96-h96" width="72" height="72" alt="Hugh" />
-      <br />
-      <sub>Hugh</sub>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://lh3.googleusercontent.com/a-/ALV-UjVwv0jFS2TRGiNOMB4xl4BXF5j1D5jRIlR6t-4xgaUSpNIsYWc=s96-w96-h96" width="84px;" alt="Hugh" /><br />
+      <sub><b>Hugh</b></sub>
     </td>
-    <td align="center" width="110">
-      <a href="https://github.com/hugo1120"><img src="https://github.com/hugo1120.png?size=160" width="72" height="72" alt="hugo2233" /></a>
-      <br />
-      <sub><a href="https://github.com/hugo1120">hugo2233</a></sub>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=**%E5%8D%97%7Calipay%7C2026-04-04%7C%EF%BF%A550&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt="**南" /><br />
+      <sub><b>**南</b></sub>
     </td>
-    <td align="center" width="110">
-      <img src="https://api.dicebear.com/7.x/identicon/svg?seed=Lucky" width="72" height="72" alt="anonymous" />
-      <br />
-      <sub>anonymous</sub>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Lucky&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt="anonymous" /><br />
+      <sub><b>anonymous</b></sub>
     </td>
-    <td align="center" width="110">
-      <img src="https://ui-avatars.com/api/?name=%E7%8B%B7%E5%AE%A2%E8%A1%8C%E8%88%9F%F0%9F%8D%9C%E7%8B%82%EF%BC%9F&amp;background=random" width="72" height="72" alt="狷客行舟🍜狂？" />
-      <br />
-      <sub>狷客行舟🍜狂？</sub>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=%E7%8B%B7%E5%AE%A2%E8%A1%8C%E8%88%9F%F0%9F%8D%9C%E7%8B%82%EF%BC%9F%7Cwechat%7C2026-04-17%7C%EF%BF%A55&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt="狷客行舟🍜狂？" /><br />
+      <sub><b>狷客行舟🍜狂？</b></sub>
+    </td>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=**%E7%85%9C%7Calipay%7C2026-04-27%7C%EF%BF%A51.99&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt="**煜" /><br />
+      <sub><b>**煜</b></sub>
     </td>
   </tr>
+  </tbody>
 </table>
-
-### 🌟 貢獻者
-
-<table align="center" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="center" width="90">
-      <a href="https://github.com/urzeye"><img src="https://avatars.githubusercontent.com/u/20869204?s=64&amp;v=4" width="56" height="56" alt="urzeye" /></a>
-      <br />
-      <sub><a href="https://github.com/urzeye">urzeye</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/treasuresure"><img src="https://avatars.githubusercontent.com/u/50103468?s=64&amp;v=4" width="56" height="56" alt="treasuresure" /></a>
-      <br />
-      <sub><a href="https://github.com/treasuresure">treasuresure</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/joevalleyfield"><img src="https://avatars.githubusercontent.com/u/14796422?s=64&amp;v=4" width="56" height="56" alt="joevalleyfield" /></a>
-      <br />
-      <sub><a href="https://github.com/joevalleyfield">joevalleyfield</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/tjsky"><img src="https://avatars.githubusercontent.com/u/7272911?s=64&amp;v=4" width="56" height="56" alt="tjsky" /></a>
-      <br />
-      <sub><a href="https://github.com/tjsky">tjsky</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/lanvent"><img src="https://avatars.githubusercontent.com/u/26515464?s=64&amp;v=4" width="56" height="56" alt="lanvent" /></a>
-      <br />
-      <sub><a href="https://github.com/lanvent">lanvent</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/KanameMadoka520"><img src="https://avatars.githubusercontent.com/u/90090108?s=64&amp;v=4" width="56" height="56" alt="KanameMadoka520" /></a>
-      <br />
-      <sub><a href="https://github.com/KanameMadoka520">KanameMadoka520</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/Felix3322"><img src="https://avatars.githubusercontent.com/u/115849429?s=64&amp;v=4" width="56" height="56" alt="Felix3322" /></a>
-      <br />
-      <sub><a href="https://github.com/Felix3322">Felix3322</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/RyanLin-InfEvo"><img src="https://avatars.githubusercontent.com/u/121378653?s=64&amp;v=4" width="56" height="56" alt="RyanLin-InfEvo" /></a>
-      <br />
-      <sub><a href="https://github.com/RyanLin-InfEvo">RyanLin-InfEvo</a></sub>
-    </td>
-  </tr>
-</table>
-
----
 
 <!-- supporters:end -->
 
+---
+
 <p align="center">
-  如果 <strong>Ophel Atlas</strong> 提升了你的工作或學習效率，歡迎透過 <strong>Star</strong> 或 <strong>Sponsor</strong> 來支持我們。
+  <em>如果 <strong>Ophel Atlas</strong> 點亮了你的工作流，或為你節省了寶貴的時間，歡迎用一顆 <strong>Star</strong> 或 <strong>Sponsor</strong> 來為它續航。</em> ☕️
 </p>
 
 <p align="center">
-  <strong>傳播也是一種力量</strong>：也期待你將它分享到 <strong>Linux.do、X、小紅書、Bilibili</strong> 及更多平台。你的每一份回饋與分享，都在讓 Ophel 變得更好！
+  <strong>傳播也是一種力量：</strong>期待你將使用體驗分享至 <strong>Linux.do、X、小紅書、Bilibili</strong> 及更多平台。每一份回饋與口碑，都在幫助 Ophel 成長！
 </p>
 
 <p align="center">
@@ -294,26 +210,133 @@ pnpm package:all
   </a>
 </p>
 
-<table align="center">
-  <tr>
-    <td align="center"><strong>微信讚賞碼</strong></td>
-    <td align="center"><strong>支付寶</strong></td>
-    <td align="center"><strong>愛發電</strong></td>
-  </tr>
+
+<table align="center" border="0" cellpadding="16" cellspacing="0">
   <tr>
     <td align="center">
-      <img src="../media/support/wechat-pay.jpg" width="220" alt="微信讚賞碼" />
+      <img src="../media/support/wechat-pay.jpg" width="160" height="160" alt="微信贊賞碼" /><br />
+      <sub><b>微信贊賞碼</b></sub>
     </td>
     <td align="center">
-      <img src="../media/support/alipay.png" width="220" alt="支付寶讚賞碼" />
+      <img src="../media/support/alipay.png" width="160" height="160" alt="支付寶" /><br />
+      <sub><b>支付寶</b></sub>
     </td>
     <td align="center">
-      <img src="../media/support/afdian.png" width="220" alt="愛發電" />
+      <a href="https://www.ifdian.net/a/urzeye">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="https://afdian-connect.deno.dev/profile.svg?slug=urzeye&bg_color=%230d1117&text_color=%23dedbd7&border_color=%232e343d" />
+          <source media="(prefers-color-scheme: light)" srcset="https://afdian-connect.deno.dev/profile.svg?slug=urzeye" />
+          <img alt="urzeye Afdian Profile" src="https://afdian-connect.deno.dev/profile.svg?slug=urzeye" height="160" />
+        </picture>
+      </a><br />
+      <sub><b>愛發電</b></sub>
     </td>
   </tr>
+  </tbody>
 </table>
 
-⭐ Star History
+## 🤝 參與共建
+
+<p align="center">
+  <em>「一個人可以走得很快，但一群人可以走得更遠。」</em>
+</p>
+
+<p align="center">
+  感謝 <a href="https://linux.do/">Linux.do</a> 社區的交流與支持，項目的許多想法與改進都源自大家的熱烈討論。<br>
+  我們也期待有更多開發者參與進來。如果擔心對代碼庫不夠熟悉，不妨借助開發文檔或 AI 助手快速上手：
+</p>
+
+<p align="center">
+  <a href="https://urzeye.mintlify.app"><img src="https://img.shields.io/badge/官方文件-Mintlify-10B981?style=flat-square&logo=mintlify&logoColor=white" alt="官方文件" style="vertical-align: middle;"></a>
+  &nbsp;
+  <a href="https://deepwiki.com/urzeye/ophel"><img src="https://img.shields.io/badge/詢問_DeepWiki-555555?style=flat-square&logo=data%3Aimage/svg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNCAxNCI%2BPGltYWdlIHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCIgaHJlZj0iZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFDQUFBQUFnQ0FNQUFBQkVwSXJHQUFBQXNWQk1WRVZIY0V3bVdNWVp5MzhBa3QwZ3dab1NhRkliWXNzVW1yNGd3SmtCbE40V2JORTRhY29md1prQmo5azRhTWtCazk0V2dNMGJzSU00YU1rZXdKYzJaTU0zWjhjYnZJd1lwSHNld0pZQWZ0Z0JrdDBmdnBnQmt0MGN2NDRjdjV3ellja0FqdHNDazkwcGFzVWJvWHNnd0prZndwWWZ3Smc0YU1vY3Q0NHlYc3dBa2QwQmtOODRaOGNCa3R3ZHVaSWpjTzg1bE00aHdabzVhY29CbGVBNmE4OGl5YUFCbU9ROGI5UWh4WjBDbk9vaXphT1c0RE92QUFBQU1IUlNUbE1BS0NmVy9BZ1dBLzcvRGZ2TWM5ajdNVS9yajNYQmNSVy9KTWJlN2tVeGpJL2xVenp6NnRQUWtKK2pWbVcxb2V1bG1tc2xBQUFCeVVsRVFWUTR5MzJUaWE2aklCU0dVVkZjcWxpWHRscTczcm0zZDUwRVJOQysvNFBOUWV0b3B0TWVFMFBnQy85L0ZoQ2FCU0g5SHoySitPTmdQRGwyRG9sU1VXWS9QTDhvRVFSQ2ZQeEhwRmMzQWg1d0hvaUk2STA1TlhnakFPZ1FGM0puMURsbzRYTVBERGVzMDlVRTJkK1JFdmwzbGlqQmc0Q3JITm1yYmNNMnU5dTVud3NSY0FGZkZIRlk1c1o2MDdZdWEzR3FwUWlLRTZHOWNaSFpUaGJsWjRUMm1Mbk14ZGUzQVRBU01VajcybzBQYnMxZkFERGNMSHFBakVEdWdKM2xDK3p0TUdZVEFEY29MYUZ5SCswMkRQOStXUzRhaHJYRTRsYUFMRktjcTh2WmZzY05ZODMxMm14ZnIyN2JMSlpqbnNZaFNESUhtVXhMdTloOU4vZXArN3BhendvWlF3KzFOd2kzM2VwdTdjMnA4Um9vZXFDZEFITUdvT0pJcTNDVXdJTUVuaVJJYUhWZTNaVm5PMlZnc2gxTXN0RWtRVVhWVWMralhmazN6YmVteFM2K3BRbWxQdFVlQUxKOFZLajRKSHZBZWxCcUZGZFNTM2gxU1B6UUtyLythUmEwKzBjQ0lXdEpMYXVHNVUvZmJneUcwMXVpTnFRaHl6QThkZEtqMU92SzI4QXNaeU4zREtFNFg2QUVXclUxakp4OU43UkZwZFB4cEhVL3RNT1FHOVNqZlRwM1l6OEtnUlZLcGZ4ODhEcWhwc2VxNjA2aC8renhmaDZMSjhlRURLV2J4eDlYRUR3cXpQMVNWZ0FBQUFCSlJVNUVya0pnZ2c9PSIvPjwvc3ZnPg%3D%3D&logoColor=white" alt="詢問 DeepWiki" style="vertical-align: middle;"/></a>
+  &nbsp;
+  <a href="https://zread.ai/urzeye/ophel"><img src="https://img.shields.io/badge/詢問_Zread-_.svg?style=flat-square&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff" alt="詢問 Zread" style="vertical-align: middle;"/></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/urzeye/ophel/issues/new/choose"><img src="https://img.shields.io/badge/回饋問題-181717?style=flat-square&logo=github&logoColor=white" alt="Report Issue" style="vertical-align: middle;"/></a>
+  &nbsp;
+  <a href="https://github.com/urzeye/ophel/pulls"><img src="https://img.shields.io/badge/貢獻代碼-181717?style=flat-square&logo=github&logoColor=white" alt="Submit PR" style="vertical-align: middle;"/></a>
+</p>
+
+<details>
+<summary><strong>💻 本地開發建構指南</strong></summary>
+
+<br>
+
+**環境要求**: `Node.js >= 18.x`, `pnpm >= 9.x`
+
+```bash
+# 1. 複製倉庫並進入專案目錄
+git clone https://github.com/urzeye/ophel.git
+cd ophel
+
+# 2. 安裝依賴
+pnpm install
+
+# 3. 啟動開發伺服器 (支援瀏覽器擴充功能熱更新)
+pnpm dev
+
+# ======== 建構與打包 ========
+
+# 建構各瀏覽器的正式版本
+pnpm build              # 建構 Chrome 擴充功能
+pnpm build:firefox      # 建構 Firefox 擴充功能
+pnpm build:all          # 一鍵建構主流雙端擴充功能
+
+# 產生分發壓縮檔 (.zip)
+pnpm package            # 根據現有建構產物打包 Chrome
+pnpm package:firefox    # 根據現有建構產物打包 Firefox
+pnpm package:all        # 一鍵打包所有平台
+
+# ======== Tampermonkey 腳本開發 ========
+
+pnpm build:userscript:local    # 建構本地除錯用的腳本
+pnpm serve:userscript:assets   # 本地啟動伺服器提供圖示/樣式等靜態資源
+```
+
+</details>
+
+> [!TIP]
+> 💡 **提交規範**：發起 PR 前，建議先 Fork 倉庫並在新分支開發，同時確認代碼通過了 `pnpm lint:check` 和 `pnpm typecheck`。
+
+---
+
+🌌 *開源的璀璨，源於社群中每一顆閃耀的星。*
+
+誠摯致敬以下每一位同行者。因為你們的無私開源與智慧，這個專案才得以不斷破浪前行。
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/urzeye"><img src="https://avatars.githubusercontent.com/u/20869204?v=4&amp;s=80" width="80px;" alt="小 i 同学"/><br /><sub><b>小 i 同学</b></sub></a><br /><span title="Code">💻</span> <span title="Ideas, Planning, & Feedback">🤔</span> <span title="Infrastructure (Hosting, Build-Tools, etc)">🚇</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/treasuresure"><img src="https://avatars.githubusercontent.com/u/50103468?v=4&amp;s=80" width="80px;" alt="treasuresure"/><br /><sub><b>treasuresure</b></sub></a><br /><span title="Design">🎨</span> <span title="Financial">💵</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://www.tjsky.net/"><img src="https://avatars.githubusercontent.com/u/7272911?v=4&amp;s=80" width="80px;" alt="去年夏天"/><br /><sub><b>去年夏天</b></sub></a><br /><span title="Code">💻</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/lanvent"><img src="https://avatars.githubusercontent.com/u/26515464?v=4&amp;s=80" width="80px;" alt="Jianglang"/><br /><sub><b>Jianglang</b></sub></a><br /><span title="Code">💻</span> <span title="Bug reports">🐛</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/Felix3322"><img src="https://avatars.githubusercontent.com/u/115849429?v=4&amp;s=80" width="80px;" alt="Felix Liu"/><br /><sub><b>Felix Liu</b></sub></a><br /><span title="Code">💻</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/KanameMadoka520"><img src="https://avatars.githubusercontent.com/u/90090108?v=4&amp;s=80" width="80px;" alt="Madoka"/><br /><sub><b>Madoka</b></sub></a><br /><span title="Code">💻</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/RyanLin-InfEvo"><img src="https://avatars.githubusercontent.com/u/121378653?v=4&amp;s=80" width="80px;" alt="Lin Zit Ting"/><br /><sub><b>Lin Zit Ting</b></sub></a><br /><span title="Code">💻</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/joevalleyfield"><img src="https://avatars.githubusercontent.com/u/14796422?v=4&amp;s=80" width="80px;" alt="joevalleyfield"/><br /><sub><b>joevalleyfield</b></sub></a><br /><span title="Code">💻</span></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/hugo1120"><img src="https://github.com/hugo1120.png?s=80" width="80px;" alt="hugo2233"/><br /><sub><b>hugo2233</b></sub></a><br /><span title="Promotion">📣</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+
+</table>
+
+## ⭐ Star History
 
 <div align="center">
 <a href="https://star-history.com/#urzeye/ophel&Date">

@@ -65,7 +65,8 @@
   <a href="#-demo">Demo</a> •
   <a href="#-recursos-principais">Recursos Principais</a> •
   <a href="#-início-rápido">Início Rápido</a> •
-  <a href="#-apoio-e-agradecimentos">Apoio e agradecimentos</a>
+  <a href="#-apoiar-o-ophel-atlas">Apoiar o Ophel Atlas</a> •
+  <a href="#-participar">Participar</a>
 </p>
 
 <p align="center">
@@ -98,20 +99,17 @@
 - 🎭 **Melhoria Claude** — Gestão de chave de sessão, troca multi-conta
 - 🔒 **Privacidade Primeiro** — Armazenamento local, sincronização WebDAV, sem coleta de dados
 
-<details>
-<summary>Privacidade e dados (expandir)</summary>
-
-**Ophel Atlas** prioriza a privacidade: por padrão é tudo local e seus dados ficam sob seu controle.
-
-- **Armazenamento local por padrão:** configurações, prompts e dados de gestão de conversas ficam no navegador
-- **Sem conta:** não é necessário registro
-- **Permissões sob demanda:** permissões opcionais só quando necessário, revogáveis (ver página Permissions na extensão)
-- **Sincronização WebDAV opcional:** use seu próprio WebDAV para múltiplos dispositivos (controlável, portátil)
-- **Exportar e fazer backup:** exportação e migração para evitar lock-in
-
-</details>
-
-> Nota: o suporte a sites de IA específicos depende do matching do site e de mudanças na estrutura da página.
+> [!IMPORTANT]
+>
+> **Ophel Atlas** prioriza a privacidade: por padrão é tudo local e seus dados ficam sob seu controle.
+>
+> - **Armazenamento local por padrão:** configurações, prompts e dados de gestão de conversas ficam no navegador
+> - **Sem conta:** não é necessário registro
+> - **Permissões sob demanda:** permissões opcionais só quando necessário, revogáveis (ver página Permissions na extensão)
+> - **Sincronização WebDAV opcional:** use seu próprio WebDAV para múltiplos dispositivos (controlável, portátil)
+> - **Exportar e fazer backup:** exportação e migração para evitar lock-in
+>
+> _Nota: o suporte a sites de IA específicos depende do matching do site e de mudanças na estrutura da página._
 
 ## 🚀 Início Rápido
 
@@ -125,7 +123,9 @@
 <a href="https://addons.mozilla.org/zh-CN/firefox/addon/ophel-ai-chat-enhancer/"><img src="https://img.shields.io/amo/users/ophel-ai-chat-enhancer?logo=firefox&logoColor=white&label=Firefox%20Add-ons&color=FF7139&labelColor=FF7139" alt="Firefox Add-ons"></a>
 <a href="https://greasyfork.org/zh-CN/scripts/563646-ophel-ai-chat-page-enhancer"><img src="https://img.shields.io/greasyfork/dt/563646?logo=tampermonkey&logoColor=white&label=Greasy%20Fork&color=black&labelColor=black" alt="Greasy Fork"></a>
 
-### Instalação Manual
+<details>
+<summary><strong>Instalação Manual (Ambiente offline ou acesso restrito à loja)</strong></summary>
+
 
 #### Extensão do Navegador
 
@@ -139,48 +139,10 @@
 2. Baixe o arquivo `.user.js` de [Releases](https://github.com/urzeye/ophel/releases)
 3. Arraste para o navegador ou clique no link para instalar
 
-### Build Local
-
-<details>
-<summary>Clique para expandir os passos de build</summary>
-
-**Requisitos**: Node.js >= 18.x, pnpm >= 9.x
-
-```bash
-git clone https://github.com/urzeye/ophel.git
-cd ophel
-
-pnpm install
-
-pnpm dev
-pnpm build
-pnpm build:firefox
-pnpm build:all
-
-pnpm build:userscript
-pnpm build:userscript:local
-pnpm serve:userscript:assets
-
-pnpm package
-pnpm package:firefox
-pnpm package:all
-```
 
 </details>
 
-### 🐛 Relatar Bug
-
-Para problemas ou sugestões, visite [GitHub Issues](https://github.com/urzeye/ophel/issues).
-
-## 🙌 Apoio e agradecimentos
-
-<p align="center">
-  <em>"If you want to go fast, go alone. If you want to go far, go together."</em>
-</p>
-
-<p align="center">
-  Agradecemos à comunidade <a href="https://linux.do/">Linux.do</a> pelas conversas e pelo apoio. Muitas ideias e melhorias do projeto vieram do feedback dos membros da comunidade.
-</p>
+## 🙌 Apoiar o Ophel Atlas
 
 <!-- supporters:start -->
 
@@ -189,95 +151,51 @@ Para problemas ou sugestões, visite [GitHub Issues](https://github.com/urzeye/o
 ### 💖 Agradecimento especial
 
 <p align="center">
-  <a href="https://github.com/treasuresure"><img src="https://github.com/treasuresure.png?size=160" width="96" height="96" alt="treasuresure" /></a>
-  <br />
-  <a href="https://github.com/treasuresure"><strong>treasuresure</strong></a>
+  <a href="https://github.com/treasuresure">
+    <img src="https://github.com/treasuresure.png?size=160" width="100px;" alt="treasuresure" /><br />
+    <sub><b>treasuresure</b></sub>
+  </a>
 </p>
 
-### 🤝 Apoiadores
+### 🌟 Apoiadores
 
-<table align="center" border="0" cellpadding="0" cellspacing="0">
+<table align="center">
+  <tbody>
   <tr>
-    <td align="center" width="110">
-      <img src="https://lh3.googleusercontent.com/a-/ALV-UjVwv0jFS2TRGiNOMB4xl4BXF5j1D5jRIlR6t-4xgaUSpNIsYWc=s96-w96-h96" width="72" height="72" alt="Hugh" />
-      <br />
-      <sub>Hugh</sub>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://lh3.googleusercontent.com/a-/ALV-UjVwv0jFS2TRGiNOMB4xl4BXF5j1D5jRIlR6t-4xgaUSpNIsYWc=s96-w96-h96" width="84px;" alt="Hugh" /><br />
+      <sub><b>Hugh</b></sub>
     </td>
-    <td align="center" width="110">
-      <a href="https://github.com/hugo1120"><img src="https://github.com/hugo1120.png?size=160" width="72" height="72" alt="hugo2233" /></a>
-      <br />
-      <sub><a href="https://github.com/hugo1120">hugo2233</a></sub>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=**%E5%8D%97%7Calipay%7C2026-04-04%7C%EF%BF%A550&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt="**南" /><br />
+      <sub><b>**南</b></sub>
     </td>
-    <td align="center" width="110">
-      <img src="https://api.dicebear.com/7.x/identicon/svg?seed=Lucky" width="72" height="72" alt="anonymous" />
-      <br />
-      <sub>anonymous</sub>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Lucky&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt="anonymous" /><br />
+      <sub><b>anonymous</b></sub>
     </td>
-    <td align="center" width="110">
-      <img src="https://ui-avatars.com/api/?name=%E7%8B%B7%E5%AE%A2%E8%A1%8C%E8%88%9F%F0%9F%8D%9C%E7%8B%82%EF%BC%9F&amp;background=random" width="72" height="72" alt="狷客行舟🍜狂？" />
-      <br />
-      <sub>狷客行舟🍜狂？</sub>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=%E7%8B%B7%E5%AE%A2%E8%A1%8C%E8%88%9F%F0%9F%8D%9C%E7%8B%82%EF%BC%9F%7Cwechat%7C2026-04-17%7C%EF%BF%A55&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt="狷客行舟🍜狂？" /><br />
+      <sub><b>狷客行舟🍜狂？</b></sub>
+    </td>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=**%E7%85%9C%7Calipay%7C2026-04-27%7C%EF%BF%A51.99&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt="**煜" /><br />
+      <sub><b>**煜</b></sub>
     </td>
   </tr>
+  </tbody>
 </table>
-
-### 🌟 Contribuidores
-
-<table align="center" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="center" width="90">
-      <a href="https://github.com/urzeye"><img src="https://avatars.githubusercontent.com/u/20869204?s=64&amp;v=4" width="56" height="56" alt="urzeye" /></a>
-      <br />
-      <sub><a href="https://github.com/urzeye">urzeye</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/treasuresure"><img src="https://avatars.githubusercontent.com/u/50103468?s=64&amp;v=4" width="56" height="56" alt="treasuresure" /></a>
-      <br />
-      <sub><a href="https://github.com/treasuresure">treasuresure</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/joevalleyfield"><img src="https://avatars.githubusercontent.com/u/14796422?s=64&amp;v=4" width="56" height="56" alt="joevalleyfield" /></a>
-      <br />
-      <sub><a href="https://github.com/joevalleyfield">joevalleyfield</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/tjsky"><img src="https://avatars.githubusercontent.com/u/7272911?s=64&amp;v=4" width="56" height="56" alt="tjsky" /></a>
-      <br />
-      <sub><a href="https://github.com/tjsky">tjsky</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/lanvent"><img src="https://avatars.githubusercontent.com/u/26515464?s=64&amp;v=4" width="56" height="56" alt="lanvent" /></a>
-      <br />
-      <sub><a href="https://github.com/lanvent">lanvent</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/KanameMadoka520"><img src="https://avatars.githubusercontent.com/u/90090108?s=64&amp;v=4" width="56" height="56" alt="KanameMadoka520" /></a>
-      <br />
-      <sub><a href="https://github.com/KanameMadoka520">KanameMadoka520</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/Felix3322"><img src="https://avatars.githubusercontent.com/u/115849429?s=64&amp;v=4" width="56" height="56" alt="Felix3322" /></a>
-      <br />
-      <sub><a href="https://github.com/Felix3322">Felix3322</a></sub>
-    </td>
-    <td align="center" width="90">
-      <a href="https://github.com/RyanLin-InfEvo"><img src="https://avatars.githubusercontent.com/u/121378653?s=64&amp;v=4" width="56" height="56" alt="RyanLin-InfEvo" /></a>
-      <br />
-      <sub><a href="https://github.com/RyanLin-InfEvo">RyanLin-InfEvo</a></sub>
-    </td>
-  </tr>
-</table>
-
----
 
 <!-- supporters:end -->
 
+---
+
 <p align="center">
-  Se <strong>Ophel Atlas</strong> aumentou a sua eficiência no trabalho ou nos estudos, apoie-nos com uma <strong>Star</strong> ou como <strong>Sponsor</strong>.
+  <em>Se o <strong>Ophel Atlas</strong> trouxe alegria ao seu fluxo de trabalho ou economizou seu tempo precioso, considere impulsionar sua jornada com uma <strong>Star</strong> ou um <strong>Sponsor</strong>.</em> ☕️
 </p>
 
 <p align="center">
-  <strong>Divulgar também é uma forma de apoiar</strong>: ficaremos felizes se você compartilhar no <strong>Linux.do, X, Xiaohongshu, Bilibili</strong> e em outras plataformas. Cada feedback e cada compartilhamento ajudam a tornar o Ophel ainda melhor!
+  <strong>Compartilhar é igualmente poderoso:</strong> Adoraríamos que você compartilhasse sua experiência no <strong>Linux.do, Reddit, X ou YouTube</strong>. Cada feedback e cada divulgação ajudam o Ophel a crescer!
 </p>
 
 <p align="center">
@@ -286,7 +204,112 @@ Para problemas ou sugestões, visite [GitHub Issues](https://github.com/urzeye/o
   </a>
 </p>
 
-⭐ Star History
+
+<table align="center" border="0" cellpadding="16" cellspacing="0">
+  <tr>
+    <td align="center">
+      <img src="../media/support/wechat-pay.jpg" width="160" height="160" alt="WeChat Pay" /><br />
+      <sub><b>WeChat Pay</b></sub>
+    </td>
+    <td align="center">
+      <img src="../media/support/alipay.png" width="160" height="160" alt="Alipay" /><br />
+      <sub><b>Alipay</b></sub>
+    </td>
+    <td align="center">
+      <a href="https://www.ifdian.net/a/urzeye">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="https://afdian-connect.deno.dev/profile.svg?slug=urzeye&bg_color=%230d1117&text_color=%23dedbd7&border_color=%232e343d" />
+          <source media="(prefers-color-scheme: light)" srcset="https://afdian-connect.deno.dev/profile.svg?slug=urzeye" />
+          <img alt="urzeye Afdian Profile" src="https://afdian-connect.deno.dev/profile.svg?slug=urzeye" height="160" />
+        </picture>
+      </a><br />
+      <sub><b>Afdian</b></sub>
+    </td>
+  </tr>
+</table>
+
+## 🤝 Participar
+
+<p align="center">
+  <em>"Quem quer ir rápido, vai sozinho. Quem quer ir longe, vai junto."</em>
+</p>
+
+<p align="center">
+  Agradecemos à comunidade <a href="https://linux.do/">Linux.do</a> pelas conversas e pelo apoio. Muitas ideias e melhorias do projeto vieram do feedback dos membros da comunidade.
+</p>
+
+Contribuições de qualquer forma são bem-vindas — código, relatos de bugs ou ideias. Novo no projeto? Explore o código com IA:
+
+<p align="center">
+  <a href="https://deepwiki.com/urzeye/ophel"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
+  &nbsp;
+  <a href="https://zread.ai/urzeye/ophel"><img src="https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff" alt="Ask Zread" /></a>
+</p>
+
+<table>
+  <tr>
+    <td width="33%" align="center">
+      <h3>🐛 Reportar um Bug</h3>
+      <p>Encontrou um bug? Tem uma sugestão?<br/>Nos diga no GitHub Issues</p>
+      <a href="https://github.com/urzeye/ophel/issues/new/choose">
+        <img src="https://img.shields.io/badge/New%20Issue-Submit-red?style=for-the-badge&logo=github" alt="New Issue" />
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <h3>🔀 Enviar um Pull Request</h3>
+      <p>Corrigiu um bug ou desenvolveu uma feature?<br/>Envie um PR e cresçamos juntos</p>
+      <a href="https://github.com/urzeye/ophel/pulls">
+        <img src="https://img.shields.io/badge/Submit%20PR-Contribute-blue?style=for-the-badge&logo=github" alt="Pull Requests" />
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <h3>🛠️ Desenvolvimento Local</h3>
+      <p>Clone o repositório e comece a desenvolver<br/>Requisitos: Node.js ≥ 18, pnpm ≥ 9</p>
+      <a href="https://github.com/urzeye/ophel/blob/main/docs/readmes/README_pt-BR.md#-in%C3%ADcio-r%C3%A1pido">
+        <img src="https://img.shields.io/badge/Local%20Build-Dev%20Guide-green?style=for-the-badge&logo=node.js" alt="Local Dev" />
+      </a>
+    </td>
+  </tr>
+</table>
+
+> [!TIP]
+> 💡 **Diretrizes de Contribuição**: Antes de enviar um PR, recomendamos fazer um fork do repositório, criar uma nova branch e certificar-se de que seu código passe em `pnpm lint:check` e `pnpm typecheck`.
+
+---
+
+🌌 *O código aberto é alimentado pelas estrelas de sua comunidade.*
+
+Nossa mais profunda gratidão às incríveis pessoas abaixo. Suas contribuições fazem este repositório brilhar mais.
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/urzeye"><img src="https://avatars.githubusercontent.com/u/20869204?v=4&amp;s=80" width="80px;" alt="小 i 同学"/><br /><sub><b>小 i 同学</b></sub></a><br /><span title="Code">💻</span> <span title="Ideas, Planning, & Feedback">🤔</span> <span title="Infrastructure (Hosting, Build-Tools, etc)">🚇</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/treasuresure"><img src="https://avatars.githubusercontent.com/u/50103468?v=4&amp;s=80" width="80px;" alt="treasuresure"/><br /><sub><b>treasuresure</b></sub></a><br /><span title="Design">🎨</span> <span title="Financial">💵</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://www.tjsky.net/"><img src="https://avatars.githubusercontent.com/u/7272911?v=4&amp;s=80" width="80px;" alt="去年夏天"/><br /><sub><b>去年夏天</b></sub></a><br /><span title="Code">💻</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/lanvent"><img src="https://avatars.githubusercontent.com/u/26515464?v=4&amp;s=80" width="80px;" alt="Jianglang"/><br /><sub><b>Jianglang</b></sub></a><br /><span title="Code">💻</span> <span title="Bug reports">🐛</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/Felix3322"><img src="https://avatars.githubusercontent.com/u/115849429?v=4&amp;s=80" width="80px;" alt="Felix Liu"/><br /><sub><b>Felix Liu</b></sub></a><br /><span title="Code">💻</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/KanameMadoka520"><img src="https://avatars.githubusercontent.com/u/90090108?v=4&amp;s=80" width="80px;" alt="Madoka"/><br /><sub><b>Madoka</b></sub></a><br /><span title="Code">💻</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/RyanLin-InfEvo"><img src="https://avatars.githubusercontent.com/u/121378653?v=4&amp;s=80" width="80px;" alt="Lin Zit Ting"/><br /><sub><b>Lin Zit Ting</b></sub></a><br /><span title="Code">💻</span></td>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/joevalleyfield"><img src="https://avatars.githubusercontent.com/u/14796422?v=4&amp;s=80" width="80px;" alt="joevalleyfield"/><br /><sub><b>joevalleyfield</b></sub></a><br /><span title="Code">💻</span></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="12.5%"><a href="https://github.com/hugo1120"><img src="https://github.com/hugo1120.png?s=80" width="80px;" alt="hugo2233"/><br /><sub><b>hugo2233</b></sub></a><br /><span title="Promotion">📣</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+<br>
+
+## ⭐ Star History
 
 <div align="center">
 <a href="https://star-history.com/#urzeye/ophel&Date">

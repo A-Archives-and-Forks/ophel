@@ -1,0 +1,90 @@
+{
+  "projectName": "ophel",
+  "projectOwner": "urzeye",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md",
+    "README_zh-CN.md",
+    "docs/readmes/README_de.md",
+    "docs/readmes/README_es.md",
+    "docs/readmes/README_fr.md",
+    "docs/readmes/README_ja.md",
+    "docs/readmes/README_ko.md",
+    "docs/readmes/README_pt-BR.md",
+    "docs/readmes/README_ru.md",
+    "docs/readmes/README_zh-TW.md"
+  ],
+  "_contributionTypesRef": "https://allcontributors.org/docs/en/emoji-key — common: code, bug, doc, design, ideas, review, test, infra, translation, tutorial, talk, video, blog, example, question, userTesting, plugin, tool, maintenance, mentoring, projectManagement, eventOrganizing, fundingFinding, data",
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "urzeye",
+      "name": "小 i 同学",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20869204?v=4",
+      "profile": "https://github.com/urzeye",
+      "contributions": ["code", "ideas", "infra"]
+    },
+    {
+      "login": "treasuresure",
+      "name": "treasuresure",
+      "avatar_url": "https://avatars.githubusercontent.com/u/50103468?v=4",
+      "profile": "https://github.com/treasuresure",
+      "contributions": ["design", "financial"]
+    },
+    {
+      "login": "tjsky",
+      "name": "去年夏天",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7272911?v=4",
+      "profile": "https://www.tjsky.net/",
+      "contributions": ["code"]
+    },
+    {
+      "login": "lanvent",
+      "name": "Jianglang",
+      "avatar_url": "https://avatars.githubusercontent.com/u/26515464?v=4",
+      "profile": "https://github.com/lanvent",
+      "contributions": ["code", "bug"]
+    },
+    {
+      "login": "Felix3322",
+      "name": "Felix Liu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/115849429?v=4",
+      "profile": "https://github.com/Felix3322",
+      "contributions": ["code"]
+    },
+    {
+      "login": "KanameMadoka520",
+      "name": "Madoka",
+      "avatar_url": "https://avatars.githubusercontent.com/u/90090108?v=4",
+      "profile": "https://github.com/KanameMadoka520",
+      "contributions": ["code"]
+    },
+    {
+      "login": "RyanLin-InfEvo",
+      "name": "Lin Zit Ting",
+      "avatar_url": "https://avatars.githubusercontent.com/u/121378653?v=4",
+      "profile": "https://github.com/RyanLin-InfEvo",
+      "contributions": ["code"]
+    },
+    {
+      "login": "joevalleyfield",
+      "name": "joevalleyfield",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14796422?v=4",
+      "profile": "https://github.com/joevalleyfield",
+      "contributions": ["code"]
+    },
+    {
+      "login": "hugo1120",
+      "name": "hugo2233",
+      "avatar_url": "https://github.com/hugo1120.png",
+      "profile": "https://github.com/hugo1120",
+      "contributions": ["promotion"]
+    }
+  ],
+  "contributorsPerLine": 8,
+  "imageSize": 80,
+  "linkToUsage": false,
+  "contributorTemplate": "<a href=\"<%- contributor.profile %>\"><img src=\"<%- contributor.avatar_url %><%- contributor.avatar_url.includes('?') ? '&' : '?' %>s=<%- options.imageSize %>\" width=\"<%- options.imageSize %>px;\" alt=\"<%- contributor.name %>\"/><br /><sub><b><%- contributor.name %></b></sub></a><br /><%= contributions.replace(/<a href=\\\"[^\\\"]*\\\"/g, '<span').replace(/<\\/a>/g, '</span>') %>"
+}
