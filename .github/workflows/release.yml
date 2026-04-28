@@ -105,13 +105,32 @@ jobs:
           # 创建临时目录并复制构建产物
           cp -r build/chrome-mv3-prod build/chrome-mv3-cws
 
-          # 从 manifest.json 中彻底删除 key 字段
+          # 清理 manifest.json：删除 key 字段，移除引用不存在文件的 web_accessible_resources 条目
           node -e "
             const fs = require('fs');
-            const manifestPath = 'build/chrome-mv3-cws/manifest.json';
+            const path = require('path');
+            const buildDir = 'build/chrome-mv3-cws';
+            const manifestPath = path.join(buildDir, 'manifest.json');
             const pkg = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-            if (pkg.key) { delete pkg.key; }
+
+            // 删除 key 字段
+            if (pkg.key) delete pkg.key;
+
+            // 过滤掉 web_accessible_resources 中指向不存在文件的条目
+            // Plasmo 多轮编译会在 manifest 中留下已合并进 JS bundle 的 CSS 残留引用
+            if (pkg.web_accessible_resources) {
+              pkg.web_accessible_resources = pkg.web_accessible_resources
+                .map(entry => ({
+                  ...entry,
+                  resources: entry.resources.filter(r =>
+                    r.includes('*') || r.startsWith('__') || fs.existsSync(path.join(buildDir, r))
+                  )
+                }))
+                .filter(entry => entry.resources.length > 0);
+            }
+
             fs.writeFileSync(manifestPath, JSON.stringify(pkg, null, 2));
+            console.log('Manifest cleaned successfully');
           "
 
           # 打包为 zip
