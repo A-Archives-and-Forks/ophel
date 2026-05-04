@@ -145,6 +145,8 @@ export interface QuickButtonsSettings {
     open: boolean
   }
   position?: QuickButtonsPosition
+  /** 面板展开时隐藏整个快捷按钮组（默认 false） */
+  hideWhenPanelOpen?: boolean
 }
 
 export interface Settings {
@@ -357,6 +359,7 @@ export const DEFAULT_QUICK_BUTTONS_SETTINGS: QuickButtonsSettings = {
   floatingToolbar: {
     open: true,
   },
+  hideWhenPanelOpen: false,
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -546,6 +549,7 @@ export const DEFAULT_SETTINGS: Settings = {
     floatingToolbar: {
       ...DEFAULT_QUICK_BUTTONS_SETTINGS.floatingToolbar,
     },
+    hideWhenPanelOpen: DEFAULT_QUICK_BUTTONS_SETTINGS.hideWhenPanelOpen,
   },
 
   claude: {
