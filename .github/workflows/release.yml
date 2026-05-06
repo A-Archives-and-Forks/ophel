@@ -106,32 +106,7 @@ jobs:
           cp -r build/chrome-mv3-prod build/chrome-mv3-cws
 
           # 清理 manifest.json：删除 key 字段，移除引用不存在文件的 web_accessible_resources 条目
-          node -e "
-            const fs = require('fs');
-            const path = require('path');
-            const buildDir = 'build/chrome-mv3-cws';
-            const manifestPath = path.join(buildDir, 'manifest.json');
-            const pkg = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-
-            // 删除 key 字段
-            if (pkg.key) delete pkg.key;
-
-            // 过滤掉 web_accessible_resources 中指向不存在文件的条目
-            // Plasmo 多轮编译会在 manifest 中留下已合并进 JS bundle 的 CSS 残留引用
-            if (pkg.web_accessible_resources) {
-              pkg.web_accessible_resources = pkg.web_accessible_resources
-                .map(entry => ({
-                  ...entry,
-                  resources: entry.resources.filter(r =>
-                    r.includes('*') || r.startsWith('__') || fs.existsSync(path.join(buildDir, r))
-                  )
-                }))
-                .filter(entry => entry.resources.length > 0);
-            }
-
-            fs.writeFileSync(manifestPath, JSON.stringify(pkg, null, 2));
-            console.log('Manifest cleaned successfully');
-          "
+          node scripts/strip-manifest-key.mjs build/chrome-mv3-cws
 
           # 打包为 zip
           cd build/chrome-mv3-cws
@@ -145,6 +120,9 @@ jobs:
 
           # 替换所有语言的 extensionName 为 Edge 商店合规的短标题（各语言独立翻译）
           node scripts/patch-edge-locales.mjs build/chrome-mv3-edge
+
+          # 清理 manifest.json：删除 key 字段（Edge Add-ons Store 不允许 key 字段）
+          node scripts/strip-manifest-key.mjs build/chrome-mv3-edge
 
           # 打包为 zip
           cd build/chrome-mv3-edge
