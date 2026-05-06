@@ -138,10 +138,23 @@ jobs:
           zip -r ../ophel-atlas-cws-upload.zip .
           cd ../..
 
+      - name: Package for Edge Add-ons Store
+        run: |
+          # 复制 Chrome 构建产物，单独处理 Edge 版本
+          cp -r build/chrome-mv3-prod build/chrome-mv3-edge
+
+          # 替换所有语言的 extensionName 为 Edge 商店合规的短标题（各语言独立翻译）
+          node scripts/patch-edge-locales.mjs build/chrome-mv3-edge
+
+          # 打包为 zip
+          cd build/chrome-mv3-edge
+          zip -r ../chrome-mv3-edge.zip .
+          cd ../..
+
       - name: Rename artifacts for release
         run: |
           cp build/chrome-mv3-prod.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-chrome.zip
-          cp build/chrome-mv3-prod.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-edge.zip
+          cp build/chrome-mv3-edge.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-edge.zip
           cp build/firefox-mv3-prod.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-firefox.zip
           cp build/userscript/ophel.user.js build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}.user.js
           cp build/ophel-atlas-cws-upload.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-cws-upload.zip
