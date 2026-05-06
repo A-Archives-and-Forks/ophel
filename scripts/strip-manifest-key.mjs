@@ -11,27 +11,27 @@
  * Usage: node scripts/strip-manifest-key.mjs <build-dir>
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "fs"
+import path from "path"
 
-const buildDir = process.argv[2];
+const buildDir = process.argv[2]
 if (!buildDir) {
-  console.error("[strip-manifest-key] Usage: node strip-manifest-key.mjs <build-dir>");
-  process.exit(1);
+  console.error("[strip-manifest-key] Usage: node strip-manifest-key.mjs <build-dir>")
+  process.exit(1)
 }
 
-const manifestPath = path.join(buildDir, "manifest.json");
+const manifestPath = path.join(buildDir, "manifest.json")
 if (!fs.existsSync(manifestPath)) {
-  console.error(`[strip-manifest-key] manifest.json not found in: ${buildDir}`);
-  process.exit(1);
+  console.error(`[strip-manifest-key] manifest.json not found in: ${buildDir}`)
+  process.exit(1)
 }
 
-const pkg = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+const pkg = JSON.parse(fs.readFileSync(manifestPath, "utf8"))
 
 // Remove key field
 if (pkg.key) {
-  delete pkg.key;
-  console.log("[strip-manifest-key] Removed 'key' field.");
+  delete pkg.key
+  console.log("[strip-manifest-key] Removed 'key' field.")
 }
 
 // Filter out web_accessible_resources entries pointing to non-existent files.
@@ -41,15 +41,12 @@ if (pkg.web_accessible_resources) {
     .map((entry) => ({
       ...entry,
       resources: entry.resources.filter(
-        (r) =>
-          r.includes("*") ||
-          r.startsWith("__") ||
-          fs.existsSync(path.join(buildDir, r))
+        (r) => r.includes("*") || r.startsWith("__") || fs.existsSync(path.join(buildDir, r)),
       ),
     }))
-    .filter((entry) => entry.resources.length > 0);
-  console.log("[strip-manifest-key] Cleaned web_accessible_resources.");
+    .filter((entry) => entry.resources.length > 0)
+  console.log("[strip-manifest-key] Cleaned web_accessible_resources.")
 }
 
-fs.writeFileSync(manifestPath, JSON.stringify(pkg, null, 2) + "\n");
-console.log("[strip-manifest-key] Manifest written successfully.");
+fs.writeFileSync(manifestPath, JSON.stringify(pkg, null, 2) + "\n")
+console.log("[strip-manifest-key] Manifest written successfully.")
