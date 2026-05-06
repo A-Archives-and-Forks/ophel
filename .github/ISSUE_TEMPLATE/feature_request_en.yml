@@ -1,0 +1,102 @@
+name: ✨ Feature Request
+description: Suggest a feature or improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your suggestion! If Ophel helps you, please give it a Star 🌟（Star helps support the project）
+
+        > [!NOTE]
+        > - This project is personally maintained — feature requests are not guaranteed to be implemented.
+        > - Feature priority is evaluated based on the overall project status.
+        > - Please verify you are using the **latest version** of Ophel before submitting — the feature you need may already exist.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Essential Checklist
+      options:
+        - label: I have searched for existing requests and confirmed this is not a duplicate
+          required: true
+        - label: I have starred the project 🌟
+          required: false
+        - label: I am willing to contribute a Pull Request for this
+          required: false
+
+  - type: dropdown
+    id: installation_type
+    attributes:
+      label: Target Environment
+      options:
+        - All Environments
+        - Browser Extension
+        - Userscript
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ai_platform
+    attributes:
+      label: Target AI Platform
+      options:
+        - All Platforms
+        - Gemini (gemini.google.com)
+        - Gemini Enterprise (business.gemini.google)
+        - ChatGPT (chatgpt.com)
+        - Claude (claude.ai)
+        - Grok (grok.com)
+        - AI Studio (aistudio.google.com)
+        - DeepSeek (chat.deepseek.com)
+        - Doubao (www.doubao.com)
+        - ima (ima.qq.com)
+        - ChatGLM (chatglm.cn)
+        - Kimi (www.kimi.com)
+        - Qianwen (www.qianwen.com)
+        - Qwen Studio (chat.qwen.ai)
+        - Yuanbao (yuanbao.tencent.com)
+        - Z.ai (chat.z.ai)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: One sentence summary of the feature.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What problem are you trying to solve?
+      placeholder: When using [...], I find that...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should it work?
+      placeholder: I want to be able to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any other ways you've considered?
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Mockups, screenshots, or extra details.

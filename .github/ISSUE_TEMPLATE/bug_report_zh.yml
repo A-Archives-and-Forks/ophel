@@ -1,0 +1,174 @@
+name: 🐞 反馈缺陷
+description: 反馈问题缺陷或异常行为
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您花时间填写此 Bug 报告！如果您觉得 Ophel 对您有帮助，请给项目点个 Star 🌟
+
+        > [!NOTE]
+        > - 本项目由个人维护，**问题修复不保证一定实现**（取决于复现难度与精力）。
+        > - 修复优先级会根据项目整体情况综合评估。
+        > - 提交前请确认您使用的是 Ophel **最新版本**，旧版本的问题可能已修复。
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 前置检查
+      options:
+        - label: 我已在 Issue 中搜索过类似问题，确认这不是一个重复问题
+          required: true
+        - label: 我理解如果未提供清晰的复现步骤或环境信息，Issue 可能会被关闭
+          required: true
+        - label: 我已为项目点了 Star 🌟
+          required: false
+        - label: 我愿意为此提交 Pull Request 贡献代码
+          required: false
+
+  - type: dropdown
+    id: installation_type
+    attributes:
+      label: 安装方式
+      description: 您是如何安装 Ophel 的？
+      options:
+        - 浏览器扩展
+        - 油猴脚本
+    validations:
+      required: true
+
+  - type: dropdown
+    id: userscript_manager
+    attributes:
+      label: 脚本管理器
+      description: 如果使用油猴脚本，请选择
+      options:
+        - Tampermonkey
+        - Violentmonkey
+        - Greasemonkey
+        - Userscripts (Safari)
+        - Stay
+        - 其他
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Ophel 版本
+      description: 填写 Ophel 本身的版本号（非浏览器 / 脚本管理器版本）。
+      placeholder: "例如 1.0.39"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ai_platform
+    attributes:
+      label: AI 平台
+      description: 出问题的平台是哪个？
+      options:
+        - Gemini (gemini.google.com)
+        - Gemini Enterprise (business.gemini.google)
+        - ChatGPT (chatgpt.com)
+        - Claude (claude.ai)
+        - Grok (grok.com)
+        - AI Studio (aistudio.google.com)
+        - DeepSeek (chat.deepseek.com)
+        - 豆包 (www.doubao.com)
+        - Kimi (www.kimi.com)
+        - ChatGLM (chatglm.cn)
+        - Z.ai (chat.z.ai)
+        - 通义千问 (www.qianwen.com)
+        - Qwen Studio (chat.qwen.ai)
+        - ima (ima.qq.com)
+        - 元宝 (yuanbao.tencent.com)
+        - 所有平台
+        - 其他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: 浏览器
+      options:
+        - Chrome
+        - Edge
+        - Firefox
+        - Safari
+        - 其他
+    validations:
+      required: true
+
+  - type: input
+    id: browser_version
+    attributes:
+      label: 浏览器版本
+      placeholder: 例如 120.0.6099.130
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 系统环境
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Android
+        - iOS
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: 问题描述
+      description: 请清晰描述遇到的问题
+      placeholder: 描述发生了什么...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: 复现步骤
+      description: 请提供详细的复现步骤
+      placeholder: |
+        1. 前往 '...'
+        2. 点击 '...'
+        3. 滚动到 '...'
+        4. 出现错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_vs_actual
+    attributes:
+      label: 预期与实际行为
+      description: 您期望发生什么 vs 实际发生了什么？
+      placeholder: |
+        预期：...
+        实际：...
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图
+      description: 拖拽可上传图片
+    validations:
+      required: false
+
+  - type: textarea
+    id: console_errors
+    attributes:
+      label: 控制台报错
+      description: 请粘贴 F12 控制台的红色报错
+      render: shell
+    validations:
+      required: false

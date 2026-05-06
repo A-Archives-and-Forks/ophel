@@ -1,0 +1,174 @@
+name: 🐞 Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! If Ophel helps you, please give it a Star 🌟
+
+        > [!NOTE]
+        > - This project is personally maintained — bug fixes are not guaranteed and depend on reproducibility and bandwidth.
+        > - Fix priority is evaluated based on the overall project status.
+        > - Please verify you are using the **latest version** of Ophel before submitting — the issue may already be fixed.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Essential Checklist
+      options:
+        - label: I have searched for existing issues and confirmed this is not a duplicate
+          required: true
+        - label: I understand that the issue may be closed if missing reproduction steps or environment info
+          required: true
+        - label: I have starred the project 🌟
+          required: false
+        - label: I am willing to contribute a Pull Request for this
+          required: false
+
+  - type: dropdown
+    id: installation_type
+    attributes:
+      label: Installation Type
+      description: How did you install Ophel?
+      options:
+        - Browser Extension
+        - Userscript
+    validations:
+      required: true
+
+  - type: dropdown
+    id: userscript_manager
+    attributes:
+      label: Userscript Manager
+      description: Required if using Userscript
+      options:
+        - Tampermonkey
+        - Violentmonkey
+        - Greasemonkey
+        - Userscripts (Safari)
+        - Stay
+        - Other
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Ophel Version
+      description: Enter the Ophel version number (not your browser or script manager version).
+      placeholder: "e.g. 1.0.39"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ai_platform
+    attributes:
+      label: AI Platform
+      description: Which platform is having issues?
+      options:
+        - Gemini (gemini.google.com)
+        - Gemini Enterprise (business.gemini.google)
+        - ChatGPT (chatgpt.com)
+        - Claude (claude.ai)
+        - Grok (grok.com)
+        - AI Studio (aistudio.google.com)
+        - DeepSeek (chat.deepseek.com)
+        - Doubao (www.doubao.com)
+        - Kimi (www.kimi.com)
+        - ChatGLM (chatglm.cn)
+        - Z.ai (chat.z.ai)
+        - Qianwen (www.qianwen.com)
+        - Qwen Studio (chat.qwen.ai)
+        - ima (ima.qq.com)
+        - Yuanbao (yuanbao.tencent.com)
+        - All Platforms
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Edge
+        - Firefox
+        - Safari
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: browser_version
+    attributes:
+      label: Browser Version
+      placeholder: e.g. 120.0.6099.130
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Android
+        - iOS
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_vs_actual
+    attributes:
+      label: Expected vs Actual Behavior
+      description: What did you expect vs what happened?
+      placeholder: |
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drop images here to help explain your problem.
+    validations:
+      required: false
+
+  - type: textarea
+    id: console_errors
+    attributes:
+      label: Console Errors
+      description: Paste any errors from DevTools Console (F12).
+      render: shell
+    validations:
+      required: false
