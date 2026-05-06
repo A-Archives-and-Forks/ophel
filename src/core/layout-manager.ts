@@ -20,6 +20,9 @@ const STYLE_IDS = {
 const ZEN_MODE_EXIT_HOST_ID = "gh-zen-mode-exit-host"
 const ZEN_MODE_EXIT_LABEL = "退出禅模式"
 
+/** 窄屏断点（CSS 逻辑像素），低于此值时内容宽度自动切换为近满屏，避免百分比宽度在手机上过窄 */
+const NARROW_SCREEN_BREAKPOINT = 480
+
 /**
  * 页面布局管理器
  * 负责动态注入页面宽度和用户问题宽度样式，支持 Shadow DOM
@@ -149,7 +152,16 @@ export class LayoutManager {
   private generatePageWidthCSS(): string {
     const width = `${this.pageWidthConfig.value}${this.pageWidthConfig.unit}`
     const selectors = this.siteAdapter.getWidthSelectors()
-    return this.buildCSSFromSelectors(selectors, width, true)
+    const mainCss = this.buildCSSFromSelectors(selectors, width, true)
+
+    // 当配置单位为 "%" 时，追加窄屏兜底媒体查询
+    // （当前设置归一化后 pageWidthConfig.unit 仅会是 "%"）
+    if (this.pageWidthConfig.unit === "%") {
+      const narrowCss = this.buildCSSFromSelectors(selectors, "95%", true)
+      return `${mainCss}\n@media (max-width: ${NARROW_SCREEN_BREAKPOINT}px) {\n${narrowCss}\n}`
+    }
+
+    return mainCss
   }
 
   private generateUserQueryWidthCSS(): string {
@@ -347,7 +359,7 @@ export class LayoutManager {
           background: var(--gh-glass-bg, rgba(255, 255, 255, 0.25));
           border: 1px solid var(--gh-border, rgba(255, 255, 255, 0.15));
           border-radius: 9999px;
-          box-shadow: 
+          box-shadow:
             var(--gh-shadow-lg, 0 10px 40px rgba(0, 0, 0, 0.15)),
             0 0 0 1px rgba(255, 255, 255, 0.1) inset;
           color: var(--gh-text, #1f2937);
@@ -367,7 +379,7 @@ export class LayoutManager {
 
         .zen-exit-btn:hover {
           transform: translateY(-2px) scale(1.02);
-          box-shadow: 
+          box-shadow:
             var(--gh-shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.2)),
             0 0 0 1px var(--gh-primary, ${primary}) inset,
             0 0 20px rgba(255, 255, 255, 0.1) inset;
@@ -413,7 +425,7 @@ export class LayoutManager {
             animation-name: ghSlideUp;
             /* 必须重置 transform，否则动画覆盖不完美 */
           }
-          
+
           @keyframes ghSlideUp {
             0% {
               opacity: 0;
@@ -527,11 +539,13 @@ export class LayoutManager {
 
       // 页面宽度
       if (this.pageWidthConfig?.enabled) {
-        const css = this.buildCSSFromSelectors(
-          siteAdapter.getWidthSelectors(),
-          `${this.pageWidthConfig.value}${this.pageWidthConfig.unit}`,
-          false,
-        )
+        const width = `${this.pageWidthConfig.value}${this.pageWidthConfig.unit}`
+        const selectors = siteAdapter.getWidthSelectors()
+        let css = this.buildCSSFromSelectors(selectors, width, false)
+        if (this.pageWidthConfig.unit === "%") {
+          const narrowCss = this.buildCSSFromSelectors(selectors, "95%", false)
+          css = `${css}\n@media (max-width: ${NARROW_SCREEN_BREAKPOINT}px) {\n${narrowCss}\n}`
+        }
         DOMToolkit.cssToShadow(shadowRoot, css, STYLE_IDS.PAGE_WIDTH_SHADOW)
       } else {
         this.removeStyleFromShadow(shadowRoot, STYLE_IDS.PAGE_WIDTH_SHADOW)
