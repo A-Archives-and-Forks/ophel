@@ -108,14 +108,16 @@ jobs:
 
           # Combine both into final release note
           {
-            cat RELEASE_NOTE_EN.md
-            echo ""
             echo "<details>"
-            echo "<summary>中文版本 / Chinese Version</summary>"
+            echo "<summary>🌐 中文版 →</summary>"
             echo ""
             cat RELEASE_NOTE_ZH.md
             echo ""
             echo "</details>"
+            echo ""
+            echo "---"
+            echo ""
+            cat RELEASE_NOTE_EN.md
           } > RELEASE_NOTE.md
 
           # Output to GITHUB_OUTPUT (multi-line)
