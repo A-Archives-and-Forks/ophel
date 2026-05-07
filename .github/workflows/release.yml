@@ -109,7 +109,7 @@ jobs:
               if ($0 ~ ver) { p=1; next }
             }
             p
-          ' CHANGELOG.zh-CN.md | strip_trailing > RELEASE_NOTE_ZH.md
+          ' CHANGELOG.zh-CN.md > RELEASE_NOTE_ZH.md
 
           if [ ! -s RELEASE_NOTE_ZH.md ]; then
             echo "详见 CHANGELOG.zh-CN.md" > RELEASE_NOTE_ZH.md
@@ -123,8 +123,6 @@ jobs:
             cat RELEASE_NOTE_ZH.md
             echo ""
             echo "</details>"
-            echo ""
-            echo "---"
             echo ""
             cat RELEASE_NOTE_EN.md
           } > RELEASE_NOTE.md
