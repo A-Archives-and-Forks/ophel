@@ -12,7 +12,11 @@ versioning follows [Semantic Versioning](https://semver.org/).
 ### ✨ Improvements
 
 - **Panel state remembered in auto-snap mode**: Both floating and auto-snap modes now remember whether the panel was open or closed across page refreshes. Previously, auto-snap mode always reopened the panel expanded after a refresh.
-- **"Default Position" renamed to "Default Side"**: The setting label and description now clearly reflect its actual behavior — the preferred side the panel expands to, also used as the fallback when auto-snap has no previous position.
+
+### 🐛 Bug Fixes
+
+- **Auto-snap panel not collapsing after batch-selecting conversations**: Fixed the panel staying open after entering or exiting batch-select mode in the conversations tab. The panel now snaps closed normally when the cursor leaves.
+- **Checking a checkbox preventing auto-snap**: Fixed clicking a checkbox (e.g. conversation multi-select) being mistakenly treated as text-input focus, causing the edge-snap panel to remain open indefinitely.
 
 ---
 
