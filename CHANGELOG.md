@@ -7,6 +7,14 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 > 中文版本: [CHANGELOG.zh-CN.md](./CHANGELOG.zh-CN.md)
 
+## [1.0.46]
+
+### 🐛 Bug Fixes
+
+- **Gemini source tooltips broken after Markdown fix**: Fixed source/citation tooltip chips disappearing in Gemini when the Markdown bold fix was enabled. The fixer was rewriting paragraph `innerHTML`, destroying Gemini's native event handlers for source tooltips. Affected paragraphs that contained citation chips are now skipped. (#468)
+
+---
+
 ## [1.0.45]
 
 ### ✨ Improvements
