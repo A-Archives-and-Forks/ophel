@@ -46,7 +46,7 @@ export function SidebarCommunityLinks() {
 
       <Tooltip content={t("discordCommunity") || "Discord 社区"}>
         <a
-          href="https://discord.gg/79B2hFxR"
+          href="https://discord.gg/rmPzb6Cx9u"
           target="_blank"
           rel="noopener noreferrer"
           aria-label={t("discordCommunity") || "Discord 社区"}

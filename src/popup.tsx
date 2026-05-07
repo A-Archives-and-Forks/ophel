@@ -299,7 +299,7 @@ function IndexPopup() {
           <Tooltip content={t("discordCommunity") || "Discord 社区"}>
             <button
               className="popup-action-pill discord-btn icon-only"
-              onClick={() => openUrl("https://discord.gg/79B2hFxR")}>
+              onClick={() => openUrl("https://discord.gg/rmPzb6Cx9u")}>
               <DiscordIcon size={16} />
             </button>
           </Tooltip>

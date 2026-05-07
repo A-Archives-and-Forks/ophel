@@ -200,7 +200,7 @@ const AboutPage: React.FC = () => {
 
         {/* Discord Link */}
         <a
-          href="https://discord.gg/79B2hFxR"
+          href="https://discord.gg/rmPzb6Cx9u"
           target="_blank"
           rel="noopener noreferrer"
           className="about-link-card discord-card"
