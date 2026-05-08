@@ -241,7 +241,7 @@
 Contribuições de qualquer forma são bem-vindas — código, relatos de bugs ou ideias. Novo no projeto? Explore o código com IA:
 
 <p align="center">
-  <a href="https://docs.ophel.app"><img src="https://img.shields.io/badge/Documentação_oficial-Mintlify-10B981?style=flat-square&logo=mintlify&logoColor=white" alt="Documentação oficial" style="vertical-align: middle;"></a>
+  <a href="https://ophel.app/docs"><img src="https://img.shields.io/badge/Documentação_oficial-Mintlify-10B981?style=flat-square&logo=mintlify&logoColor=white" alt="Documentação oficial" style="vertical-align: middle;"></a>
   &nbsp;
   <a href="https://deepwiki.com/urzeye/ophel"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
   &nbsp;
