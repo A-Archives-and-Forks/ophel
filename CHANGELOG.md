@@ -9,16 +9,20 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.0.47]
+
 ### ✨ Improvements
 
-- **Gemini Markdown Bold Fix now defaults to off**: The "Markdown Bold Fix" toggle for Gemini is now disabled by default for both the browser extension and userscript. The fix can still be enabled manually in Settings → Site Settings → Gemini. This reduces interference with Gemini's native rendering for users who don't need it.
-- **Panel state remembered in auto-snap mode**: Both floating and auto-snap modes now remember whether the panel was open or closed across page refreshes. Previously, auto-snap mode always reopened the panel expanded after a refresh.
+- **Gemini Markdown Bold Fix now defaults to off**: The "Markdown Bold Fix" toggle for Gemini is now disabled by default. It can still be enabled in Settings → Site Settings → Gemini.
+- **Panel state remembered in auto-snap mode**: Both floating and auto-snap modes now remember whether the panel was open or closed across page refreshes.
 
 ### 🐛 Bug Fixes
 
-- **Claude reply notifications repeating endlessly**: Fixed notifications firing on every background API poll after a reply was completed on Claude.ai. The network monitor URL pattern `["/api/", "/completion"]` used OR logic, matching all `/api/*` background requests (conversation sync, feature flags, etc.) and re-triggering a generation cycle each time. Changed to an AND match (`urlPatterns: ["/api/"]` + `urlPathEndsWith: ["/completion"]`) so only the actual streaming completion endpoint `/api/organizations/.../chat_conversations/.../completion` is intercepted. (#470)
-- **Yuanbao theme sync broken**: Fixed theme detection failing when Yuanbao updated their dark mode implementation from a CSS class to a custom `html[yb-theme-mode]` attribute. The MutationObserver now watches the new attribute, and switching between dark, light, and system modes now works in both directions.
-- **Drag-to-sort broken on Yuanbao**: Fixed tab order and quick button drag sorting in the settings modal, and prompt item drag sorting in the prompts tab, failing on Yuanbao. Yuanbao's page-level JS was cancelling drags with an empty `dataTransfer`; adding `setData()` in the drag handler prevents the cancellation.
+- **Claude reply notifications repeating endlessly**: Fixed notifications firing repeatedly after a reply was completed on Claude.ai. (#470)
+- **Yuanbao theme sync broken**: Fixed theme detection failing on Yuanbao after they changed their dark mode implementation.
+- **Drag-to-sort broken on Yuanbao**: Fixed tab order, quick button, and prompt drag sorting failing on Yuanbao.
 
 ---
 
@@ -966,6 +970,8 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.0.47]: https://github.com/urzeye/ophel/releases/tag/v1.0.47
+[1.0.46]: https://github.com/urzeye/ophel/releases/tag/v1.0.46
 [1.0.45]: https://github.com/urzeye/ophel/releases/tag/v1.0.45
 [1.0.44]: https://github.com/urzeye/ophel/releases/tag/v1.0.44
 [1.0.43]: https://github.com/urzeye/ophel/releases/tag/v1.0.43

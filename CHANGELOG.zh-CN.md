@@ -6,18 +6,18 @@
 
 > English version: [CHANGELOG.md](./CHANGELOG.md)
 
-## [Unreleased]
+## [1.0.47]
 
 ### ✨ 功能优化
 
-- **Gemini Markdown 加粗修复默认关闭**：浏览器扩展和油猴脚本两种安装方式均将该开关默认改为关闭。需要时可在「设置 → 站点设置 → Gemini」手动开启。
-- **自动吸附模式支持记忆展开状态**：悬浮模式和自动吸附模式均可记住刷新前面板的展开/收起状态，不再强制刷新后展开。
+- **Gemini Markdown 加粗修复默认关闭**：该开关默认改为关闭，需要时可在「设置 → 站点设置 → Gemini」手动开启。
+- **自动吸附模式支持记忆展开状态**：悬浮模式和自动吸附模式均可记住刷新前面板的展开/收起状态。
 
 ### 🐛 问题修复
 
-- **Claude 回复通知持续重复**：修复 Claude.ai 回复完成后通知不断重复触发的问题。根本原因是网络监控 URL 规则 `["/api/", "/completion"]` 使用 OR 逻辑，导致会话同步、feature flags 等所有 `/api/*` 后台轮询请求也被匹配，每次轮询都重新触发一次「生成完成」判断并发送通知。修复方式：改为 AND 匹配（`urlPatterns: ["/api/"]` + `urlPathEndsWith: ["/completion"]`），只拦截真正的流式生成端点 `/api/organizations/.../chat_conversations/.../completion`。（#470）
-- **元宝主题同步失效**：修复元宝将深色模式实现从 CSS class 改为自定义属性 `html[yb-theme-mode]` 后，主题联动失效的问题。MutationObserver 现在监听新属性，深色/浅色/系统三种模式之间的双向切换均已正常。
-- **元宝拖拽排序失效**：修复设置弹窗中界面排版/快捷按钮拖拽排序，以及提示词 Tab 中提示词拖拽排序在元宝站点完全失效的问题。根因是元宝的页面级 JS 在 dragstart 冒泡阶段检测到空 dataTransfer 后会取消拖拽，在拖拽处理器中添加 setData() 调用即可绕过。
+- **Claude 回复通知持续重复**：修复 Claude.ai 回复完成后通知不断重复触发的问题。（#470）
+- **元宝主题同步失效**：修复元宝更新深色模式实现后主题联动失效的问题。
+- **元宝拖拽排序失效**：修复设置弹窗和提示词面板中拖拽排序在元宝上完全失效的问题。
 
 ---
 
@@ -966,6 +966,8 @@
 
 ---
 
+[1.0.47]: https://github.com/urzeye/ophel/releases/tag/v1.0.47
+[1.0.46]: https://github.com/urzeye/ophel/releases/tag/v1.0.46
 [1.0.45]: https://github.com/urzeye/ophel/releases/tag/v1.0.45
 [1.0.44]: https://github.com/urzeye/ophel/releases/tag/v1.0.44
 [1.0.43]: https://github.com/urzeye/ophel/releases/tag/v1.0.43
