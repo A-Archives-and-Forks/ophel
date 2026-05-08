@@ -111,6 +111,9 @@ jobs:
             echo "[🌐 中文版 →](${ZH_CHANGELOG_URL})"
             echo ""
             cat RELEASE_NOTE_EN.md
+            echo ""
+            echo "---"
+            echo ""
           } > RELEASE_NOTE.md
 
           # Output to GITHUB_OUTPUT (multi-line)
