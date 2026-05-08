@@ -102,27 +102,13 @@ jobs:
             echo "See CHANGELOG.md for details." > RELEASE_NOTE_EN.md
           fi
 
-          # Extract Chinese changelog section
-          awk -v ver="\\[${VERSION_NO_V}\\]" '
-            /^## \[/ {
-              if (p) exit;
-              if ($0 ~ ver) { p=1; next }
-            }
-            p
-          ' CHANGELOG.zh-CN.md > RELEASE_NOTE_ZH.md
+          # Compute GitHub anchor for Chinese changelog heading (e.g. 1.0.47 → 1047)
+          VERSION_ANCHOR=$(echo "$VERSION_NO_V" | tr -d '.')
+          ZH_CHANGELOG_URL="https://github.com/urzeye/ophel/blob/main/CHANGELOG.zh-CN.md#${VERSION_ANCHOR}"
 
-          if [ ! -s RELEASE_NOTE_ZH.md ]; then
-            echo "详见 CHANGELOG.zh-CN.md" > RELEASE_NOTE_ZH.md
-          fi
-
-          # Combine both into final release note
+          # Combine: Chinese link on top, then English content
           {
-            echo "<details>"
-            echo "<summary>🌐 中文版 →</summary>"
-            echo ""
-            cat RELEASE_NOTE_ZH.md
-            echo ""
-            echo "</details>"
+            echo "[🌐 中文版 →](${ZH_CHANGELOG_URL})"
             echo ""
             cat RELEASE_NOTE_EN.md
           } > RELEASE_NOTE.md
