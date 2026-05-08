@@ -7,10 +7,6 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 > 中文版本: [CHANGELOG.zh-CN.md](./CHANGELOG.zh-CN.md)
 
-## [Unreleased]
-
----
-
 ## [1.0.47]
 
 ### ✨ Improvements
