@@ -203,13 +203,13 @@ html[dark-theme] .gh-user-query-markdown.gh-user-query-markdown-gemini {
   font-size: 0.9em;
 }
 
-/* 代码块复制按钮 - sticky 定位，滚动时保持可见 */
+/* 代码块复制按钮 - 覆盖在右上角，避免参与代码文本排版 */
 .gh-user-query-markdown .gh-code-copy-btn {
-  position: sticky;
+  position: absolute;
   top: 6px;
-  float: right;
-  margin-top: -1.5em;
-  margin-right: -1.0em;
+  right: 6px;
+  float: none;
+  margin: 0;
   width: 24px;
   height: 24px;
   padding: 0;
@@ -220,6 +220,7 @@ html[dark-theme] .gh-user-query-markdown.gh-user-query-markdown-gemini {
   font-size: 12px;
   cursor: pointer;
   opacity: 0.2;
+  pointer-events: none;
   transition: opacity 0.2s, background 0.2s;
   display: flex;
   align-items: center;
@@ -228,6 +229,7 @@ html[dark-theme] .gh-user-query-markdown.gh-user-query-markdown-gemini {
 }
 .gh-user-query-markdown pre:hover .gh-code-copy-btn {
   opacity: 1;
+  pointer-events: auto;
 }
 .gh-user-query-markdown .gh-code-copy-btn:hover {
   background: #4285f4;
