@@ -2,6 +2,8 @@
  * 显示 Toast 提示
  * 从用户脚本迁移的轻量级提示组件
  */
+import { INTER_LOCAL_FONT_FACE } from "~utils/font"
+
 type ToastOptions = {
   className?: string
   maxWidth?: number
@@ -51,6 +53,7 @@ export function showToast(message: string, duration = 2000, options: ToastOption
     const style = document.createElement("style")
     style.id = "gh-toast-style"
     style.textContent = `
+${INTER_LOCAL_FONT_FACE}
       .gh-toast {
         position: fixed !important;
         left: 50% !important;
@@ -69,7 +72,7 @@ export function showToast(message: string, duration = 2000, options: ToastOption
         opacity: 0 !important;
         transform: translateY(-20px) translateX(-50%) scale(0.92) !important;
         transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "PingFang SC", "Microsoft YaHei", sans-serif !important;
+        font-family: "Inter", "PingFang SC", "Hiragino Sans SC", "Apple SD Gothic Neo", "Malgun Gothic", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
         letter-spacing: 0.2px !important;
         backdrop-filter: blur(16px) saturate(160%) !important;
         -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
