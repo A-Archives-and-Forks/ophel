@@ -9,8 +9,13 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.0.48]
+
 ### 🐛 Bug Fixes
 
+- **Settings About page store icons shrink when platform name wraps**: Added `flex-shrink: 0` to store icon SVGs so they maintain consistent size regardless of the platform name's length in the "Love Ophel?" rating section. Also shortened the German `edgeAddons` label from `"Microsoft Edge Add-on"` to `"Edge Add-on"` to match other locales and prevent unnecessary wrapping.
 - **Gemini strips code indentation in user query Markdown**: Fixed `extractUserQueryMarkdown` trimming all leading whitespace from each `query-text-line`, which removed meaningful code indentation. Now uses dedent logic to strip only the wrapper spaces Gemini adds, preserving relative indentation inside code blocks.
 - **ChatGPT model lock fails to detect model in non-English locales**: Fixed an infinite switch loop where the keyword (e.g. `think`) matched the English menu item slug (`gpt-5-5-thinking`) but not the localized pill label (`思考`). The adapter now retains the last known model slug after the menu closes, so the lock check passes regardless of display language.
 - **ChatGPT model lock broken after site redesign**: The 2025 ChatGPT redesign removed the header model-switcher button. Updated the adapter to target the new Composer area Pill button (`__composer-pill`), fix menu item detection (`menuitemradio` role + `data-testid^=model-switcher-`), and extract model name from the pill's `span.truncate` text node. Removed ~90 lines of now-obsolete state-caching code specific to the old two-step header interaction.
