@@ -9,9 +9,14 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.0.49] - 2026-05-13
+
 ### 🐛 Bug Fixes
 
-- **Windows UI font regression after the macOS CJK fallback fix**: Restored `system-ui` priority on Windows and other non-macOS platforms while keeping CJK fonts before `system-ui` on macOS. Also removed Arial/Roboto local aliases from the Inter fallback so environments without bundled Inter fall back to the native system UI font instead of mixing unrelated fonts.
+- **Windows UI font regression after the macOS CJK fallback fix**: Restored `system-ui` priority on Windows and other non-macOS platforms while keeping CJK fonts before `system-ui` on macOS. Also removed Arial/Roboto local aliases from the Inter fallback so environments without bundled Inter fall back to the native system UI font instead of mixing unrelated fonts. (#489 regression, #491)
+- **macOS CJK font appears too thin (PingFang SC)**: Changed the macOS CJK font preference from `PingFang SC` to `Hiragino Sans SC` (with PingFang SC as fallback). Hiragino Sans SC has heavier strokes that render more legibly at normal weight on macOS.
 
 ---
 
@@ -990,6 +995,8 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.0.49]: https://github.com/urzeye/ophel/releases/tag/v1.0.49
+[1.0.48]: https://github.com/urzeye/ophel/releases/tag/v1.0.48
 [1.0.47]: https://github.com/urzeye/ophel/releases/tag/v1.0.47
 [1.0.46]: https://github.com/urzeye/ophel/releases/tag/v1.0.46
 [1.0.45]: https://github.com/urzeye/ophel/releases/tag/v1.0.45
