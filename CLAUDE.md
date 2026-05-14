@@ -4,25 +4,25 @@
 
 Ophel 是一款跨平台浏览器扩展（同时支持油猴脚本），将 AI 对话转化为可阅读、可导航、可复用的知识内容。通过实时大纲、会话文件夹与 Prompt 词库，让 AI 对话告别无限滚动，成为可组织、可沉淀的工作流。
 
-支持站点：Gemini、Gemini Enterprise、AI Studio、ChatGPT、Grok、Claude、DeepSeek、Doubao、Kimi、QwenAI、Qianwen、Yuanbao、Z.ai、ChatGLM、Ima。
+支持站点（15 个）：Gemini、Gemini Enterprise、AI Studio、ChatGPT、Grok、Claude、DeepSeek、Doubao、Kimi、Qwen Studio（原 QwenAI，文件已重命名 qwen-studio.ts）、Qianwen、Yuanbao、Z.ai、ChatGLM、Ima。
 
 ## 架构总览
 
 ### 技术栈
 
-| 类别 | 技术 |
-|------|------|
-| 语言 | TypeScript 5.3 |
-| UI 框架 | React 18 |
-| 状态管理 | Zustand 5 (persist 中间件 + chrome.storage.local) |
-| 扩展框架 | Plasmo 0.90 (Manifest V3, Chrome + Firefox) |
-| 油猴构建 | Vite + vite-plugin-monkey |
-| 样式 | 纯 CSS（无 CSS-in-JS 或预处理器） |
-| 包管理 | pnpm 9.15 |
+| 类别     | 技术                                                    |
+| -------- | ------------------------------------------------------- |
+| 语言     | TypeScript 5.3                                          |
+| UI 框架  | React 18                                                |
+| 状态管理 | Zustand 5 (persist 中间件 + chrome.storage.local)       |
+| 扩展框架 | Plasmo 0.90 (Manifest V3, Chrome + Firefox)             |
+| 油猴构建 | Vite + vite-plugin-monkey                               |
+| 样式     | 纯 CSS（无 CSS-in-JS 或预处理器）                       |
+| 包管理   | pnpm 9.15                                               |
 | 代码质量 | ESLint 9 (flat config) + Prettier + TypeScript 严格模式 |
 | Git 规范 | Husky + lint-staged + commitlint (Conventional Commits) |
-| 文档站 | VitePress (中/英双语) |
-| 函数式库 | Effect (用于部分核心逻辑) |
+| 文档站   | VitePress (中/英双语)                                   |
+| 函数式库 | Effect (用于部分核心逻辑)                               |
 
 ### 架构模式
 
@@ -51,7 +51,7 @@ getAdapter() --> SiteAdapter (抽象基类)
     |               +-- ImaAdapter
     |
     v
-initCoreModules(ctx) --> 11 个核心模块
+initCoreModules(ctx) --> 13 个核心模块
     |
     v
 App.tsx (Shadow DOM 内的 React 面板)
@@ -116,23 +116,23 @@ graph TD
 
 ## 模块索引
 
-| 模块路径 | 职责 | 关键文件 |
-|----------|------|----------|
-| `src/adapters/` | 多站点适配器层，基于 `SiteAdapter` 抽象基类，每个站点一个实现 | `base.ts`, `gemini.ts`, `gemini-enterprise.ts`, `chatgpt.ts`, `claude.ts`, `grok.ts`, `aistudio.ts`, `deepseek.ts`, `doubao.ts`, `kimi.ts`, `qwenai.ts`, `qianwen.ts`, `yuanbao.ts`, `zai.ts`, `chatglm.ts`, `ima.ts` |
-| `src/core/` | 核心业务模块（多个管理器），由 `modules-init.ts` 统一编排 | `modules-init.ts`, `outline-manager.ts`, `theme-manager.ts`, `layout-manager.ts`, `conversation/`, `webdav-sync.ts`, `assistant-mermaid-renderer.ts`, `gemini-mystuff-bridge.ts`, `usage-counter-manager.ts` |
-| `src/components/` | React UI 层，运行在 Shadow DOM 中 | `App.tsx`, `MainPanel.tsx`, `OutlineTab.tsx`, `ConversationsTab.tsx`, `SettingsModal.tsx`, `global-search/` |
-| `src/stores/` | Zustand 状态管理，persist 到 chrome.storage.local | `settings-store.ts`, `conversations-store.ts`, `prompts-store.ts`, `folders-store.ts`, `tags-store.ts` |
-| `src/contents/` | Plasmo Content Script 入口 | `main.ts`（逻辑入口）, `ui-entry.tsx`（UI 入口/Shadow DOM） |
-| `src/platform/` | 平台抽象层（浏览器扩展 vs 油猴脚本） | `types.ts`, `index.ts`, `extension/`, `userscript/` |
-| `src/utils/` | 工具函数 | `i18n.ts`, `dom-toolkit.ts`, `exporter.ts`, `markdown.ts`, `themes/`, `scroll-helper.ts` |
-| `src/constants/` | 常量与默认配置 | `defaults.ts`（SITE_IDS）, `ui.ts`, `shortcuts.ts`, `tools-menu.ts` |
-| `src/hooks/` | React Hooks | `useDraggable.ts`, `useShortcuts.ts` |
-| `src/locales/` | 应用内 i18n 资源（10 种语言） | `resources.ts`, `zh-CN/`, `en/`, `ja/`, `ko/`, `de/`, `es/`, `fr/`, `pt/`, `ru/`, `zh-TW/` |
-| `src/tabs/` | 独立页面（选项页、权限请求页） | `options.tsx`, `options/pages/`, `perm-request.tsx` |
-| `src/styles/` | 全局样式 | `conversations.css`, `settings.css`, `theme-variables.css`, `queue-overlay.css` |
-| `locales/` | Chrome 扩展 manifest 多语言（_locales 等价） | `zh_CN/messages.json`, `en/messages.json` 等 10 种语言 |
-| `docs/` | VitePress 文档站（中英双语） | `zh/`, `en/`, `.vitepress/config.mts` |
-| `assets/` | 静态资源（图标、截图、音效） | `icon.png`, `store/`, `demo/` |
+| 模块路径          | 职责                                                          | 关键文件                                                                                                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/adapters/`   | 多站点适配器层，基于 `SiteAdapter` 抽象基类，每个站点一个实现 | `base.ts`, `gemini.ts`, `gemini-enterprise.ts`, `chatgpt.ts`, `claude.ts`, `grok.ts`, `aistudio.ts`, `deepseek.ts`, `doubao.ts`, `kimi.ts`, `qwen-studio.ts`（qwenai）, `qianwen.ts`, `yuanbao.ts`, `zai.ts`, `chatglm.ts`, `ima.ts` |
+| `src/core/`       | 核心业务模块（多个管理器），由 `modules-init.ts` 统一编排     | `modules-init.ts`, `outline-manager.ts`, `theme-manager.ts`, `layout-manager.ts`, `conversation/`, `webdav-sync.ts`, `assistant-mermaid-renderer.ts`, `gemini-mystuff-bridge.ts`, `usage-counter-manager.ts`                         |
+| `src/components/` | React UI 层，运行在 Shadow DOM 中                             | `App.tsx`, `MainPanel.tsx`, `OutlineTab.tsx`, `ConversationsTab.tsx`, `SettingsModal.tsx`, `global-search/`                                                                                                                          |
+| `src/stores/`     | Zustand 状态管理，persist 到 chrome.storage.local             | `settings-store.ts`, `conversations-store.ts`, `prompts-store.ts`, `folders-store.ts`, `tags-store.ts`                                                                                                                               |
+| `src/contents/`   | Plasmo Content Script 入口                                    | `main.ts`（逻辑入口）, `ui-entry.tsx`（UI/Shadow DOM）, `monitor-entry.ts`（网络监控）, `aistudio-preload.ts`, `gemini-watermark-main.ts`, `iframe-scroll-main.ts`, `scroll-lock-main.ts`                                            |
+| `src/platform/`   | 平台抽象层（浏览器扩展 vs 油猴脚本）                          | `types.ts`, `index.ts`, `extension/`, `userscript/`                                                                                                                                                                                  |
+| `src/utils/`      | 工具函数                                                      | `i18n.ts`, `dom-toolkit.ts`, `exporter.ts`, `markdown.ts`, `themes/`, `scroll-helper.ts`                                                                                                                                             |
+| `src/constants/`  | 常量与默认配置                                                | `defaults.ts`（SITE_IDS）, `ui.ts`, `shortcuts.ts`, `tools-menu.ts`                                                                                                                                                                  |
+| `src/hooks/`      | React Hooks                                                   | `useDraggable.ts`, `useShortcuts.ts`, `useEdgePeekController.ts`                                                                                                                                                                     |
+| `src/locales/`    | 应用内 i18n 资源（10 种语言）                                 | `resources.ts`, `zh-CN/`, `en/`, `ja/`, `ko/`, `de/`, `es/`, `fr/`, `pt/`, `ru/`, `zh-TW/`                                                                                                                                           |
+| `src/tabs/`       | 独立页面（选项页、权限请求页）                                | `options.tsx`, `options/pages/`, `perm-request.tsx`                                                                                                                                                                                  |
+| `src/styles/`     | 全局样式                                                      | `conversations.css`, `settings.css`, `theme-variables.css`, `queue-overlay.css`                                                                                                                                                      |
+| `locales/`        | Chrome 扩展 manifest 多语言（_locales 等价）                  | `zh_CN/messages.json`, `en/messages.json` 等 10 种语言                                                                                                                                                                               |
+| `docs/`           | VitePress 文档站（中英双语）                                  | `zh/`, `en/`, `.vitepress/config.mts`                                                                                                                                                                                                |
+| `assets/`         | 静态资源（图标、截图、音效）                                  | `icon.png`, `store/`, `demo/`                                                                                                                                                                                                        |
 
 ## 运行与开发
 
@@ -183,14 +183,14 @@ pnpm docs:build    # 构建文档
 
 ### 关键入口文件
 
-| 入口 | 路径 | 说明 |
-|------|------|------|
-| Content Script 逻辑入口 | `src/contents/main.ts` | 初始化适配器和核心模块 |
-| Content Script UI 入口 | `src/contents/ui-entry.tsx` | Shadow DOM 内挂载 React App |
-| Background Service Worker | `src/background.ts` | 消息处理、通知、代理请求、Cookie 管理 |
-| Popup 页面 | `src/popup.tsx` | 扩展弹出窗口 |
-| Options 页面 | `src/tabs/options.tsx` | 独立设置页面 |
-| 油猴脚本入口 | `src/platform/userscript/entry.tsx` | Vite 构建入口 |
+| 入口                      | 路径                                | 说明                                  |
+| ------------------------- | ----------------------------------- | ------------------------------------- |
+| Content Script 逻辑入口   | `src/contents/main.ts`              | 初始化适配器和核心模块                |
+| Content Script UI 入口    | `src/contents/ui-entry.tsx`         | Shadow DOM 内挂载 React App           |
+| Background Service Worker | `src/background.ts`                 | 消息处理、通知、代理请求、Cookie 管理 |
+| Popup 页面                | `src/popup.tsx`                     | 扩展弹出窗口                          |
+| Options 页面              | `src/tabs/options.tsx`              | 独立设置页面                          |
+| 油猴脚本入口              | `src/platform/userscript/entry.tsx` | Vite 构建入口                         |
 
 ### 路径别名
 
@@ -214,26 +214,27 @@ import { useSettingsStore } from "~stores/settings-store"
 - `getExportConfig()` - 导出配置
 - `lockModel()` - 模型锁定（通用实现在基类中）
 
-支持的站点标识（`SITE_IDS`）：`gemini`, `gemini-enterprise`, `chatgpt`, `claude`, `grok`, `aistudio`, `deepseek`, `doubao`, `kimi`, `qwenai`, `qianwen`, `yuanbao`, `zai`, `chatglm`, `ima`
+支持的站点标识（`SITE_IDS`）：`gemini`, `gemini-enterprise`, `chatgpt`, `claude`, `grok`, `aistudio`, `deepseek`, `doubao`, `kimi`, `qwenai`（文件为 `qwen-studio.ts`）, `qianwen`, `yuanbao`, `zai`, `chatglm`, `ima`
 
 ### 核心模块 (`src/core/modules-init.ts`)
 
-`initCoreModules()` 按以下顺序初始化管理器：
+`initCoreModules()` 按以下顺序初始化管理器（共 13 个，见 `modules-init.ts`）：
 
 1. **ThemeManager** - 主题管理（light/dark/system + 自定义预设样式）
 2. **MarkdownFixer** - AI 响应中的 Markdown 渲染修复
-3. **LayoutManager** - 页面宽度、用户提问宽度、禅模式（Zen Mode）
+3. **LayoutManager** - 页面宽度、用户提问宽度、禅模式（Zen Mode）、净化模式
 4. **CopyManager** - 公式复制（LaTeX）、表格复制
 5. **TabManager** - 标签页自动重命名、隐私模式
-6. **WatermarkRemover** - Gemini 去水印（Banana 功能）
-7. **ReadingHistoryManager** - 阅读历史记录与进度恢复
-8. **ModelLocker** - 模型锁定（自动切换到指定模型）
-9. **ScrollLockManager** - 滚动锁定
-10. **UserQueryMarkdownRenderer** - 用户提问 Markdown 渲染
-11. **PolicyRetryManager** - Gemini Enterprise 策略重试
+6. **WatermarkRemover** - Gemini 去水印（仅 gemini/gemini-enterprise）
+7. **UsageCounterManager** - 本地使用量计数与预估面板
+8. **ReadingHistoryManager** - 阅读历史记录与进度恢复
+9. **ModelLocker** - 模型锁定（自动切换到指定模型）
+10. **ScrollLockManager** - 滚动锁定
+11. **UserQueryMarkdownRenderer** - 用户提问 Markdown 渲染
 12. **AssistantMermaidRenderer** - AI 回复 Mermaid 兜底渲染
-13. **GeminiMystuffBridge** - Gemini My Stuff 桥接
-14. **UsageCounterManager** - 使用统计管理
+13. **PolicyRetryManager** - Gemini Enterprise 策略重试
+
+其他核心模块（不在 init 序列中，独立管理）：`ConversationManager`、`OutlineManager`、`PromptManager`、`WebDAVSyncManager`、`ShortcutManager`、`GeminiMystuffBridge`、`InlineBookmarkManager`、`NetworkMonitor`、`QueueDispatcher`。
 
 所有模块支持通过 `subscribeModuleUpdates()` 响应设置变化的热更新。
 
@@ -264,15 +265,20 @@ import { useSettingsStore } from "~stores/settings-store"
 
 ### Background Service Worker (`src/background.ts`)
 
-处理以下消息类型：
+消息类型常量定义在 `src/utils/messaging.ts`，共 21 个 MSG_ 常量：
 
-- `MSG_SHOW_NOTIFICATION` - 桌面通知
-- `MSG_PROXY_FETCH` - 代理请求（绕过 CORS，用于图片 Base64 转换）
-- `MSG_WEBDAV_REQUEST` - WebDAV 同步请求
-- `MSG_CHECK_PERMISSION` / `MSG_REQUEST_PERMISSIONS` - 权限管理
-- `MSG_SET_CLAUDE_SESSION_KEY` / `MSG_SWITCH_NEXT_CLAUDE_KEY` / `MSG_TEST_CLAUDE_TOKEN` - Claude 账号管理
-- `MSG_GET_AISTUDIO_MODELS` - AI Studio 模型列表获取
-- `MSG_CLEAR_ALL_DATA` - 全量数据清除
+| 类别     | 常量                                                                                                                                             | 说明                               |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| 通知     | `MSG_SHOW_NOTIFICATION`, `MSG_FOCUS_TAB`                                                                                                         | 桌面通知与标签页聚焦               |
+| 网络     | `MSG_PROXY_FETCH`, `MSG_WEBDAV_REQUEST`                                                                                                          | 代理请求（绕过 CORS）、WebDAV 同步 |
+| 权限     | `MSG_CHECK_PERMISSION`, `MSG_CHECK_PERMISSIONS`, `MSG_REQUEST_PERMISSIONS`, `MSG_REVOKE_PERMISSIONS`                                             | 权限管理                           |
+| 导航     | `MSG_OPEN_OPTIONS_PAGE`, `MSG_OPEN_URL`                                                                                                          | 打开选项页/URL                     |
+| 扩展状态 | `MSG_EXTENSION_UPDATE_AVAILABLE`                                                                                                                 | 更新通知                           |
+| 数据     | `MSG_CLEAR_ALL_DATA`, `MSG_RESTORE_DATA`                                                                                                         | 数据清除/恢复                      |
+| Claude   | `MSG_SET_CLAUDE_SESSION_KEY`, `MSG_TEST_CLAUDE_TOKEN`, `MSG_GET_CLAUDE_SESSION_KEY`, `MSG_CHECK_CLAUDE_GENERATING`, `MSG_SWITCH_NEXT_CLAUDE_KEY` | Claude 账号管理                    |
+| 模型     | `MSG_GET_AISTUDIO_MODELS`                                                                                                                        | AI Studio 模型列表                 |
+| 会话     | `MSG_START_NEW_CONVERSATION`                                                                                                                     | 发起新会话                         |
+| 事件     | `EVENT_MONITOR_INIT`                                                                                                                             | 网络监控初始化                     |
 
 ## 测试策略
 
@@ -289,29 +295,29 @@ import { useSettingsStore } from "~stores/settings-store"
 
 项目共 **7 个 CSS 文件**（纯原生 CSS，无预处理器），总计 ~5,974 行：
 
-| 文件路径 | 行数 | 用途 |
-|---------|------|------|
-| `src/style.css` | 1,472 | 主样式（大纲面板、快捷按钮、tooltip 等核心 UI） |
-| `src/styles/settings.css` | 2,081 | 设置页面（Options Page）样式 |
-| `src/styles/conversations.css` | 1,313 | 会话 Tab 样式（文件夹、标签、搜索、批量操作） |
-| `src/styles/queue-overlay.css` | 395 | Prompt Queue 排队叠加层样式 |
-| `src/styles/theme-variables.css` | 286 | CSS 变量定义文件（浅色/深色模式默认值） |
-| `src/popup.css` | 395 | 浏览器扩展 Popup 页面样式 |
-| `src/tabs/options.css` | 32 | Options 页面入口（仅 @import） |
+| 文件路径                         | 行数  | 用途                                            |
+| -------------------------------- | ----- | ----------------------------------------------- |
+| `src/style.css`                  | 1,472 | 主样式（大纲面板、快捷按钮、tooltip 等核心 UI） |
+| `src/styles/settings.css`        | 2,081 | 设置页面（Options Page）样式                    |
+| `src/styles/conversations.css`   | 1,313 | 会话 Tab 样式（文件夹、标签、搜索、批量操作）   |
+| `src/styles/queue-overlay.css`   | 395   | Prompt Queue 排队叠加层样式                     |
+| `src/styles/theme-variables.css` | 286   | CSS 变量定义文件（浅色/深色模式默认值）         |
+| `src/popup.css`                  | 395   | 浏览器扩展 Popup 页面样式                       |
+| `src/tabs/options.css`           | 32    | Options 页面入口（仅 @import）                  |
 
 ### 样式技术方案
 
-| 维度 | 方案 |
-|------|------|
-| 预处理器 | 无（纯原生 CSS） |
-| CSS 框架 | 无（全部手写） |
-| CSS-in-JS | 无（外部 CSS 文件 + React 内联 style 混合） |
-| 主题系统 | CSS 变量 + TypeScript 预设 + 运行时动态注入 |
-| 样式隔离 | Shadow DOM（`:host` 选择器 + 动态 style 注入） |
-| 命名前缀 | `--gh-*`（项目前身 Gemini Helper 缩写） |
-| 布局 | Flexbox 为主，Grid 辅助，固定定位用于浮动 UI |
-| 响应式 | 极少媒体查询，主要依赖 JS 动态类名（`.is-narrow`） |
-| 现代特性 | `color-mix()`、`backdrop-filter`、View Transitions、`scrollbar-width` |
+| 维度      | 方案                                                                  |
+| --------- | --------------------------------------------------------------------- |
+| 预处理器  | 无（纯原生 CSS）                                                      |
+| CSS 框架  | 无（全部手写）                                                        |
+| CSS-in-JS | 无（外部 CSS 文件 + React 内联 style 混合）                           |
+| 主题系统  | CSS 变量 + TypeScript 预设 + 运行时动态注入                           |
+| 样式隔离  | Shadow DOM（`:host` 选择器 + 动态 style 注入）                        |
+| 命名前缀  | `--gh-*`（项目前身 Gemini Helper 缩写）                               |
+| 布局      | Flexbox 为主，Grid 辅助，固定定位用于浮动 UI                          |
+| 响应式    | 极少媒体查询，主要依赖 JS 动态类名（`.is-narrow`）                    |
+| 现代特性  | `color-mix()`、`backdrop-filter`、View Transitions、`scrollbar-width` |
 
 ### 主题系统
 
@@ -340,18 +346,18 @@ src/utils/themes/
 
 **命名规范**：`--gh-{语义域}-{属性}[-{状态}]`，总计约 **87 个变量**。
 
-| 分类 | 示例 |
-|------|------|
-| 基础背景 | `--gh-bg`, `--gh-bg-secondary`, `--gh-bg-tertiary` |
-| 文字颜色 | `--gh-text`, `--gh-text-secondary`, `--gh-text-tertiary` |
-| 边框/交互 | `--gh-border`, `--gh-hover`, `--gh-active-bg` |
-| 输入框 | `--gh-input-bg`, `--gh-input-border`, `--gh-input-focus-border` |
-| 品牌色 | `--gh-primary`, `--gh-secondary`, `--gh-danger` |
-| 阴影 | `--gh-shadow`, `--gh-shadow-sm`, `--gh-shadow-lg` |
-| 文件夹色板 | `--gh-folder-bg-0` ~ `--gh-folder-bg-7`（10 个） |
-| 大纲高亮 | `--gh-outline-locate-bg`, `--gh-outline-sync-*` |
-| 玻璃拟态 | `--gh-glass-*` |
-| 分类颜色 | `--gh-category-1` ~ `--gh-category-7` |
+| 分类       | 示例                                                            |
+| ---------- | --------------------------------------------------------------- |
+| 基础背景   | `--gh-bg`, `--gh-bg-secondary`, `--gh-bg-tertiary`              |
+| 文字颜色   | `--gh-text`, `--gh-text-secondary`, `--gh-text-tertiary`        |
+| 边框/交互  | `--gh-border`, `--gh-hover`, `--gh-active-bg`                   |
+| 输入框     | `--gh-input-bg`, `--gh-input-border`, `--gh-input-focus-border` |
+| 品牌色     | `--gh-primary`, `--gh-secondary`, `--gh-danger`                 |
+| 阴影       | `--gh-shadow`, `--gh-shadow-sm`, `--gh-shadow-lg`               |
+| 文件夹色板 | `--gh-folder-bg-0` ~ `--gh-folder-bg-7`（10 个）                |
+| 大纲高亮   | `--gh-outline-locate-bg`, `--gh-outline-sync-*`                 |
+| 玻璃拟态   | `--gh-glass-*`                                                  |
+| 分类颜色   | `--gh-category-1` ~ `--gh-category-7`                           |
 
 **特殊前缀**：`--popup-*`（Popup 页面独立体系）、`--panel-width`（布局动态变量）、`--theme-x/y`（View Transitions 坐标）。
 
@@ -434,8 +440,8 @@ feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert, deps, ux
 
 ## 变更记录 (Changelog)
 
-| 日期 | 操作 | 说明 |
-|------|------|------|
-| 2026-03-04 | 初始创建 | 全仓扫描生成，覆盖率 ~92% |
-| 2026-03-04 | CSS 架构分析 | 补充完整 CSS 架构文档：7 个样式文件、主题系统、CSS 变量体系、Shadow DOM 注入机制 |
-| 2026-04-03 | 全面更新 | 更新支持站点列表（新增 7 个站点）、更新核心模块列表（新增 4 个模块）、更新 TypeScript 配置（使用 bundler 模块解析） |
+| 日期       | 操作         | 说明                                                                                                                |
+| ---------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| 2026-03-04 | 初始创建     | 全仓扫描生成，覆盖率 ~92%                                                                                           |
+| 2026-03-04 | CSS 架构分析 | 补充完整 CSS 架构文档：7 个样式文件、主题系统、CSS 变量体系、Shadow DOM 注入机制                                    |
+| 2026-04-03 | 全面更新     | 更新支持站点列表（新增 7 个站点）、更新核心模块列表（新增 4 个模块）、更新 TypeScript 配置（使用 bundler 模块解析） |  | 2026-05-14 | 全面更新 | 修正核心模块初始化顺序（13 个）、新增 hooks（useEdgePeekController）、更新内容脚本列表（7 个）、更新消息类型（messaging.ts，21 个常量）、修正 qwenai 适配器文件名（qwen-studio.ts）、更新 CLAUDE.md 同步状态 |

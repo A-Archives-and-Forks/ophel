@@ -38,20 +38,15 @@ docs/site/.vitepress/.temp
 docs/site/.vitepress/cache
 docs/site/.vitepress/dist
 
-.spec-workflow/.idea/
 .playwright-mcp
 assets/assistant-mermaid-vendor.js
 comparison_result.txt
 
-# Claude AI related
-.claude/settings.local.json
-.claude/plan/*.md
+# Claude AI related (all local, not for sharing)
+.claude/
 
-# Spec workflow temporary files
-.spec-workflow/approvals/
-.spec-workflow/archive/
-.spec-workflow/specs/
-.spec-workflow/steering/
+# Spec workflow
+.spec-workflow/
 
 # IDE and editor files
 .vscode/
