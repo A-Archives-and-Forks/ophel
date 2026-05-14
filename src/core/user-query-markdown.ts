@@ -48,8 +48,9 @@ const USER_QUERY_MARKDOWN_CSS = `
 .gh-user-query-markdown {
   font-size: 15px;
   line-height: 1.6;
-  /* 默认：GitHub Light 浅色主题（适用于所有非 Gemini 站点的浅色模式） */
-  --gh-user-query-code-bg: #f6f8fa;
+  /* 默认：浅色主题代码块（透明叠加，叠加在气泡背景之上，适配任意站点/主题） */
+  --gh-user-query-code-bg: rgba(0, 0, 0, 0.06);
+  --gh-user-query-code-border: rgba(0, 0, 0, 0.08);
   --gh-user-query-code-fg: #24292e;
   --gh-user-query-code-comment: #6a737d;
   --gh-user-query-code-keyword: #d73a49;
@@ -62,12 +63,20 @@ const USER_QUERY_MARKDOWN_CSS = `
   --gh-user-query-code-scrollbar-hover: rgba(0, 0, 0, 0.35);
 }
 
+/* 为无原生气泡背景的站点（DeepSeek、Kimi 等）提供统一气泡底色
+ * Gemini 的用户气泡由外层原生元素（user-query）提供背景，排除在外 */
+.gh-user-query-markdown:not(.gh-user-query-markdown-gemini) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
 /* 通用深色模式覆盖（覆盖非 Gemini 站点） */
 html.dark .gh-user-query-markdown,
+body.dark .gh-user-query-markdown,
 html[data-theme='dark'] .gh-user-query-markdown,
 body[data-theme='dark'] .gh-user-query-markdown,
 html[yb-theme-mode='dark'] .gh-user-query-markdown {
-  --gh-user-query-code-bg: #1e1e1e;
+  --gh-user-query-code-bg: rgba(255, 255, 255, 0.09);
+  --gh-user-query-code-border: rgba(255, 255, 255, 0.1);
   --gh-user-query-code-fg: #e6edf3;
   --gh-user-query-code-comment: #8b949e;
   --gh-user-query-code-keyword: #ff7b72;
@@ -79,10 +88,18 @@ html[yb-theme-mode='dark'] .gh-user-query-markdown {
   --gh-user-query-code-scrollbar: rgba(255, 255, 255, 0.2);
   --gh-user-query-code-scrollbar-hover: rgba(255, 255, 255, 0.35);
 }
+html.dark .gh-user-query-markdown:not(.gh-user-query-markdown-gemini),
+body.dark .gh-user-query-markdown:not(.gh-user-query-markdown-gemini),
+html[data-theme='dark'] .gh-user-query-markdown:not(.gh-user-query-markdown-gemini),
+body[data-theme='dark'] .gh-user-query-markdown:not(.gh-user-query-markdown-gemini),
+html[yb-theme-mode='dark'] .gh-user-query-markdown:not(.gh-user-query-markdown-gemini) {
+  background: rgba(255, 255, 255, 0.05);
+}
 
 .gh-user-query-markdown.gh-user-query-markdown-gemini {
   font-family: 'Google Sans', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-  --gh-user-query-code-bg: #f6f8fa;
+  --gh-user-query-code-bg: rgba(0, 0, 0, 0.06);
+  --gh-user-query-code-border: rgba(0, 0, 0, 0.08);
   --gh-user-query-code-fg: #24292e;
   --gh-user-query-code-comment: #6a737d;
   --gh-user-query-code-keyword: #d73a49;
@@ -97,7 +114,8 @@ html[yb-theme-mode='dark'] .gh-user-query-markdown {
 
 body.dark-theme .gh-user-query-markdown.gh-user-query-markdown-gemini,
 html[dark-theme] .gh-user-query-markdown.gh-user-query-markdown-gemini {
-  --gh-user-query-code-bg: #1e1e1e;
+  --gh-user-query-code-bg: rgba(255, 255, 255, 0.09);
+  --gh-user-query-code-border: rgba(255, 255, 255, 0.1);
   --gh-user-query-code-fg: #e6edf3;
   --gh-user-query-code-comment: #8b949e;
   --gh-user-query-code-keyword: #ff7b72;
@@ -126,12 +144,13 @@ html[dark-theme] .gh-user-query-markdown.gh-user-query-markdown-gemini {
   margin: 0.5em 0;
 }
 
-/* 代码块样式 - 背景与当前代码高亮配色匹配，不跟随 Ophel 主题色 */
+/* 代码块样式 - 透明叠加背景，在任意气泡背景上自动形成视觉层次 */
 .gh-user-query-markdown pre {
   margin: 0;
   padding: 0.75em;
   padding-right: 0.5em;
   background: var(--gh-user-query-code-bg);
+  border: 1px solid var(--gh-user-query-code-border);
   color: var(--gh-user-query-code-fg);
   border-radius: 6px;
   font-size: 0.95em;
