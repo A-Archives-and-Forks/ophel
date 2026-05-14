@@ -31,9 +31,6 @@
     "sync:supporters": "node scripts/generate-supporters-readmes.mjs",
     "sync:contributors": "node scripts/sync-contributors.mjs && npx all-contributors-cli generate",
     "sync:all": "pnpm sync:supporters && pnpm sync:contributors",
-    "docs:dev": "vitepress dev docs/site",
-    "docs:build": "vitepress build docs/site",
-    "docs:preview": "vitepress preview docs/site",
     "prepare": "husky"
   },
   "lint-staged": {
