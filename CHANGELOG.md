@@ -9,31 +9,21 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.0.50] - 2026-05-15
+
 ### 🐛 Bug Fixes
 
-- **DeepSeek native user query width adjustment**: DeepSeek's user question width setting only applied `max-width` to the native random-class content node, so long unrendered plain-text prompts could keep their intrinsic width and ignore the setting unless the user-query Markdown enhancement replaced the node. The DeepSeek adapter now applies the configured width directly to the native and enhanced user-content nodes, keeps them right-aligned, and adds shrink/wrapping safeguards for long code-like prompts.
-
-- **Kimi page width adjustment alignment**: Kimi's main conversation list kept horizontal padding after page width adjustment, making the visible conversation area narrower than the widened input box. The Kimi adapter now removes that horizontal padding when applying the width override so the conversation body and input edges align.
-
-- **Kimi user query width adjustment**: Kimi did not provide user-query width selectors, so the user question width setting had no effect on the current `.segment-content-box > .user-content` DOM. The adapter now targets the current user bubble structure, keeps the bubble right-aligned, and applies the configured width consistently across different prompts instead of shrinking each bubble to its text length.
-
-- **Qianwen page width adjustment with the new centered wrapper**: Qianwen's conversation area stayed capped at the site's default 664px because the new `.auto-center-wrapper-*` element used `--max-message-list-width` after the outer message list was widened. Page width adjustment now also targets that wrapper and resets the min/max message-list variables, avoids applying the page-width percentage twice to the nested input wrapper, and user-query width adjustment now covers the new question card without shrinking its inner text card while keeping the question bubble right-aligned. The user-query selector was also narrowed to the real question card so inline bookmark icons are not injected twice.
-
-- **Qianwen user query Markdown rendering after DOM update**: Qianwen's user messages moved to the new `.chat-question-wrap` / `.question-text-card` structure, so the user-query style enhancement no longer detected prompts and inline code, code blocks, and math stayed as plain text. The adapter now recognizes the new question wrapper, targets the real text card for replacement, and normalizes non-breaking spaces before Markdown rendering.
-
-- **Clean mode selectors for ChatGLM, Ima, and Kimi**: Updated site-specific clean mode hiding rules to cover newly surfaced promotional/activity elements, including ChatGLM's slogan banner, Ima's activity banner content, and Kimi's activity area.
-
-- **ChatGLM code block width with page width adjustment**: Code block bodies were narrower than their copy headers because the ChatGLM page-width rule also constrained nested `.markdown-body.md-code` nodes. Code blocks now keep their inner code body, language wrapper, and `<pre>` width aligned with the native copy header while still respecting the outer conversation width.
-
-- **AI Studio Alt+/ shortcut cannot find the model selector**: AI Studio did not provide a model-switcher config for the shared `clickModelSelector()` shortcut path, so `Alt+/` returned "Model selector not found" even when the page had a visible `button.model-selector-card`. The AI Studio adapter now handles the shortcut directly, reuses the current `model-selector-card` / `data-test-id="model-name"` DOM anchors, and can programmatically click the native model selector even when Zen Mode hides the run settings panel. Model locking also switches the model picker to the "All" category before searching for the target model, matching the model-list sync flow and avoiding false "model not found" failures when the picker opens on Featured.
-
-- **AI Studio outline misses user prompts in virtual-scrolled conversations**: AI Studio now exposes conversation turn navigation through `ms-items-scrollbar` while virtualizing off-screen chat turns. The previous fallback only read `aria-label` from legacy `ms-prompt-scrollbar` buttons and still built user-query outline entries from mounted DOM, so long conversations could show only the currently rendered prompts. The AI Studio adapter now reads both scrollbar components, uses the timeline as the authoritative user-query list when available, keeps visible assistant headings merged in order, and reveals off-screen prompts through the native timeline button before resolving the outline target.
-
-- **ChatGPT outline shrinks to only visible messages when scrolling long conversations**: ChatGPT now lazily unmounts off-screen turn content while keeping a `data-turn-id-container` placeholder shell in the DOM. The previous outline extraction ran `querySelectorAll('[data-message-author-role]')`, which only found mounted nodes, causing the outline to collapse to a handful of entries near the current scroll position. Fixed by caching every outline item (keyed by stable `data-message-id`) inside `ChatGPTAdapter` and merging cached entries back whenever the number of turn shells exceeds the number of live role nodes. Clicking a cached entry scrolls to its placeholder shell so ChatGPT re-mounts the real content. Also fixed a secondary issue where the tree was not rebuilt (text unchanged) but `node.element` still held a stale/disconnected reference, causing the "content deleted or collapsed" toast on click. The runtime-reference sync is guarded to ChatGPT only, with no behaviour change for other sites. (fixes #402)
-
-- **Code copy button disappears when scrolling inside user-query code block**: Wrapped each `<pre>` with a `<div class="gh-code-wrapper">` and moved the copy button outside the scroll container. The button is now `position: absolute` relative to the non-scrolling wrapper, so it stays visible at the top-right corner regardless of how far the user scrolls inside the code block. This also resolves the previous `float: right` line-wrap regression (#484) without reintroducing it.
-- **User-query code blocks indistinguishable from the bubble background on some sites (Kimi, DeepSeek, etc.)**: Replaced the fixed hex code-block background colors (`#f6f8fa` / `#1e1e1e`) with semi-transparent overlays (`rgba(0,0,0,0.06)` for light mode, `rgba(255,255,255,0.09)` for dark mode). The overlay is always applied on top of the bubble's actual background, so code blocks remain visually distinct regardless of the site, Ophel theme preset, or whether host-theme-sync is enabled. Also added a matching semi-transparent border for extra definition, and added the missing `body.dark` dark-mode selector to cover DeepSeek. For sites where the user-query bubble itself has no background (DeepSeek, Kimi, etc.), a subtle bubble overlay (`rgba(0,0,0,0.04)` / `rgba(255,255,255,0.05)`) is now applied to the rendered container, creating a two-tier visual hierarchy between the bubble and the code block. Gemini is excluded from the bubble overlay since its bubble background is provided by the native outer element.
-- **ChatGPT theme circular-reveal animation broken after site update**: A recent ChatGPT redesign introduced `view-transition-name` CSS on their header and buttons, which prevented the `clip-path` animation on `::view-transition-new(root)` from producing any visual output (the animation ran to completion but remained invisible). Diagnosed by isolating the View Transition API layer: `transition.ready` still resolved and the `element.animate()` call completed normally, yet no circle appeared. Fixed by temporarily assigning `view-transition-name: gh-page` to `document.body` before each theme toggle so Ophel's circular reveal targets `::view-transition-new(gh-page)` instead of `root`. The named slot is removed from body once `transition.finished` resolves. The corresponding `::view-transition-old/new(gh-page)` rules are added to the global VT stylesheet so the old snapshot stays frozen during the reveal. This change is ChatGPT-specific; all other sites continue to use `::view-transition-new(root)` unchanged.
+- Fixed page-width and user-question-width adjustments not working or misaligned on DeepSeek, Kimi, and Qianwen
+- Fixed code and math in Qianwen user messages not rendering correctly
+- Fixed clean mode not hiding new promotional banners on ChatGLM, Ima, and Kimi
+- Fixed code blocks displaying with inconsistent widths when page-width adjustment is enabled on ChatGLM
+- Fixed the `Alt+/` shortcut reporting "model selector not found" on AI Studio
+- Fixed the outline only showing nearby messages in long conversations on AI Studio and ChatGPT
+- Fixed the copy button disappearing when scrolling inside a code block in user messages
+- Fixed code blocks being hard to distinguish from the message bubble background on some sites (Kimi, DeepSeek, etc.)
+- Fixed the circular theme-switch animation not appearing on ChatGPT
 
 ---
 
@@ -1021,6 +1011,7 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.0.50]: https://github.com/urzeye/ophel/releases/tag/v1.0.50
 [1.0.49]: https://github.com/urzeye/ophel/releases/tag/v1.0.49
 [1.0.48]: https://github.com/urzeye/ophel/releases/tag/v1.0.48
 [1.0.47]: https://github.com/urzeye/ophel/releases/tag/v1.0.47

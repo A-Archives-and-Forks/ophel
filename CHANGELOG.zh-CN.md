@@ -8,31 +8,21 @@
 
 ## [Unreleased]
 
+---
+
+## [1.0.50] - 2026-05-15
+
 ### 🐛 问题修复
 
-- **DeepSeek 原生用户问题宽度调整不生效**：DeepSeek 的用户问题宽度设置此前只给原生随机类名内容节点应用 `max-width`，未经过用户提问 Markdown 样式优化的长文本/代码类提问仍可能保持自身内容宽度，看起来没有响应设置。现在 DeepSeek 适配器会把配置宽度直接应用到原生和增强后的用户内容节点，保持右对齐，并补充长代码类文本的收缩与断行兜底。
-
-- **Kimi 页面宽度调整后主体区域与输入框不对齐**：Kimi 的主对话列表在页面宽度调整后仍保留横向 padding，导致视觉上的对话主体比加宽后的输入框更窄。现在 Kimi 适配器在应用宽度覆盖时会移除这层左右 padding，使对话主体和输入框边缘对齐。
-
-- **Kimi 用户问题宽度调整不生效**：Kimi 适配器此前没有提供用户问题宽度选择器，导致「用户问题宽度调整」对当前 `.segment-content-box > .user-content` 结构没有效果。现在适配器会命中新版用户气泡结构，保持气泡右对齐，并对不同问题统一应用设置宽度，不再按文本长度自适应收缩。
-
-- **Qianwen 新版居中容器下页面宽度调整不生效**：千问主对话区域在外层消息列表变宽后，仍会被新的 `.auto-center-wrapper-*` 元素和 `--max-message-list-width` 变量限制在站点默认的 664px。现在页面宽度调整会同时覆盖该居中容器并重置消息列表的最小/最大宽度变量，避免对嵌套输入框容器重复套用页面宽度百分比；用户问题宽度调整会作用在新版问题卡片外层，不再缩窄内部文本卡片，并保持用户气泡右对齐。用户问题选择器也收敛到真实问题卡片，避免页内收藏图标重复注入。
-
-- **Qianwen 用户提问 Markdown 渲染在新版 DOM 下失效**：千问用户消息切到了新的 `.chat-question-wrap` / `.question-text-card` 结构，导致「用户提问样式优化」无法识别提问，行内代码、代码块和公式都保持纯文本。现在适配器会识别新的问题容器，精确替换真实文本卡片，并在渲染前将不可见的 NBSP 还原为普通空格。
-
-- **ChatGLM、Ima、Kimi 净化模式选择器适配**：更新多个站点的净化模式隐藏规则，覆盖新版页面中新出现的推广/活动区域，包括 ChatGLM 的 slogan banner、Ima 的活动横幅内容和 Kimi 的活动区域。
-
-- **ChatGLM 开启页面宽度调整后代码块宽度不一致**：ChatGLM 的页面宽度规则会同时限制嵌套的 `.markdown-body.md-code`，导致代码内容区域比顶部复制栏更窄。现在代码块内部的代码内容、语言容器和 `<pre>` 会与站点原生复制栏保持同宽，同时仍然受外层对话宽度控制。
-
-- **AI Studio 中 `Alt + /` 快捷键找不到模型选择器**：AI Studio 未给通用 `clickModelSelector()` 快捷键路径提供模型切换配置，导致页面上明明存在可见的 `button.model-selector-card`，按 `Alt + /` 仍提示「未找到模型选择器」。现在 AI Studio 适配器会直接处理该快捷键，复用当前 `model-selector-card` / `data-test-id="model-name"` DOM 锚点；即使禅模式隐藏运行设置面板，也可以程序化点击原生模型选择器。模型锁定也会在查找目标模型前将模型选择器切换到「All」分类，与模型列表同步流程保持一致，避免侧栏默认停留在 Featured 时误判用户选择的模型不存在。
-
-- **AI Studio 虚拟滚动长会话中大纲漏掉用户提问**：AI Studio 现在通过 `ms-items-scrollbar` 暴露对话轮次导航，同时会虚拟化卸载视口外的聊天 turn。此前兜底逻辑只从旧版 `ms-prompt-scrollbar` 按钮读取 `aria-label`，并且用户提问大纲仍主要依赖已挂载 DOM，长会话中可能只显示当前渲染出来的少数提问。AI Studio 适配器现在同时兼容新旧时间线组件；当时间线可用时，以时间线作为完整用户提问列表来源，并按顺序合并当前可见的 AI 回复标题；点击离屏提问时会先通过原生时间线按钮让目标 turn 回挂，再解析大纲跳转目标。
-
-- **ChatGPT 长会话滚动后大纲缩水为仅显示当前可见消息**：ChatGPT 在长对话中会对视口外的消息做懒卸载，仅保留 `data-turn-id-container` 占位外壳；原先的大纲抽取逻辑使用 `querySelectorAll('[data-message-author-role]')` 只能扫到已挂载节点，导致大纲折叠为滚动位置附近的少数条目。修复方案：在 `ChatGPTAdapter` 内按 `data-message-id` 缓存大纲项，当 turn 外壳数大于实际 role 节点数时自动将缓存条目合并回大纲列表；点击缓存条目时跳转到对应占位外壳，ChatGPT 随即重新挂载真实内容。同时修复次要问题：树结构未重建（文本未变）时 `node.element` 仍持有旧的断开引用，导致点击出现「收藏内容已被删除或折叠」提示。DOM 引用同步逻辑仅限 ChatGPT 适配器，不影响其他站点。（修复 #402）
-
-- **用户提问代码块内向下滚动后复制按钮消失**：为每个 `<pre>` 外层增加 `<div class="gh-code-wrapper">` 包裹层，并将复制按钮移至 `pre` 滚动容器之外。按钮现在以不参与滚动的 wrapper 为定位祖先，无论代码块内容多长，右上角复制按钮始终可见。同时彻底消除了 #484 修复中 `float: right` 换行回退问题的根因。
-- **部分站点（Kimi、DeepSeek 等）代码块背景色与用户问题气泡背景色完全一致**：将代码块背景由固定颜色（`#f6f8fa` / `#1e1e1e`）改为半透明叠加层（浅色模式 `rgba(0,0,0,0.06)`，深色模式 `rgba(255,255,255,0.09)`）。叠加层始终在气泡实际背景之上渲染，代码块在任意站点、任意 Ophel 主题预设及是否开启原生主题同步的情况下均保持可区分。同时补充了同色系细边框以增强轮廓感，并补全了 DeepSeek 缺失的深色模式选择器 `body.dark`。对于用户问题气泡本身无背景色的站点（DeepSeek、Kimi 等），现在为渲染容器补充轻量气泡底色（`rgba(0,0,0,0.04)` / `rgba(255,255,255,0.05)`），在气泡与代码块之间形成双层视觉层次。Gemini 的气泡背景由外层原生元素提供，排除在外。
-- **ChatGPT 切换主题时圆形扩散动画失效**：ChatGPT 近期改版在页面 header 与按钮上引入了 `view-transition-name` CSS，导致 `::view-transition-new(root)` 的 `clip-path` 动画完全无法产生视觉效果（动画正常跑完但不可见）。排查过程：隔离验证 View Transitions API 层，确认 `transition.ready` 仍正常 resolve、`element.animate()` 正常执行完毕，但圆形始终不显示。修复方案：在每次主题切换前临时给 `document.body` 设置 `view-transition-name: gh-page`，将圆形揭示动画目标从 `root` 切换为 `::view-transition-new(gh-page)`；`transition.finished` 后恢复原 inline 值。全局 VT 样式表同步补充 `::view-transition-old/new(gh-page)` 规则，使旧快照在圆形扩散期间保持冻结。此修改仅影响 ChatGPT，其它站点继续使用 `::view-transition-new(root)`。
+- 修复了 DeepSeek、Kimi、千问的「页面宽度调整」和「用户问题宽度调整」设置不生效或对齐异常的问题
+- 修复了千问用户消息中的代码、公式等内容无法正常渲染的问题
+- 修复了 ChatGLM、Ima、Kimi 的净化模式未能隐藏新版页面中的活动推广区域
+- 修复了 ChatGLM 开启页面宽度调整后代码块宽度显示不一致的问题
+- 修复了 AI Studio 按 `Alt+/` 快捷键时提示「找不到模型选择器」的问题
+- 修复了 AI Studio 和 ChatGPT 在长对话中，大纲只显示当前可见消息的问题
+- 修复了在用户提问的代码块内向下滚动时，复制按钮消失的问题
+- 修复了部分站点（如 Kimi、DeepSeek）代码块背景色与消息气泡背景色难以区分的问题
+- 修复了 ChatGPT 切换明暗主题时圆形扩散动画失效的问题
 
 ---
 
@@ -1021,6 +1011,7 @@
 
 ---
 
+[1.0.50]: https://github.com/urzeye/ophel/releases/tag/v1.0.50
 [1.0.49]: https://github.com/urzeye/ophel/releases/tag/v1.0.49
 [1.0.48]: https://github.com/urzeye/ophel/releases/tag/v1.0.48
 [1.0.47]: https://github.com/urzeye/ophel/releases/tag/v1.0.47
