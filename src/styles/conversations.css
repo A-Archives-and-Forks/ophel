@@ -72,6 +72,11 @@
   overflow-y: auto;
 }
 
+/* 拖拽进行中时禁止文本选择，避免拖拽会话时误选文字 */
+.conversations-content.is-dragging-any {
+  user-select: none;
+}
+
 .conversations-toolbar {
   display: flex;
   gap: 6px;
@@ -273,12 +278,21 @@ html[data-theme="dark"] .conversations-unsupported-icon {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  margin-bottom: 4px;
   border-radius: 8px;
   background: var(--gh-bg-secondary, #f9fafb);
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    border 0.2s,
+    box-shadow 0.2s,
+    outline 0.2s;
   flex-wrap: wrap;
+}
+
+/* 间距由后继兄弟节点控制，避免展开时产生闪烁或布局跳动 */
+.conversations-folder-item + .conversations-folder-item,
+.conversations-list + .conversations-folder-item {
+  margin-top: 4px;
 }
 
 .conversations-folder-item:hover {
@@ -385,6 +399,11 @@ html[data-theme="dark"] .conversations-unsupported-icon {
 
 .conversations-folder-item.is-drag-over {
   box-shadow: inset 0 2px 0 var(--gh-primary, #4285f4);
+}
+
+.conversations-folder-item.is-drag-over-conv {
+  outline: 2px dashed var(--gh-primary, #4285f4) !important;
+  outline-offset: -2px;
 }
 
 .conversations-folder-menu {
@@ -839,7 +858,6 @@ html[data-theme="dark"] .conversations-unsupported-icon {
   border-top: none;
   border-radius: 0 0 8px 8px;
   margin-top: -4px;
-  margin-bottom: 4px;
   max-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -869,6 +887,10 @@ html[data-theme="dark"] .conversations-unsupported-icon {
   transition: background-color 0.2s;
   gap: 8px;
   position: relative;
+}
+
+.conversations-item.is-dragging {
+  opacity: 0.5;
 }
 
 .conversations-item:hover {
