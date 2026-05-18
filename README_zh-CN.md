@@ -246,6 +246,12 @@
       <img src="https://api.dicebear.com/7.x/bottts/svg?seed=**%E7%85%9C%7Calipay%7C2026-04-27%7C%EF%BF%A51.99&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt="**煜" /><br />
       <sub><b>**煜</b></sub>
     </td>
+    <td align="center" valign="top" width="14.28%">
+      <a href="https://github.com/Ice-wilderness">
+        <img src="https://avatars.githubusercontent.com/u/65530045?v=4" width="84px;" alt="Ice_wilderness" /><br />
+        <sub><b>Ice_wilderness</b></sub>
+      </a>
+    </td>
   </tr>
   </tbody>
 </table>
