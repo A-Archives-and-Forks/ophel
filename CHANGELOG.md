@@ -11,6 +11,14 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ### ✨ New Features
 
+### 🐛 Bug Fixes
+
+---
+
+## [1.0.51] - 2026-05-20
+
+### ✨ New Features
+
 - **Quick Buttons proximity wake radius** (`Settings → Quick Buttons`): A new slider controls how close the cursor must be before the floating widget auto-expands (default 150 px, matching previous behavior). Set it to **0** for a true dwell-hover mode — the widget only expands after the cursor rests on the water-drop for 300 ms, preventing accidental expansion from the cursor passing through. (#492)
 - **Drag conversations into folders**: In the Conversations tab, you can now drag a chat onto any folder to move it there. Thanks @t0ny-peng (#512)
 
@@ -1024,6 +1032,7 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.0.51]: https://github.com/urzeye/ophel/releases/tag/v1.0.51
 [1.0.50]: https://github.com/urzeye/ophel/releases/tag/v1.0.50
 [1.0.49]: https://github.com/urzeye/ophel/releases/tag/v1.0.49
 [1.0.48]: https://github.com/urzeye/ophel/releases/tag/v1.0.48
