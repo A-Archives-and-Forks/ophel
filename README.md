@@ -248,6 +248,12 @@
       </a>
     </td>
   </tr>
+  <tr>
+    <td align="center" valign="top" width="14.28%">
+      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=%20%E7%81%AB%E5%8D%8E%E5%85%B0%E6%A8%B1%7Cwechat%7C2026-05-24%7C%C2%A530&amp;radius=20&amp;backgroundColor=f1f5f9" width="84px;" alt=" 火华兰樱" /><br />
+      <sub><b> 火华兰樱</b></sub>
+    </td>
+  </tr>
   </tbody>
 </table>
 
