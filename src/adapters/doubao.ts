@@ -37,9 +37,9 @@ const SIDEBAR_HISTORY_SELECTOR = `${SIDEBAR_ROOT_SELECTOR} [data-history-contain
 const CONVERSATION_ROW_SELECTOR = `${SIDEBAR_ROOT_SELECTOR} a[id^="conversation_"][href*="/chat/"]`
 const CONVERSATION_TITLE_SELECTOR = '[class*="overallTitle-"], [class*="title-"]'
 const NEW_CHAT_BUTTON_SELECTOR = `${SIDEBAR_ROOT_SELECTOR} > div:nth-child(2)`
-const MESSAGE_LIST_SELECTOR =
-  '[data-table-spillover="true"][data-table-spillover-force-disable="true"]'
-const MESSAGE_SCROLL_SELECTOR = '[class^="scrollable-"], [class*=" scrollable-"]'
+const VIRTUAL_SCROLL_SELECTOR = '[class*="v_list_scroller"]'
+const VIRTUAL_ROW_SELECTOR = ".v_list_row"
+const VIRTUAL_SCROLL_HOLDER_SELECTOR = '[data-name="scroll_holder"]'
 const MESSAGE_BLOCK_SELECTOR = '[data-target-id="message-box-target-id"]'
 const USER_QUERY_SELECTOR = "[data-message-id].justify-end"
 const RAW_USER_QUERY_TEXT_SELECTOR =
@@ -52,11 +52,31 @@ const DOUBAO_DELETE_REASON = {
   UI_FAILED: "delete_ui_failed",
   BATCH_ABORTED_AFTER_UI_FAILURE: "delete_batch_aborted_after_ui_failure",
 } as const
+const DOUBAO_OUTLINE_CACHE_MAX_ITEMS = 1200
+
+interface DoubaoVirtualMessageMeta {
+  messageId: string | null
+  rowIndex: number
+}
+
+interface DoubaoOutlineCacheEntry {
+  id: string
+  level: number
+  text: string
+  messageId: string | null
+  rowIndex: number
+  scrollTop: number
+  orderInMessage: number
+  headingMatchIndex?: number
+  isUserQuery?: boolean
+  isTruncated?: boolean
+  wordCount?: number
+}
 
 export class DoubaoAdapter extends SiteAdapter {
-  // 滚动补偿状态记录
-  private lastScrollHeight = 0
-  private lastScrollTop = 0
+  private outlineCacheSessionKey = ""
+  private outlineCacheTransitionEndAt = 0
+  private outlineItemCache = new Map<string, DoubaoOutlineCacheEntry>()
 
   // ===== 必选抽象方法 =====
 
@@ -249,14 +269,31 @@ export class DoubaoAdapter extends SiteAdapter {
     )
   }
 
-  private getMessageListContainer(): HTMLElement | null {
-    const candidates = Array.from(document.querySelectorAll(MESSAGE_LIST_SELECTOR)) as HTMLElement[]
-    if (candidates.length === 0) return null
+  private getVirtualScrollContainer(): HTMLElement | null {
+    const candidates = Array.from(
+      document.querySelectorAll(VIRTUAL_SCROLL_SELECTOR),
+    ) as HTMLElement[]
 
     return (
-      candidates.find((candidate) =>
-        candidate.querySelector(`${USER_QUERY_SELECTOR}, ${ASSISTANT_CONTENT_SELECTOR}`),
-      ) || candidates[0]
+      candidates.find((candidate) => {
+        if (!candidate.isConnected) return false
+
+        const hasVirtualList =
+          candidate.querySelector(VIRTUAL_SCROLL_HOLDER_SELECTOR) ||
+          candidate.querySelector(VIRTUAL_ROW_SELECTOR) ||
+          candidate.querySelector(MESSAGE_BLOCK_SELECTOR)
+        if (!hasVirtualList) return false
+
+        const style = window.getComputedStyle(candidate)
+        const isScrollable =
+          style.overflowY === "auto" ||
+          style.overflowY === "scroll" ||
+          style.overflow === "auto" ||
+          style.overflow === "scroll" ||
+          candidate.scrollHeight > candidate.clientHeight
+
+        return isScrollable && candidate.clientHeight > 0
+      }) || null
     )
   }
 
@@ -461,35 +498,15 @@ export class DoubaoAdapter extends SiteAdapter {
   }
 
   getScrollContainer(): HTMLElement | null {
-    const messageList = this.getMessageListContainer()
-    if (messageList) {
-      const nestedScrollable = messageList.querySelector(
-        MESSAGE_SCROLL_SELECTOR,
-      ) as HTMLElement | null
-      if (nestedScrollable) {
-        return nestedScrollable
-      }
+    return this.getVirtualScrollContainer()
+  }
 
-      const scrollableAncestor = this.findScrollableAncestor(messageList)
-      if (scrollableAncestor) return scrollableAncestor
-    }
-
-    const scrollContainers = document.querySelectorAll(MESSAGE_SCROLL_SELECTOR)
-    for (const el of scrollContainers) {
-      const style = window.getComputedStyle(el)
-      if (
-        (style.overflowY === "scroll" || style.overflowY === "auto") &&
-        (el.scrollHeight > el.clientHeight || el.clientHeight > 0)
-      ) {
-        return el as HTMLElement
-      }
-    }
-
-    return null
+  getObserveTarget(): Element | null {
+    return this.getVirtualScrollContainer() || super.getObserveTarget()
   }
 
   getResponseContainerSelector(): string {
-    return MESSAGE_LIST_SELECTOR
+    return VIRTUAL_SCROLL_SELECTOR
   }
 
   getUserQuerySelector(): string | null {
@@ -1030,20 +1047,360 @@ export class DoubaoAdapter extends SiteAdapter {
     await new Promise((resolve) => setTimeout(resolve, ms))
   }
 
+  // ==================== 大纲缓存（虚拟滚动兜底） ====================
+
+  private getOutlineCacheSessionKey(): string {
+    const cid = this.getCurrentCid() || "default"
+    const sessionId = this.getSessionId() || "default"
+    return `${cid}:${sessionId}:${window.location.pathname}`
+  }
+
+  private ensureOutlineCacheSession(): void {
+    const sessionKey = this.getOutlineCacheSessionKey()
+    if (sessionKey === this.outlineCacheSessionKey) return
+
+    const isFirstSession = this.outlineCacheSessionKey === ""
+    this.outlineCacheSessionKey = sessionKey
+    this.outlineItemCache.clear()
+    this.outlineCacheTransitionEndAt = isFirstSession ? 0 : Date.now() + 1200
+  }
+
+  private isInOutlineCacheTransition(): boolean {
+    return Date.now() < this.outlineCacheTransitionEndAt
+  }
+
+  private getVirtualRow(element: Element | null): HTMLElement | null {
+    return (element?.closest(VIRTUAL_ROW_SELECTOR) as HTMLElement | null) || null
+  }
+
+  private getVirtualRowIndex(row: HTMLElement | null, fallbackIndex: number): number {
+    if (!row) return fallbackIndex
+
+    const clsValue = row.style.getPropertyValue("--cls") || row.getAttribute("style") || ""
+    const match = clsValue.match(/r-(\d+)-/)
+    return match ? Number.parseInt(match[1], 10) : fallbackIndex
+  }
+
+  private getVirtualRowScrollTop(row: HTMLElement | null, fallbackTop: number): number {
+    if (!row) return fallbackTop
+
+    const propValue =
+      row.style.getPropertyValue("--vlist-row-transform-y") || row.getAttribute("style") || ""
+    const match = propValue.match(/--vlist-row-transform-y:\s*(-?\d+(?:\.\d+)?)px/)
+    if (match) return Math.max(0, Number.parseFloat(match[1]))
+
+    const directValue = Number.parseFloat(propValue)
+    return Number.isFinite(directValue) ? Math.max(0, directValue) : fallbackTop
+  }
+
+  private getVirtualMessageMeta(
+    unit: HTMLElement,
+    fallbackIndex: number,
+  ): DoubaoVirtualMessageMeta {
+    const row = this.getVirtualRow(unit)
+    const observedRow = row?.getAttribute("data-observe-row") || ""
+    const rowMessageId = observedRow.match(/^block_(.+)$/)?.[1] || null
+    const messageElement = unit.matches("[data-message-id]")
+      ? unit
+      : (unit.querySelector("[data-message-id]") as HTMLElement | null)
+
+    return {
+      messageId: rowMessageId || messageElement?.getAttribute("data-message-id") || null,
+      rowIndex: this.getVirtualRowIndex(row, fallbackIndex),
+    }
+  }
+
+  private getOutlineMessageKey(meta: DoubaoVirtualMessageMeta): string {
+    return meta.messageId || `row:${meta.rowIndex}`
+  }
+
+  private getElementVirtualScrollTop(container: HTMLElement, element: HTMLElement): number {
+    const row = this.getVirtualRow(element)
+    const fallbackTop = Math.max(
+      0,
+      container.scrollTop +
+        element.getBoundingClientRect().top -
+        container.getBoundingClientRect().top,
+    )
+    const rowTop = this.getVirtualRowScrollTop(row, fallbackTop)
+    if (!row) return rowTop
+
+    const elementOffsetInRow = element.getBoundingClientRect().top - row.getBoundingClientRect().top
+    return Math.max(0, rowTop + elementOffsetInRow)
+  }
+
+  private hashOutlineText(value: string): string {
+    let hash = 5381
+    for (let i = 0; i < value.length; i += 1) {
+      hash = ((hash << 5) + hash + value.charCodeAt(i)) >>> 0
+    }
+    return hash.toString(16)
+  }
+
+  private buildOutlineItemId(
+    meta: DoubaoVirtualMessageMeta,
+    item: Pick<OutlineItem, "level" | "text" | "isUserQuery">,
+    headingMatchIndex = 0,
+  ): string {
+    const messageKey = this.getOutlineMessageKey(meta)
+    if (item.isUserQuery) return `doubao:${messageKey}:user`
+    return `doubao:${messageKey}:h${item.level}:${headingMatchIndex}:${this.hashOutlineText(
+      item.text,
+    )}`
+  }
+
+  private trimOutlineCache(): void {
+    if (this.outlineItemCache.size <= DOUBAO_OUTLINE_CACHE_MAX_ITEMS) return
+
+    const entries = Array.from(this.outlineItemCache.values()).sort((a, b) => {
+      if (a.rowIndex !== b.rowIndex) return a.rowIndex - b.rowIndex
+      return a.orderInMessage - b.orderInMessage
+    })
+
+    const keep = new Set(entries.slice(-DOUBAO_OUTLINE_CACHE_MAX_ITEMS).map((entry) => entry.id))
+    for (const id of this.outlineItemCache.keys()) {
+      if (!keep.has(id)) this.outlineItemCache.delete(id)
+    }
+  }
+
+  private clearOutlineCacheForMeta(meta: DoubaoVirtualMessageMeta): void {
+    for (const [id, entry] of this.outlineItemCache) {
+      if (meta.messageId && entry.messageId === meta.messageId) {
+        this.outlineItemCache.delete(id)
+      } else if (!entry.messageId && entry.rowIndex === meta.rowIndex) {
+        this.outlineItemCache.delete(id)
+      }
+    }
+  }
+
+  private mergeCachedOutlineItems(
+    currentItems: OutlineItem[],
+    currentIds: Set<string>,
+    maxLevel: number,
+    includeUserQueries: boolean,
+    showWordCount: boolean,
+  ): OutlineItem[] {
+    if (this.outlineItemCache.size === 0) return currentItems
+
+    const merged: OutlineItem[] = [...currentItems]
+
+    for (const entry of this.outlineItemCache.values()) {
+      if (currentIds.has(entry.id)) continue
+      if (entry.isUserQuery && !includeUserQueries) continue
+      if (!entry.isUserQuery && entry.level > maxLevel) continue
+      if (!entry.text.trim()) continue
+
+      merged.push({
+        level: entry.level,
+        text: entry.text,
+        element: null,
+        id: entry.id,
+        isUserQuery: entry.isUserQuery,
+        isTruncated: entry.isTruncated,
+        wordCount: showWordCount ? entry.wordCount : undefined,
+        scrollTop: entry.scrollTop,
+      } as OutlineItem & { scrollTop: number })
+    }
+
+    return merged
+      .map((item, originalIndex) => {
+        const entry = item.id ? this.outlineItemCache.get(item.id) : undefined
+        return {
+          item,
+          originalIndex,
+          rowIndex: entry?.rowIndex ?? Number.MAX_SAFE_INTEGER,
+          orderInMessage: entry?.orderInMessage ?? originalIndex,
+        }
+      })
+      .sort((a, b) => {
+        if (a.rowIndex !== b.rowIndex) return a.rowIndex - b.rowIndex
+        if (a.orderInMessage !== b.orderInMessage) return a.orderInMessage - b.orderInMessage
+        return a.originalIndex - b.originalIndex
+      })
+      .map(({ item }) => item)
+  }
+
+  private escapeAttributeValue(value: string): string {
+    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+      return CSS.escape(value)
+    }
+    return value.replace(/["\\]/g, "\\$&")
+  }
+
+  private findMessageElementByCacheEntry(
+    container: HTMLElement,
+    entry: DoubaoOutlineCacheEntry,
+  ): HTMLElement | null {
+    if (entry.messageId) {
+      const escaped = this.escapeAttributeValue(entry.messageId)
+      const messageElement = container.querySelector(
+        `[data-message-id="${escaped}"]`,
+      ) as HTMLElement | null
+      if (messageElement) return messageElement
+    }
+
+    const rows = Array.from(container.querySelectorAll(VIRTUAL_ROW_SELECTOR)) as HTMLElement[]
+    const row = rows.find((candidate) => this.getVirtualRowIndex(candidate, -1) === entry.rowIndex)
+    return (row?.querySelector("[data-message-id]") as HTMLElement | null) || null
+  }
+
+  private findHeadingInsideMessage(
+    messageElement: Element,
+    entry: DoubaoOutlineCacheEntry,
+  ): Element | null {
+    if (entry.isUserQuery) return messageElement
+
+    const headings = Array.from(messageElement.querySelectorAll(`h${entry.level}`))
+    const targetMatchIndex = entry.headingMatchIndex ?? 0
+    let matched = 0
+
+    for (const heading of headings) {
+      if ((heading.textContent || "").trim() !== entry.text) continue
+      if (matched === targetMatchIndex) return heading
+      matched += 1
+    }
+
+    return null
+  }
+
+  private resolveCachedDoubaoOutlineTarget(id: string | undefined): Element | null {
+    if (!id) return null
+
+    this.ensureOutlineCacheSession()
+
+    const entry = this.outlineItemCache.get(id)
+    if (!entry) return null
+
+    const container = this.getVirtualScrollContainer()
+    if (!container) return null
+
+    const messageElement = this.findMessageElementByCacheEntry(container, entry)
+    if (!messageElement) return null
+
+    if (entry.isUserQuery) return messageElement
+    return this.findHeadingInsideMessage(messageElement, entry)
+  }
+
+  private scrollVirtualContainerTo(container: HTMLElement, scrollTop: number): void {
+    const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight)
+    const top = Math.max(0, Math.min(scrollTop, maxScrollTop))
+
+    container.scrollTo({
+      top,
+      behavior: "instant",
+      __bypassLock: true,
+    } as any)
+    container.dispatchEvent(new Event("scroll", { bubbles: true }))
+  }
+
+  private async waitForCachedDoubaoOutlineTargetMount(
+    id: string | undefined,
+    timeoutMs = 1500,
+  ): Promise<Element | null> {
+    if (!id) return null
+
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      const target = this.resolveCachedDoubaoOutlineTarget(id)
+      if (target) return target
+      await this.sleep(60)
+    }
+
+    return null
+  }
+
+  async resolveOutlineTarget(
+    item: Pick<OutlineItem, "level" | "text" | "isUserQuery" | "id">,
+    queryIndex?: number,
+  ): Promise<Element | null> {
+    this.ensureOutlineCacheSession()
+
+    if (item.id && this.outlineItemCache.has(item.id)) {
+      const visibleTarget = this.resolveCachedDoubaoOutlineTarget(item.id)
+      if (visibleTarget) return visibleTarget
+
+      const entry = this.outlineItemCache.get(item.id)
+      const container = this.getVirtualScrollContainer()
+      if (!entry || !container) return null
+
+      this.scrollVirtualContainerTo(container, entry.scrollTop)
+      const revivedTarget = await this.waitForCachedDoubaoOutlineTargetMount(item.id)
+      return revivedTarget || super.resolveOutlineTarget(item, queryIndex)
+    }
+
+    return super.resolveOutlineTarget(item, queryIndex)
+  }
+
   // ===== 大纲提取 =====
 
   extractOutline(maxLevel = 6, includeUserQueries = false, showWordCount = false): OutlineItem[] {
     const items: OutlineItem[] = []
-    const container = this.getMessageListContainer()
+    const container = this.getVirtualScrollContainer()
     if (!container) return items
 
-    const collectHeadings = (root: ParentNode, parentBlock?: Element | null) => {
+    this.ensureOutlineCacheSession()
+
+    const currentIds = new Set<string>()
+    const isInTransition = this.isInOutlineCacheTransition()
+    const refreshedCacheKeys = new Set<string>()
+
+    const prepareCacheRefresh = (meta: DoubaoVirtualMessageMeta) => {
+      if (isInTransition) return
+
+      const key = this.getOutlineMessageKey(meta)
+      if (refreshedCacheKeys.has(key)) return
+
+      refreshedCacheKeys.add(key)
+      this.clearOutlineCacheForMeta(meta)
+    }
+
+    const cacheCurrentItem = (
+      item: OutlineItem,
+      meta: DoubaoVirtualMessageMeta,
+      scrollTop: number,
+      orderInMessage: number,
+      headingMatchIndex?: number,
+    ) => {
+      const id = this.buildOutlineItemId(meta, item, headingMatchIndex)
+      item.id = id
+      ;(item as OutlineItem & { scrollTop: number }).scrollTop = scrollTop
+      currentIds.add(id)
+
+      if (isInTransition) return
+
+      prepareCacheRefresh(meta)
+      this.outlineItemCache.set(id, {
+        id,
+        level: item.level,
+        text: item.text,
+        messageId: meta.messageId,
+        rowIndex: meta.rowIndex,
+        scrollTop,
+        orderInMessage,
+        headingMatchIndex,
+        isUserQuery: item.isUserQuery,
+        isTruncated: item.isTruncated,
+        wordCount: item.wordCount,
+      })
+    }
+
+    const collectHeadings = (
+      root: ParentNode,
+      meta: DoubaoVirtualMessageMeta,
+      headingCounts: Map<string, number>,
+      nextOrderInMessage: () => number,
+      parentBlock?: Element | null,
+    ) => {
       const headings = Array.from(root.querySelectorAll("h1, h2, h3, h4, h5, h6"))
       headings.forEach((heading, index) => {
         const level = parseInt(heading.tagName[1], 10)
         if (level > maxLevel) return
         const text = heading.textContent?.trim() || ""
         if (!text) return
+
+        const headingKey = `${level}:${text}`
+        const headingMatchIndex = headingCounts.get(headingKey) || 0
+        headingCounts.set(headingKey, headingMatchIndex + 1)
 
         let wordCount: number | undefined
         if (showWordCount) {
@@ -1064,12 +1421,20 @@ export class DoubaoAdapter extends SiteAdapter {
           )
         }
 
-        items.push({
+        const item: OutlineItem = {
           level,
           text,
           element: heading as HTMLElement,
           wordCount,
-        })
+        }
+        cacheCurrentItem(
+          item,
+          meta,
+          this.getElementVirtualScrollTop(container, heading as HTMLElement),
+          nextOrderInMessage(),
+          headingMatchIndex,
+        )
+        items.push(item)
       })
     }
 
@@ -1080,6 +1445,8 @@ export class DoubaoAdapter extends SiteAdapter {
     let pendingUserQuery: {
       element: HTMLElement
       text: string
+      meta: DoubaoVirtualMessageMeta
+      scrollTop: number
     } | null = null
 
     const orderedUnits =
@@ -1089,27 +1456,36 @@ export class DoubaoAdapter extends SiteAdapter {
             container.querySelectorAll(`${USER_QUERY_SELECTOR}, ${ASSISTANT_MESSAGE_SELECTOR}`),
           ).filter((message): message is HTMLElement => message instanceof HTMLElement)
 
-    orderedUnits.forEach((unit) => {
+    orderedUnits.forEach((unit, unitIndex) => {
+      const meta = this.getVirtualMessageMeta(unit, unitIndex)
       const userMessage = unit.matches(USER_QUERY_SELECTOR)
         ? unit
         : (unit.querySelector(USER_QUERY_SELECTOR) as HTMLElement | null) ?? null
 
       if (userMessage) {
         const text = this.extractUserQueryMarkdown(userMessage)
-        pendingUserQuery = text ? { element: userMessage, text } : null
+        pendingUserQuery = text
+          ? {
+              element: userMessage,
+              text,
+              meta,
+              scrollTop: this.getElementVirtualScrollTop(container, userMessage),
+            }
+          : null
       }
 
       const assistantRoots = this.getAssistantContentRoots(unit)
       if (assistantRoots.length === 0) {
         return
       }
+      prepareCacheRefresh(meta)
 
       const aiWordCount = showWordCount
         ? assistantRoots.reduce((sum, root) => sum + (root.textContent?.length || 0), 0)
         : undefined
 
-      if (includeUserQueries && pendingUserQuery) {
-        items.push({
+      if (pendingUserQuery) {
+        const userItem: OutlineItem = {
           level: 0,
           text:
             pendingUserQuery.text.length > 80
@@ -1119,14 +1495,31 @@ export class DoubaoAdapter extends SiteAdapter {
           isUserQuery: true,
           isTruncated: pendingUserQuery.text.length > 80,
           wordCount: aiWordCount,
-        })
+        }
+        cacheCurrentItem(userItem, pendingUserQuery.meta, pendingUserQuery.scrollTop, 0)
+        if (includeUserQueries) {
+          items.push(userItem)
+        }
       }
 
-      assistantRoots.forEach((root) => collectHeadings(root, root))
+      const headingCounts = new Map<string, number>()
+      let headingOrder = 0
+      assistantRoots.forEach((root) =>
+        collectHeadings(root, meta, headingCounts, () => headingOrder++, root),
+      )
       pendingUserQuery = null
     })
 
-    return items
+    if (isInTransition) return items
+
+    this.trimOutlineCache()
+    return this.mergeCachedOutlineItems(
+      items,
+      currentIds,
+      maxLevel,
+      includeUserQueries,
+      showWordCount,
+    )
   }
 
   // ===== 导出配置 =====
@@ -1193,9 +1586,9 @@ export class DoubaoAdapter extends SiteAdapter {
     ]
   }
 
-  // ===== 专用滚动补偿与历史隔离机制 (针对豆包 column-reverse 特殊处理) =====
+  // ===== 专用滚动补偿与历史隔离机制 =====
 
-  // 豆包采用 column-reverse 逆向布局，基类的 scrollTop 与 offsetTop 记录与恢复策略全盘失效。
+  // 豆包新版采用虚拟列表，基类的 offsetTop 记录与恢复策略容易失效。
   // 因此我们独立覆写历史记录读取和恢复方法：
   // 1. 获取屏幕最顶部的一个可见对话段落，记录其前 50 字为特征签名
   // 2. 恢复时，在页面重寻此段落并将其对齐至屏幕顶部。
@@ -1249,6 +1642,23 @@ export class DoubaoAdapter extends SiteAdapter {
     return null
   }
 
+  scrollToOutlineTarget(element: HTMLElement): void {
+    const container = this.getScrollContainer()
+    if (!container) {
+      super.scrollToOutlineTarget(element)
+      return
+    }
+
+    const containerRect = container.getBoundingClientRect()
+    const elementRect = element.getBoundingClientRect()
+    const targetScrollTop = container.scrollTop + elementRect.top - containerRect.top
+    container.scrollTo({
+      top: Math.max(0, targetScrollTop),
+      behavior: "instant",
+      __bypassLock: true,
+    } as any)
+  }
+
   restoreScroll(anchorData: AnchorData): boolean {
     const container = this.getScrollContainer()
     if (!container || !anchorData) return false
@@ -1279,13 +1689,7 @@ export class DoubaoAdapter extends SiteAdapter {
     }
 
     if (targetElement) {
-      targetElement.scrollIntoView({ block: "start", behavior: "instant" })
-
-      // 因为豆包反向滚动的复杂性，执行 scrollIntoView 后立刻同步历史高度避免 ResizeObserver 误报
-      setTimeout(() => {
-        this.lastScrollHeight = container.scrollHeight
-        this.lastScrollTop = container.scrollTop
-      }, 50)
+      this.scrollToOutlineTarget(targetElement as HTMLElement)
       return true
     }
     return false
