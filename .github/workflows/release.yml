@@ -153,7 +153,7 @@ jobs:
       - name: Rename artifacts for release
         run: |
           cp build/chrome-mv3-prod.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-chrome.zip
-          cp build/chrome-mv3-edge.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-edge.zip
+          cp build/chrome-mv3-edge.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-edge-addons-upload.zip
           cp build/firefox-mv3-prod.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-firefox.zip
           cp build/userscript/ophel.user.js build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}.user.js
           cp build/ophel-atlas-cws-upload.zip build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-cws-upload.zip
@@ -188,20 +188,26 @@ jobs:
 
             | Platform | File | Note |
             |----------|------|------|
-            | **Chrome** | `ophel-atlas-${{ steps.get_version.outputs.VERSION }}-chrome.zip` | **Recommended** (Consistent ID) |
-            | **Edge** | `ophel-atlas-${{ steps.get_version.outputs.VERSION }}-edge.zip` | Edge Add-ons or Load Unpacked |
-            | **Firefox** | `ophel-atlas-${{ steps.get_version.outputs.VERSION }}-firefox.zip` | Firefox Add-ons |
+            | **Chrome** | `ophel-atlas-${{ steps.get_version.outputs.VERSION }}-chrome.zip` | Manual extension package |
+            | **Firefox** | `ophel-atlas-${{ steps.get_version.outputs.VERSION }}-firefox.zip` | Manual extension package |
             | **Userscript** | `ophel-atlas-${{ steps.get_version.outputs.VERSION }}.user.js` | Tampermonkey script |
-            | **CWS Upload** | `ophel-atlas-${{ steps.get_version.outputs.VERSION }}-cws-upload.zip` | **For Store Upload Only** (No Key) |
+            | **CWS Upload** | `ophel-atlas-${{ steps.get_version.outputs.VERSION }}-cws-upload.zip` | **For Chrome Web Store Upload Only** (No Key) |
+            | **Edge Add-ons Upload** | `ophel-atlas-${{ steps.get_version.outputs.VERSION }}-edge-addons-upload.zip` | **For Edge Add-ons Store Upload Only** (No Key) |
 
             ### 🔧 Installation | 安装方法
 
-            #### Chrome / Edge (Recommended)
-            1. Download `ophel-atlas-...-chrome.zip` | 下载 Chrome 版本压缩包
-            2. Unzip and load unpacked in Developer Mode | 解压并在开发者模式下加载已解压的扩展
+            #### Browser Extensions | 浏览器扩展
+            > **Recommended:** Install Ophel Atlas from the official browser stores: Chrome Web Store, Microsoft Edge Add-ons, or Firefox Add-ons.
+            > **推荐：** 请从官方浏览器商店安装 Ophel Atlas：Chrome Web Store、Microsoft Edge Add-ons 或 Firefox Add-ons。
 
-            > **Note:** This version includes the public key, ensuring your Extension ID matches the Chrome Web Store version.
-            > **注意：** 此版本包含公钥，确保您的扩展 ID 与 Chrome 商店版本一致，以保证数据互通。
+            > **Do not mix** GitHub release extension packages with store-installed versions. Manual packages and store versions can use different IDs, update channels, and storage areas, which may create duplicate extensions or separate data.
+            > **请不要混用** GitHub Release 中的扩展包与应用商店版本。手动安装包和商店版本可能使用不同的扩展 ID、更新渠道和存储空间，可能导致重复安装或数据不互通。
+
+            > The `*-cws-upload.zip` and `*-edge-addons-upload.zip` files are for store submission only. Do not install them manually.
+            > `*-cws-upload.zip` 和 `*-edge-addons-upload.zip` 仅用于商店提交，请不要手动安装。
+
+            > If you already installed a store version, do not install these GitHub extension zips unless you are intentionally testing a separate development copy.
+            > 如果你已经安装了商店版本，请不要再安装这些 GitHub 扩展 zip，除非你明确想测试一个独立的开发副本。
 
             #### Userscript (Tampermonkey) | 油猴脚本
             1. Install [Tampermonkey](https://www.tampermonkey.net/) | 安装 Tampermonkey 插件
@@ -214,7 +220,7 @@ jobs:
             *Changelog: [CHANGELOG.md](https://github.com/urzeye/ophel/blob/main/CHANGELOG.md) · [中文版 CHANGELOG.zh-CN.md](https://github.com/urzeye/ophel/blob/main/CHANGELOG.zh-CN.md)*
           files: |
             build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-chrome.zip
-            build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-edge.zip
+            build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-edge-addons-upload.zip
             build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-firefox.zip
             build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}.user.js
             build/ophel-atlas-${{ steps.get_version.outputs.VERSION }}-cws-upload.zip
