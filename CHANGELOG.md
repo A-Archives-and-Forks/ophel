@@ -9,6 +9,10 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.0.54] - 2026-05-26
+
 ### 🚀 New Features
 
 - **Prompt queue and library integration** — Prompt Library actions can now add prompts to the queue, and the queue batch dialog can add prompts directly from the library. (#547, @mrpops2ko)
@@ -1084,6 +1088,7 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.0.54]: https://github.com/urzeye/ophel/releases/tag/v1.0.54
 [1.0.53]: https://github.com/urzeye/ophel/releases/tag/v1.0.53
 [1.0.52]: https://github.com/urzeye/ophel/releases/tag/v1.0.52
 [1.0.51]: https://github.com/urzeye/ophel/releases/tag/v1.0.51

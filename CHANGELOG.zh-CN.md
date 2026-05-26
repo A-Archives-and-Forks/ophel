@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.0.54] - 2026-05-26
+
 ### 🚀 新增功能
 
 - **提示词队列与提示词库联动** — 提示词库操作现在可加入队列，队列批量加入弹窗也可直接从提示词库选择提示词。(#547, @mrpops2ko)
@@ -1084,6 +1088,7 @@
 
 ---
 
+[1.0.54]: https://github.com/urzeye/ophel/releases/tag/v1.0.54
 [1.0.53]: https://github.com/urzeye/ophel/releases/tag/v1.0.53
 [1.0.52]: https://github.com/urzeye/ophel/releases/tag/v1.0.52
 [1.0.51]: https://github.com/urzeye/ophel/releases/tag/v1.0.51
