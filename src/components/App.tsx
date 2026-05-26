@@ -29,6 +29,7 @@ import { setLanguage, t } from "~utils/i18n"
 import { getHighlightStyles, renderMarkdown } from "~utils/markdown"
 import { createSafeHTML } from "~utils/trusted-types"
 import { initCopyButtons, showCopySuccess } from "~utils/icons"
+import { hasOphelInteractionLayer } from "~utils/dom-toolkit"
 
 import { ConfirmDialog, FolderSelectDialog, TagManagerDialog } from "./ConversationDialogs"
 import { DisclaimerModal } from "./DisclaimerModal"
@@ -88,6 +89,11 @@ interface LauncherPeekAnchorRect {
   bottom: number
   width: number
   height: number
+}
+
+interface PointerPosition {
+  clientX: number
+  clientY: number
 }
 
 const LAUNCHER_PEEK_DWELL_MS = 300
@@ -1137,8 +1143,11 @@ export const App = () => {
   const [launcherPeekAnchorRect, setLauncherPeekAnchorRect] =
     useState<LauncherPeekAnchorRect | null>(null)
   const isLauncherPeekingRef = useRef(false)
+  const isLauncherPeekInteractionActiveRef = useRef(false)
   const launcherPeekDwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const launcherPeekHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastLauncherPeekPointerPositionRef = useRef<PointerPosition | null>(null)
+  const isLauncherPeekPointerStaleRef = useRef(false)
 
   const clearLauncherPeekDwellTimer = useCallback(() => {
     if (launcherPeekDwellTimerRef.current) {
@@ -1158,25 +1167,106 @@ export const App = () => {
     clearLauncherPeekDwellTimer()
     clearLauncherPeekHideTimer()
     isLauncherPeekingRef.current = false
+    isLauncherPeekInteractionActiveRef.current = false
     setIsLauncherPeeking(false)
     setLauncherPeekAnchorRect(null)
   }, [clearLauncherPeekDwellTimer, clearLauncherPeekHideTimer])
 
+  const isLauncherPeekRetainedByPointer = useCallback(() => {
+    if (isLauncherPeekPointerStaleRef.current) {
+      return false
+    }
+
+    const retainedSelectors = [".gh-main-panel", ".quick-btn-group"]
+    const pointerPosition = lastLauncherPeekPointerPositionRef.current
+
+    for (const selector of retainedSelectors) {
+      const element = findUiElement(selector)
+      if (!element) {
+        continue
+      }
+
+      if (pointerPosition) {
+        const rect = element.getBoundingClientRect()
+        if (
+          pointerPosition.clientX >= rect.left &&
+          pointerPosition.clientX <= rect.right &&
+          pointerPosition.clientY >= rect.top &&
+          pointerPosition.clientY <= rect.bottom
+        ) {
+          return true
+        }
+        continue
+      }
+
+      if (element.matches(":hover")) {
+        return true
+      }
+    }
+
+    return false
+  }, [findUiElement])
+
   const scheduleLauncherPeekHide = useCallback(() => {
     clearLauncherPeekDwellTimer()
     clearLauncherPeekHideTimer()
-    launcherPeekHideTimerRef.current = setTimeout(() => {
+    const runHideCheck = () => {
       launcherPeekHideTimerRef.current = null
+
+      if (!isLauncherPeekingRef.current) {
+        return
+      }
+
+      if (
+        isLauncherPeekInteractionActiveRef.current ||
+        hasOphelInteractionLayer(getEdgePeekQueryRoots())
+      ) {
+        launcherPeekHideTimerRef.current = setTimeout(runHideCheck, LAUNCHER_PEEK_HIDE_DELAY_MS)
+        return
+      }
+
+      if (isLauncherPeekRetainedByPointer()) {
+        launcherPeekHideTimerRef.current = setTimeout(runHideCheck, LAUNCHER_PEEK_HIDE_DELAY_MS)
+        return
+      }
+
       isLauncherPeekingRef.current = false
       setIsLauncherPeeking(false)
       setLauncherPeekAnchorRect(null)
-    }, LAUNCHER_PEEK_HIDE_DELAY_MS)
-  }, [clearLauncherPeekDwellTimer, clearLauncherPeekHideTimer])
+    }
+
+    launcherPeekHideTimerRef.current = setTimeout(runHideCheck, LAUNCHER_PEEK_HIDE_DELAY_MS)
+  }, [
+    clearLauncherPeekDwellTimer,
+    clearLauncherPeekHideTimer,
+    getEdgePeekQueryRoots,
+    isLauncherPeekRetainedByPointer,
+  ])
+
+  const handlePanelInteractionChange = useCallback(
+    (isActive: boolean) => {
+      handleInteractionChange(isActive)
+      isLauncherPeekInteractionActiveRef.current = isActive
+
+      if (!isLauncherPeekingRef.current) {
+        return
+      }
+
+      if (isActive) {
+        clearLauncherPeekHideTimer()
+        return
+      }
+
+      scheduleLauncherPeekHide()
+    },
+    [clearLauncherPeekHideTimer, handleInteractionChange, scheduleLauncherPeekHide],
+  )
 
   const handlePanelLogoHoverStart = useCallback(
     (anchorRect: DOMRect, options?: { waitForGroupDwell?: boolean }) => {
       if (isPanelExpandedRef.current) return
 
+      isLauncherPeekPointerStaleRef.current = false
       clearLauncherPeekDwellTimer()
       clearLauncherPeekHideTimer()
 
@@ -1247,6 +1337,100 @@ export const App = () => {
       hideLauncherPeek()
     }
   }, [hideLauncherPeek, isLauncherPeeking, isPanelExpanded])
+
+  useEffect(() => {
+    const updatePointerPosition = (event: PointerEvent) => {
+      isLauncherPeekPointerStaleRef.current = false
+      lastLauncherPeekPointerPositionRef.current = {
+        clientX: event.clientX,
+        clientY: event.clientY,
+      }
+    }
+
+    const invalidatePointerPosition = () => {
+      isLauncherPeekPointerStaleRef.current = true
+      lastLauncherPeekPointerPositionRef.current = null
+      clearLauncherPeekDwellTimer()
+
+      if (isLauncherPeekingRef.current) {
+        scheduleLauncherPeekHide()
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        invalidatePointerPosition()
+      }
+    }
+
+    const handlePointerOut = (event: PointerEvent) => {
+      if (event.relatedTarget === null) {
+        invalidatePointerPosition()
+      }
+    }
+
+    const handleMouseOut = (event: MouseEvent) => {
+      if (event.relatedTarget === null) {
+        invalidatePointerPosition()
+      }
+    }
+
+    window.addEventListener("pointermove", updatePointerPosition, true)
+    window.addEventListener("pointerdown", updatePointerPosition, true)
+    window.addEventListener("blur", invalidatePointerPosition)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    document.addEventListener("pointerout", handlePointerOut, true)
+    document.addEventListener("mouseout", handleMouseOut, true)
+
+    return () => {
+      window.removeEventListener("pointermove", updatePointerPosition, true)
+      window.removeEventListener("pointerdown", updatePointerPosition, true)
+      window.removeEventListener("blur", invalidatePointerPosition)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      document.removeEventListener("pointerout", handlePointerOut, true)
+      document.removeEventListener("mouseout", handleMouseOut, true)
+    }
+  }, [clearLauncherPeekDwellTimer, scheduleLauncherPeekHide])
+
+  useEffect(() => {
+    if (!isLauncherPeeking) {
+      return
+    }
+
+    let hadInteractionLayer = hasOphelInteractionLayer(getEdgePeekQueryRoots())
+    if (hadInteractionLayer) {
+      clearLauncherPeekHideTimer()
+    }
+
+    const handleInteractionLayerMutation = () => {
+      const hasInteractionLayer = hasOphelInteractionLayer(getEdgePeekQueryRoots())
+
+      if (hasInteractionLayer) {
+        clearLauncherPeekHideTimer()
+      } else if (hadInteractionLayer) {
+        scheduleLauncherPeekHide()
+      }
+
+      hadInteractionLayer = hasInteractionLayer
+    }
+
+    const observer = new MutationObserver(handleInteractionLayerMutation)
+    for (const root of getEdgePeekQueryRoots()) {
+      observer.observe(root, {
+        childList: true,
+        subtree: true,
+      })
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [
+    clearLauncherPeekHideTimer,
+    getEdgePeekQueryRoots,
+    isLauncherPeeking,
+    scheduleLauncherPeekHide,
+  ])
 
   useEffect(() => {
     return () => {
@@ -3141,7 +3325,7 @@ export const App = () => {
           setEdgeSnapState(null)
           hideEdgePeek()
         }}
-        onInteractionStateChange={handleInteractionChange}
+        onInteractionStateChange={handlePanelInteractionChange}
         onOpenSettings={() => {
           openSettingsModal()
         }}
