@@ -2535,6 +2535,7 @@ export const App = () => {
   const themeSites = settings?.theme?.sites
   const syncUnpin = settings?.features?.conversations?.syncUnpin
   const syncDelete = settings?.features?.conversations?.syncDelete
+  const outlineEnabled = settings?.features?.outline?.enabled ?? true
   const inlineBookmarkMode = settings?.features?.outline?.inlineBookmarkMode
   const hasSettings = Boolean(settings)
   const quickButtonsSettings = settings?.quickButtons || DEFAULT_SETTINGS.quickButtons
@@ -2714,15 +2715,20 @@ export const App = () => {
 
   // 初始化页面内收藏图标
   useEffect(() => {
-    if (!outlineManager || !adapter || !hasSettings) return
+    if (!isSettingsHydrated || !outlineManager || !adapter || !hasSettings) return
 
     const mode = inlineBookmarkMode || "always"
+    if (!outlineEnabled || mode === "hidden") {
+      InlineBookmarkManager.cleanupInjectedArtifacts()
+      return
+    }
+
     const inlineBookmarkManager = new InlineBookmarkManager(outlineManager, adapter, mode)
 
     return () => {
       inlineBookmarkManager.cleanup()
     }
-  }, [outlineManager, adapter, inlineBookmarkMode, hasSettings])
+  }, [outlineManager, adapter, outlineEnabled, inlineBookmarkMode, hasSettings, isSettingsHydrated])
 
   // 滚动锁定切换
   const handleToggleScrollLock = useCallback(() => {
