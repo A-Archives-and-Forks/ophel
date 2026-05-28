@@ -583,6 +583,9 @@ export const ru = {
   outlineLocateCurrent: "Найти текущее место",
   outlineSearch: "Поиск в содержании...",
   outlineSearchResult: " совп.",
+  outlineSourceConversation: "Чат",
+  outlineSourceDocument: "Документ",
+  outlineSourceSwitchLabel: "Источник содержания",
   outlineLevelHint: "заг.",
   // Refresh button hints
   refreshConversations: "Обновить чаты",

@@ -586,6 +586,9 @@ export const fr = {
   outlineLocateCurrent: "Localiser position actuelle",
   outlineSearch: "Chercher dans le sommaire...",
   outlineSearchResult: " résultat(s)",
+  outlineSourceConversation: "Chat",
+  outlineSourceDocument: "Document",
+  outlineSourceSwitchLabel: "Source du sommaire",
   outlineLevelHint: "titres",
   // Refresh button hints
   refreshConversations: "Actualiser les chats",
