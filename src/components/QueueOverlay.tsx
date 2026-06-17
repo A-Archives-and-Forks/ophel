@@ -15,8 +15,10 @@ import { DialogOverlay, Tooltip } from "~components/ui"
 import { extractVariables } from "~components/VariableInputDialog"
 import { formatShortcut, normalizeShortcutBinding } from "~constants/shortcuts"
 import type { QueueDispatcher } from "~core/queue-dispatcher"
+import { appendQuickQuoteMarker, stripQuickQuoteMarkers } from "~core/quick-quote-marker"
 import { usePromptsStore } from "~stores/prompts-store"
 import { useSettingsStore } from "~stores/settings-store"
+import type { QueueItem } from "~stores/queue-store"
 import { useQueueItems, useQueueStore } from "~stores/queue-store"
 import { attachEditableKeyboardFocusGuard } from "~utils/dom-toolkit"
 import { t } from "~utils/i18n"
@@ -340,13 +342,13 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
   )
 
   const handleForceSend = useCallback(
-    async (id: string, content: string) => {
+    async (item: QueueItem) => {
       // 允许强行发送（插队）
-      store.remove(id)
-      const success = await dispatcher.sendImmediately(content, submitShortcut)
+      store.remove(item.id)
+      const success = await dispatcher.sendImmediately(item.content, submitShortcut, item.metadata)
       if (!success) {
         // 如果失败再放回去（虽然可能顺序变了，但算作 fallback）
-        store.enqueue(content)
+        store.enqueue(item.content, item.metadata)
         if (!dispatcher.isRunning()) {
           dispatcher.start()
         }
@@ -416,13 +418,22 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
 
   const handleEditClick = useCallback((id: string, content: string) => {
     setEditingItemId(id)
-    setEditValue(content)
+    setEditValue(stripQuickQuoteMarkers(content))
   }, [])
 
   const handleEditSave = useCallback(
     (id: string) => {
       if (editValue.trim()) {
-        store.updateContent(id, editValue.trim())
+        const item = store.items.find((item) => item.id === id)
+        const markerKind = item?.metadata?.quoteMarkerKind
+        store.updateContent(
+          id,
+          appendQuickQuoteMarker(
+            editValue.trim(),
+            item?.metadata?.quoteRef,
+            markerKind ? { kind: markerKind } : undefined,
+          ),
+        )
       }
       setEditingItemId(null)
     },
@@ -605,7 +616,20 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
                       </div>
                     ) : (
                       <>
-                        <span className="gh-queue-item-content">{item.content}</span>
+                        <span className="gh-queue-item-main">
+                          {item.metadata?.chainTitle && (
+                            <span className="gh-queue-item-chain">
+                              {t("quickQuoteChainQueueSource", {
+                                title: item.metadata.chainTitle,
+                                index: String(item.metadata.stepIndex || index + 1),
+                                total: String(item.metadata.stepTotal || 1),
+                              })}
+                            </span>
+                          )}
+                          <span className="gh-queue-item-content">
+                            {stripQuickQuoteMarkers(item.content)}
+                          </span>
+                        </span>
                         <div className="gh-queue-item-actions">
                           {item.status === "pending" && (
                             <button
@@ -629,7 +653,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
                           {item.status === "pending" && (
                             <button
                               className="gh-queue-item-force-send"
-                              onClick={() => handleForceSend(item.id, item.content)}
+                              onClick={() => handleForceSend(item)}
                               title={t("queueForceSend")}>
                               <svg
                                 viewBox="0 0 24 24"

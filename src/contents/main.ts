@@ -20,6 +20,7 @@ import { APP_DISPLAY_NAME } from "~utils/config"
 import { INTER_LOCAL_FONT_FACE, getPlatformFontFamily } from "~utils/font"
 import { useConversationsStore } from "~stores/conversations-store"
 import { useFoldersStore } from "~stores/folders-store"
+import { usePromptChainsStore } from "~stores/prompt-chains-store"
 import { usePromptsStore } from "~stores/prompts-store"
 import { useReadingHistoryStore } from "~stores/reading-history-store"
 import { getSettingsState, useSettingsStore } from "~stores/settings-store"
@@ -35,6 +36,7 @@ import {
 const resetAllStores = () => {
   useSettingsStore.getState().resetSettings()
   usePromptsStore.getState().setPrompts(getDefaultPrompts())
+  usePromptChainsStore.getState().setChains([])
   useFoldersStore.setState({ folders: DEFAULT_FOLDERS })
   useTagsStore.setState({ tags: [] })
   useConversationsStore.setState({ conversations: {}, lastUsedFolderId: "inbox" })

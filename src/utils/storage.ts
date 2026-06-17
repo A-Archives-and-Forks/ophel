@@ -29,6 +29,7 @@ export const STORAGE_KEYS = {
   CONVERSATIONS: "conversations",
   READING_HISTORY: "readingHistory",
   CLAUDE_SESSION_KEYS: "claudeSessionKeys", // Claude SessionKey管理
+  PROMPT_CHAINS: "promptChains",
 } as const
 
 // 清除全部数据标记（用于跳过首次自动恢复/自动同步）
@@ -233,6 +234,7 @@ export interface Settings {
       doubleClickToSend: boolean
       submitShortcut: "enter" | "ctrlEnter"
       promptQueue: boolean
+      quickQuoteEnabled: boolean
     }
     conversations: {
       enabled: boolean
@@ -503,6 +505,7 @@ export const DEFAULT_SETTINGS: Settings = {
       doubleClickToSend: false,
       submitShortcut: "enter",
       promptQueue: false,
+      quickQuoteEnabled: true,
     },
     conversations: {
       enabled: true,

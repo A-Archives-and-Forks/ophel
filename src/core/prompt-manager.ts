@@ -8,6 +8,7 @@
 import type { SiteAdapter } from "~adapters/base"
 import { VIRTUAL_CATEGORY } from "~constants"
 import { SITE_IDS } from "~constants/defaults"
+import { rememberQuickQuoteReferencesFromContent } from "~core/quick-quote-marker"
 import { DOMToolkit } from "~utils/dom-toolkit"
 import {
   filterPrompts,
@@ -112,6 +113,7 @@ export class PromptManager {
 
       const result = this.adapter.insertPrompt(content)
       if (result) {
+        rememberQuickQuoteReferencesFromContent(content)
         return true
       }
     }
@@ -127,6 +129,19 @@ export class PromptManager {
     }
 
     return editor.textContent || ""
+  }
+
+  getCurrentEditorContent(): string {
+    const editor = this.adapter.getTextareaElement() || this.adapter.findTextarea()
+    return this.getEditorContent(editor)
+  }
+
+  hasEditorContent(): boolean {
+    return (
+      this.getCurrentEditorContent()
+        .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
+        .trim().length > 0
+    )
   }
 
   private isElementDisabled(element: HTMLElement | null): boolean {

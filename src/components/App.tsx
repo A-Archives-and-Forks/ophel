@@ -18,6 +18,7 @@ import { InlineBookmarkManager } from "~core/inline-bookmark-manager"
 import { OutlineManager, type OutlineNode } from "~core/outline-manager"
 import { AI_STUDIO_SHORTCUT_SYNC_EVENT, PromptManager } from "~core/prompt-manager"
 import { QueueDispatcher } from "~core/queue-dispatcher"
+import { QuickQuoteActions } from "~components/QuickQuoteActions"
 import { ensureGlobalThemeManager, type ThemeTransitionOrigin } from "~core/theme-manager"
 import { useEdgePeekController } from "~hooks/useEdgePeekController"
 import { useShortcuts } from "~hooks/useShortcuts"
@@ -341,6 +342,7 @@ const SETTING_SEARCH_TITLE_KEY_MAP: Record<string, string> = {
   "panel-width": "panelWidthLabel",
   "prompt-double-click-send": "promptDoubleClickSendLabel",
   "prompt-queue": "queueSettingLabel",
+  "prompt-quick-quote-enabled": "quickQuoteEnabledLabel",
   "quick-buttons-hide-when-panel-open": "quickButtonsHideWhenPanelOpenLabel",
   "quick-buttons-opacity": "quickButtonsOpacityLabel",
   "quick-buttons-proximity-radius": "quickButtonsProximityRadiusLabel",
@@ -3739,6 +3741,9 @@ export const App = () => {
       )}
       {adapter && queueDispatcher && (settings?.features?.prompts?.promptQueue ?? false) && (
         <QueueOverlay adapter={adapter} dispatcher={queueDispatcher} />
+      )}
+      {adapter && promptManager && (settings?.features?.prompts?.enabled ?? true) && (
+        <QuickQuoteActions adapter={adapter} promptManager={promptManager} />
       )}
       <LoadingOverlay
         isVisible={Boolean(exportProgress)}

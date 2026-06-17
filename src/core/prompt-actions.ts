@@ -1,5 +1,10 @@
 import type { SiteAdapter } from "~adapters/base"
 import type { PromptManager } from "~core/prompt-manager"
+import {
+  appendQuickQuoteMarker,
+  rememberQuickQuoteReferenceForContent,
+} from "~core/quick-quote-marker"
+import type { QueueItemMetadata } from "~stores/queue-store"
 import { useQueueStore } from "~stores/queue-store"
 import { useSettingsStore } from "~stores/settings-store"
 import { splitQueueLines } from "~utils/queue-batch"
@@ -43,26 +48,41 @@ interface SendOrQueuePromptOptions {
 
 const splitModeToBoolean = (splitMode?: PromptActionSplitMode) => splitMode === "line"
 
+const buildQueueMetadata = (context?: PromptActionContext): QueueItemMetadata | undefined => {
+  if (!context) return undefined
+
+  return {
+    source: context.source,
+    promptId: context.prompt?.id,
+    promptTitle: context.prompt?.title,
+    quoteRef: context.variables?.quoteRef,
+  }
+}
+
 export const sendOrQueuePrompt = async ({
   adapter,
   manager,
   content,
   submitShortcut,
+  context,
 }: SendOrQueuePromptOptions): Promise<PromptSendResult> => {
   const trimmedContent = content.trim()
   if (!trimmedContent) {
     return { status: "insert-failed" }
   }
+  const quoteRef = context?.variables?.quoteRef
+  rememberQuickQuoteReferenceForContent(trimmedContent, quoteRef)
+  const contentWithMarker = appendQuickQuoteMarker(trimmedContent, quoteRef)
 
   const promptQueueEnabled =
     useSettingsStore.getState().settings.features?.prompts?.promptQueue ?? false
 
   if (adapter?.isGenerating() && promptQueueEnabled) {
-    useQueueStore.getState().enqueue(trimmedContent)
+    useQueueStore.getState().enqueue(contentWithMarker, buildQueueMetadata(context))
     return { status: "queued", count: 1 }
   }
 
-  const insertOk = await manager.insertPrompt(trimmedContent)
+  const insertOk = await manager.insertPrompt(contentWithMarker)
   if (!insertOk) {
     return { status: "insert-failed" }
   }
@@ -92,7 +112,13 @@ export const enqueuePrompt = ({
     return { status: "empty" }
   }
 
-  const queuedItems = useQueueStore.getState().enqueueMany(contents)
+  const metadata = buildQueueMetadata(_context)
+  const queuedItems = useQueueStore.getState().enqueueMany(
+    contents.map((content) => ({
+      content: appendQuickQuoteMarker(content, metadata?.quoteRef),
+      metadata,
+    })),
+  )
   if (queuedItems.length === 0) {
     return { status: "empty" }
   }

@@ -1776,6 +1776,10 @@ export class AIStudioAdapter extends SiteAdapter {
     return ".chat-turn-container.user"
   }
 
+  getQuickQuoteSupportMode() {
+    return "disabled" as const
+  }
+
   findUserQueryElement(queryIndex: number, text: string): Element | null {
     const scrollbarEntry = this.getScrollbarQueryEntries()[queryIndex - 1]
     if (scrollbarEntry) {
