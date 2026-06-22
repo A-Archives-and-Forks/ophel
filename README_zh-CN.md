@@ -100,49 +100,45 @@
 <table>
   <thead>
     <tr>
-      <th width=”200">功能</th>
+      <th width=”200”>功能</th>
       <th>描述</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>🧭 <a href="https://ophel.app/docs/zh/features/outline">智能大纲</a></td>
-      <td>实时解析对话结构生成可导航目录，支持层级折叠、搜索跳转、锚点定位、收藏书签与字数统计</td>
+      <td>🧭 <a href=”https://ophel.app/docs/zh/features/outline”>智能大纲</a></td>
+      <td>实时解析对话结构生成可导航目录，支持层级折叠、搜索跳转、锚点定位、收藏书签、大纲复制与字数统计</td>
     </tr>
     <tr>
-      <td>💬 <a href="https://ophel.app/docs/zh/features/conversations">会话管理</a></td>
-      <td>文件夹 + 标签双维度管理，自动同步源站会话，支持搜索、批量操作与多格式导出（Markdown/JSON/TXT、分段导出）</td>
+      <td>💬 <a href=”https://ophel.app/docs/zh/features/conversations”>会话管理</a></td>
+      <td>文件夹 + 标签双维度管理，自动同步源站会话，支持搜索、批量操作与拖拽排序</td>
     </tr>
     <tr>
-      <td>💡 <a href="https://ophel.app/docs/zh/features/prompts">提示词库</a></td>
-      <td>变量模板、分类管理、一键填充、双击发送，支持提示词队列自动排队发送</td>
+      <td>📤 <a href=”https://ophel.app/docs/zh/features/export”>对话导出</a></td>
+      <td>支持 Markdown/JSON/TXT 多格式导出，zip 打包保留图片附件，分段导出精准提取内容</td>
     </tr>
     <tr>
-      <td>🔍 <a href="https://ophel.app/docs/zh/features/global-search">全局搜索</a></td>
+      <td>💡 <a href=”https://ophel.app/docs/zh/features/prompts”>提示词库</a></td>
+      <td>变量模板、分类管理、一键填充，支持提示词链与队列自动排队发送，选择文本快捷引用</td>
+    </tr>
+    <tr>
+      <td>🔍 <a href=”https://ophel.app/docs/zh/features/global-search”>全局搜索</a></td>
       <td>跨会话/大纲/提示词/设置统一搜索，支持 <code>folder:</code> <code>tag:</code> <code>date:</code> 等语法过滤与模糊匹配</td>
     </tr>
     <tr>
-      <td>📖 <a href="https://ophel.app/docs/zh/enhancements/content">阅读增强</a></td>
+      <td>📖 <a href=”https://ophel.app/docs/zh/enhancements/content”>阅读增强</a></td>
       <td>Mermaid 图表渲染、LaTeX 公式支持、用户问题 Markdown 排版、滚动锁定</td>
     </tr>
     <tr>
-      <td>⌨️ <a href="https://ophel.app/docs/zh/customization/shortcuts">效率工具</a></td>
+      <td>⌨️ <a href=”https://ophel.app/docs/zh/customization/shortcuts”>效率工具</a></td>
       <td>阅读历史恢复、自定义快捷键、模型锁定、标签页增强命名、AI 完成通知</td>
     </tr>
     <tr>
-      <td>🎨 <a href="https://ophel.app/docs/zh/customization/appearance">界面定制</a></td>
+      <td>🎨 <a href=”https://ophel.app/docs/zh/customization/appearance”>界面定制</a></td>
       <td>20+ 主题、自定义 CSS、宽屏模式、禅模式，<code>Option+D</code> 一键切换明暗</td>
     </tr>
     <tr>
-      <td>📊 <a href="https://ophel.app/docs/zh/panel-overview">数据统计</a></td>
-      <td>本地对话计数、Token 粗估、历史曲线（按站点/时间维度）</td>
-    </tr>
-    <tr>
-      <td>🎭 <a href="https://ophel.app/docs/zh/customization/site-settings">Claude 增强</a></td>
-      <td>Session Key 管理与多账号快速切换</td>
-    </tr>
-    <tr>
-      <td>🔒 <a href="https://ophel.app/docs/zh/data/privacy">隐私与数据</a></td>
+      <td>🔒 <a href=”https://ophel.app/docs/zh/data/privacy”>隐私与数据</a></td>
       <td>默认本地存储、WebDAV 多设备同步、文件导入导出、零数据收集</td>
     </tr>
   </tbody>

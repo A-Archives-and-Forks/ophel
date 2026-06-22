@@ -94,15 +94,19 @@
   <tbody>
     <tr>
       <td>🧭 <a href="https://ophel.app/docs/features/outline">Smart Outline</a></td>
-      <td>Analisa automaticamente a estrutura da conversa em um sumário navegável com colapso hierárquico, busca, âncoras, favoritos e contagem de palavras</td>
+      <td>Analisa automaticamente a estrutura da conversa em um sumário navegável com colapso hierárquico, busca, âncoras, favoritos, cópia de outline e contagem de palavras</td>
     </tr>
     <tr>
       <td>💬 <a href="https://ophel.app/docs/features/conversations">Conversas</a></td>
-      <td>Pastas + etiquetas para gestão bidimensional, sincronização automática, busca, operações em lote e exportação multi-formato (Markdown/JSON/TXT, exportação segmentada)</td>
+      <td>Pastas + etiquetas para gestão bidimensional, sincronização automática, busca, operações em lote e reordenação por arrastar</td>
+    </tr>
+    <tr>
+      <td>📤 <a href="https://ophel.app/docs/features/export">Exportar</a></td>
+      <td>Exportação multi-formato (Markdown/JSON/TXT), pacotes ZIP com imagens e anexos, exportação segmentada para extração precisa de conteúdo</td>
     </tr>
     <tr>
       <td>💡 <a href="https://ophel.app/docs/features/prompts">Biblioteca de Prompts</a></td>
-      <td>Templates com variáveis, categorização, inserção com um clique, envio com duplo clique, fila de prompts para envio sequencial automático</td>
+      <td>Templates com variáveis, categorização, inserção com um clique, cadeias e fila de prompts para envio sequencial automático, ações de citação de seleção</td>
     </tr>
     <tr>
       <td>🔍 <a href="https://ophel.app/docs/features/global-search">Busca Global</a></td>
@@ -119,14 +123,6 @@
     <tr>
       <td>🎨 <a href="https://ophel.app/docs/customization/appearance">Temas</a></td>
       <td>20+ temas, CSS personalizado, modo widescreen, modo Zen, <code>Option+D</code> para alternar escuro/claro</td>
-    </tr>
-    <tr>
-      <td>📊 <a href="https://ophel.app/docs/panel-overview">Estatísticas</a></td>
-      <td>Contador local de conversas, estimativas de tokens, gráficos de histórico (por site e tempo)</td>
-    </tr>
-    <tr>
-      <td>🎭 <a href="https://ophel.app/docs/customization/site-settings">Claude</a></td>
-      <td>Gestão de Session Key e troca rápida multi-conta</td>
     </tr>
     <tr>
       <td>🔒 <a href="https://ophel.app/docs/data/privacy">Privacidade e Dados</a></td>

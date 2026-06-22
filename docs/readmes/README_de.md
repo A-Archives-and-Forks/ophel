@@ -94,15 +94,19 @@
   <tbody>
     <tr>
       <td>🧭 <a href="https://ophel.app/docs/features/outline">Smart Outline</a></td>
-      <td>Automatische Analyse der Gesprächsstruktur in ein navigierbares Inhaltsverzeichnis mit Ebenen-Faltung, Suche, Ankern, Lesezeichen und Wortzählung</td>
+      <td>Automatische Analyse der Gesprächsstruktur in ein navigierbares Inhaltsverzeichnis mit Ebenen-Faltung, Suche, Ankern, Lesezeichen, Gliederung kopieren und Wortzählung</td>
     </tr>
     <tr>
       <td>💬 <a href="https://ophel.app/docs/features/conversations">Konversationen</a></td>
-      <td>Ordner + Tags für zweidimensionale Verwaltung, automatische Synchronisierung, Suche, Stapeloperationen und Multi-Format-Export (Markdown/JSON/TXT, Segment-Export)</td>
+      <td>Ordner + Tags für zweidimensionale Verwaltung, automatische Synchronisierung, Suche, Stapeloperationen und Drag-and-Drop-Sortierung</td>
+    </tr>
+    <tr>
+      <td>📤 <a href="https://ophel.app/docs/features/export">Export</a></td>
+      <td>Multi-Format-Export (Markdown/JSON/TXT), Zip-Pakete mit Bildern und Anhängen, segmentierter Export für präzise Inhaltsextraktion</td>
     </tr>
     <tr>
       <td>💡 <a href="https://ophel.app/docs/features/prompts">Prompt-Bibliothek</a></td>
-      <td>Variablen-Templates, Kategorisierung, Ein-Klick-Einfügung, Doppelklick-Senden, Prompt-Warteschlange für automatisches sequenzielles Senden</td>
+      <td>Variablen-Templates, Kategorisierung, Ein-Klick-Einfügung, Prompt-Chains und Warteschlange für automatisches sequenzielles Senden, Auswahl-Zitat-Aktionen</td>
     </tr>
     <tr>
       <td>🔍 <a href="https://ophel.app/docs/features/global-search">Globale Suche</a></td>
@@ -119,14 +123,6 @@
     <tr>
       <td>🎨 <a href="https://ophel.app/docs/customization/appearance">Themes</a></td>
       <td>20+ Themes, benutzerdefiniertes CSS, Widescreen-Modus, Zen-Modus, <code>Option+D</code> für Dark/Light-Wechsel</td>
-    </tr>
-    <tr>
-      <td>📊 <a href="https://ophel.app/docs/panel-overview">Statistiken</a></td>
-      <td>Lokaler Gesprächszähler, Token-Schätzungen, Verlaufsdiagramme (nach Seite und Zeit)</td>
-    </tr>
-    <tr>
-      <td>🎭 <a href="https://ophel.app/docs/customization/site-settings">Claude</a></td>
-      <td>Session Key Management und schneller Multi-Account-Wechsel</td>
     </tr>
     <tr>
       <td>🔒 <a href="https://ophel.app/docs/data/privacy">Datenschutz & Daten</a></td>

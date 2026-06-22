@@ -102,15 +102,19 @@
   <tbody>
     <tr>
       <td>🧭 <a href="https://ophel.app/docs/zh/features/outline">智能大綱</a></td>
-      <td>實時解析對話結構生成可導航目錄，支援層級折疊、搜尋跳轉、錨點定位、收藏書籤與字數統計</td>
+      <td>實時解析對話結構生成可導航目錄，支援層級折疊、搜尋跳轉、錨點定位、收藏書籤、大綱複製與字數統計</td>
     </tr>
     <tr>
       <td>💬 <a href="https://ophel.app/docs/zh/features/conversations">會話管理</a></td>
-      <td>文件夾 + 標籤雙維度管理，自動同步源站會話，支援搜尋、批量操作與多格式匯出（Markdown/JSON/TXT、分段匯出）</td>
+      <td>文件夾 + 標籤雙維度管理，自動同步源站會話，支援搜尋、批量操作與拖曳排序</td>
+    </tr>
+    <tr>
+      <td>📤 <a href="https://ophel.app/docs/zh/features/export">匯出功能</a></td>
+      <td>多格式匯出（Markdown/JSON/TXT），支援圖片附件打包、分段匯出精確提取內容</td>
     </tr>
     <tr>
       <td>💡 <a href="https://ophel.app/docs/zh/features/prompts">提示詞庫</a></td>
-      <td>變數模板、分類管理、一鍵填充、雙擊發送，支援提示詞佇列自動排隊發送</td>
+      <td>變數模板、分類管理、一鍵填充，支援提示詞鏈與佇列自動排隊發送，選擇文字快捷引用</td>
     </tr>
     <tr>
       <td>🔍 <a href="https://ophel.app/docs/zh/features/global-search">全域搜尋</a></td>
@@ -127,14 +131,6 @@
     <tr>
       <td>🎨 <a href="https://ophel.app/docs/zh/customization/appearance">介面定製</a></td>
       <td>20+ 主題、自訂 CSS、寬螢幕模式、禪模式，<code>Option+D</code> 一鍵切換明暗</td>
-    </tr>
-    <tr>
-      <td>📊 <a href="https://ophel.app/docs/zh/panel-overview">資料統計</a></td>
-      <td>本地對話計數、Token 粗估、歷史曲線（按站點/時間維度）</td>
-    </tr>
-    <tr>
-      <td>🎭 <a href="https://ophel.app/docs/zh/customization/site-settings">Claude 增強</a></td>
-      <td>Session Key 管理與多帳號快速切換</td>
     </tr>
     <tr>
       <td>🔒 <a href="https://ophel.app/docs/zh/data/privacy">隱私與資料</a></td>

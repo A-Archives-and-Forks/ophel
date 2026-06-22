@@ -102,15 +102,19 @@
   <tbody>
     <tr>
       <td>🧭 <a href="https://ophel.app/docs/features/outline">스마트 개요</a></td>
-      <td>대화 구조를 실시간 분석하여 탐색 가능한 목차 생성, 계층 접기, 검색 이동, 앵커, 북마크, 글자 수 통계 지원</td>
+      <td>대화 구조를 실시간 분석하여 탐색 가능한 목차 생성, 계층 접기, 검색 이동, 앵커, 북마크, 개요 복사, 글자 수 통계 지원</td>
     </tr>
     <tr>
       <td>💬 <a href="https://ophel.app/docs/features/conversations">대화 관리</a></td>
-      <td>폴더 + 태그 이중 관리, 소스 사이트 자동 동기화, 검색·일괄 작업·다중 형식 내보내기(Markdown/JSON/TXT, 세그먼트 내보내기)</td>
+      <td>폴더 + 태그 이중 관리, 소스 사이트 자동 동기화, 검색·일괄 작업·드래그 정렬</td>
+    </tr>
+    <tr>
+      <td>📤 <a href="https://ophel.app/docs/features/export">내보내기</a></td>
+      <td>다중 형식 내보내기(Markdown/JSON/TXT), 이미지와 첨부파일 포함 ZIP 패키지, 세그먼트 내보내기로 정확한 콘텐츠 추출</td>
     </tr>
     <tr>
       <td>💡 <a href="https://ophel.app/docs/features/prompts">프롬프트 라이브러리</a></td>
-      <td>변수 템플릿, 분류 관리, 원클릭 입력, 더블클릭 전송, 프롬프트 큐 자동 순차 전송</td>
+      <td>변수 템플릿, 분류 관리, 원클릭 입력, 프롬프트 체인과 큐로 자동 순차 전송, 선택 인용 액션</td>
     </tr>
     <tr>
       <td>🔍 <a href="https://ophel.app/docs/features/global-search">글로벌 검색</a></td>
@@ -127,14 +131,6 @@
     <tr>
       <td>🎨 <a href="https://ophel.app/docs/customization/appearance">테마</a></td>
       <td>20+ 테마, 사용자 정의 CSS, 와이드스크린 모드, 젠 모드, <code>Option+D</code>로 다크/라이트 전환</td>
-    </tr>
-    <tr>
-      <td>📊 <a href="https://ophel.app/docs/panel-overview">데이터 통계</a></td>
-      <td>로컬 대화 카운터, 토큰 추정, 히스토리 차트(사이트별/시간별)</td>
-    </tr>
-    <tr>
-      <td>🎭 <a href="https://ophel.app/docs/customization/site-settings">Claude 확장</a></td>
-      <td>Session Key 관리 및 다중 계정 빠른 전환</td>
     </tr>
     <tr>
       <td>🔒 <a href="https://ophel.app/docs/data/privacy">개인정보 및 데이터</a></td>

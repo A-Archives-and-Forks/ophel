@@ -96,15 +96,19 @@
   <tbody>
     <tr>
       <td>🧭 <a href="https://ophel.app/docs/features/outline">Smart Outline</a></td>
-      <td>Auto-parse conversation structure into a navigable TOC with hierarchical collapse, search, anchors, bookmarks, and word counts</td>
+      <td>Auto-parse conversation structure into a navigable TOC with hierarchical collapse, search, anchors, bookmarks, outline copy, and word counts</td>
     </tr>
     <tr>
       <td>💬 <a href="https://ophel.app/docs/features/conversations">Conversations</a></td>
-      <td>Folders + tags for dual-dimension management, auto-sync from source sites, search, batch ops, and multi-format export (Markdown/JSON/TXT, segmented export)</td>
+      <td>Folders + tags for dual-dimension management, auto-sync from source sites, search, batch ops, and drag-to-reorder</td>
+    </tr>
+    <tr>
+      <td>📤 <a href="https://ophel.app/docs/features/export">Export</a></td>
+      <td>Multi-format export (Markdown/JSON/TXT), zip packages with images and attachments, segmented export for precise content extraction</td>
     </tr>
     <tr>
       <td>💡 <a href="https://ophel.app/docs/features/prompts">Prompt Library</a></td>
-      <td>Variable templates, categorization, one-click insert, double-click send, prompt queue for automated sequential sending</td>
+      <td>Variable templates, categorization, one-click insert, prompt chains and queue for automated sequential sending, selection quote actions</td>
     </tr>
     <tr>
       <td>🔍 <a href="https://ophel.app/docs/features/global-search">Global Search</a></td>
@@ -121,14 +125,6 @@
     <tr>
       <td>🎨 <a href="https://ophel.app/docs/customization/appearance">Themes</a></td>
       <td>20+ themes, custom CSS, widescreen mode, Zen mode, <code>Option+D</code> to toggle dark/light</td>
-    </tr>
-    <tr>
-      <td>📊 <a href="https://ophel.app/docs/panel-overview">Statistics</a></td>
-      <td>Local conversation counter, token estimates, history charts (by site and time)</td>
-    </tr>
-    <tr>
-      <td>🎭 <a href="https://ophel.app/docs/customization/site-settings">Claude</a></td>
-      <td>Session Key management and multi-account quick switching</td>
     </tr>
     <tr>
       <td>🔒 <a href="https://ophel.app/docs/data/privacy">Privacy & Data</a></td>

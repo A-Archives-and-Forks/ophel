@@ -102,15 +102,19 @@
   <tbody>
     <tr>
       <td>🧭 <a href="https://ophel.app/docs/features/outline">スマートアウトライン</a></td>
-      <td>対話構造をリアルタイム解析しナビゲーション可能な目次を生成。階層折りたたみ、検索ジャンプ、アンカー、ブックマーク、文字数カウントに対応</td>
+      <td>対話構造をリアルタイム解析しナビゲーション可能な目次を生成。階層折りたたみ、検索ジャンプ、アンカー、ブックマーク、アウトラインコピー、文字数カウントに対応</td>
     </tr>
     <tr>
       <td>💬 <a href="https://ophel.app/docs/features/conversations">会話管理</a></td>
-      <td>フォルダ + タグの二次元管理、ソースサイトとの自動同期、検索・一括操作・複数形式エクスポート（Markdown/JSON/TXT、分割エクスポート）</td>
+      <td>フォルダ + タグの二次元管理、ソースサイトとの自動同期、検索・一括操作・ドラッグ並び替え</td>
+    </tr>
+    <tr>
+      <td>📤 <a href="https://ophel.app/docs/features/export">エクスポート</a></td>
+      <td>複数形式エクスポート（Markdown/JSON/TXT）、画像・添付ファイル付きZIPパッケージ、分割エクスポートで正確なコンテンツ抽出</td>
     </tr>
     <tr>
       <td>💡 <a href="https://ophel.app/docs/features/prompts">プロンプトライブラリ</a></td>
-      <td>変数テンプレート、分類管理、ワンクリック入力、ダブルクリック送信、プロンプトキューによる自動連続送信</td>
+      <td>変数テンプレート、分類管理、ワンクリック入力、プロンプトチェーンとキューによる自動連続送信、選択引用アクション</td>
     </tr>
     <tr>
       <td>🔍 <a href="https://ophel.app/docs/features/global-search">グローバル検索</a></td>
@@ -127,14 +131,6 @@
     <tr>
       <td>🎨 <a href="https://ophel.app/docs/customization/appearance">テーマ</a></td>
       <td>20+ テーマ、カスタム CSS、ワイドスクリーンモード、禅モード、<code>Option+D</code> でダーク/ライト切替</td>
-    </tr>
-    <tr>
-      <td>📊 <a href="https://ophel.app/docs/panel-overview">データ統計</a></td>
-      <td>ローカル対話カウンター、トークン概算、履歴チャート（サイト別/時間別）</td>
-    </tr>
-    <tr>
-      <td>🎭 <a href="https://ophel.app/docs/customization/site-settings">Claude 拡張</a></td>
-      <td>Session Key 管理とマルチアカウント切り替え</td>
     </tr>
     <tr>
       <td>🔒 <a href="https://ophel.app/docs/data/privacy">プライバシーとデータ</a></td>
