@@ -9,13 +9,17 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### 🚀 New Features
+
+- **Gemini Canvas document export** — Gemini Canvas export now supports regular document Canvas panels, so article Canvas content is included in conversation exports and Canvas Markdown copy/download actions. (#736)
+
 ### 🐛 Bug Fixes
 
 - **AI Studio model lock in userscript** — Fixed issue where the AI Studio model lock feature on the options page couldn't fetch the model list in the userscript build because it tried to use the background script proxy which doesn't exist in userscripts. Now it directly calls the adapter in userscript mode. (#733)
 
 ---
 
-## [1.1.1] - 2026-06-25
+## [1.1.1][1.1.1] - 2026-06-25
 
 ### ✨ Improvements
 
