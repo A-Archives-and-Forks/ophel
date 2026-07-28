@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.8] - 2026-07-28
+
 ### 🚀 新增功能
 
 - **提示词平台筛选** — 提示词现在支持在编辑弹窗中设置适用平台（如 ChatGPT、Gemini、Claude）；分类栏新增地球图标按钮，点击可弹出多选筛选面板并显示角标计数，方便用户按平台快速筛选提示词。(#802)
@@ -1355,6 +1359,7 @@
 
 ---
 
+[1.1.8]: https://github.com/urzeye/ophel/releases/tag/v1.1.8
 [1.1.7]: https://github.com/urzeye/ophel/releases/tag/v1.1.7
 [1.1.6]: https://github.com/urzeye/ophel/releases/tag/v1.1.6
 [1.1.5]: https://github.com/urzeye/ophel/releases/tag/v1.1.5

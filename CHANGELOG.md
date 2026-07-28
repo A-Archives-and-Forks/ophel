@@ -9,6 +9,10 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.1.8] - 2026-07-28
+
 ### 🚀 New Features
 
 - **Prompt platform filter** — Prompts now support optional platform assignment (e.g., ChatGPT, Gemini, Claude) via the editor dialog; a new globe icon in the category bar opens a multi-select filter popover with a badge count, so users can quickly narrow prompts to those relevant for a specific platform. (#802)
@@ -1356,6 +1360,7 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.1.8]: https://github.com/urzeye/ophel/releases/tag/v1.1.8
 [1.1.7]: https://github.com/urzeye/ophel/releases/tag/v1.1.7
 [1.1.6]: https://github.com/urzeye/ophel/releases/tag/v1.1.6
 [1.1.5]: https://github.com/urzeye/ophel/releases/tag/v1.1.5
