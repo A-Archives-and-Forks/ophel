@@ -420,3 +420,10 @@ Our deepest gratitude to the amazing individuals below. Your contributions make 
   <a href="./LICENSE"><strong>GPLv3 License</strong></a>
 </p>
 </div>
+<a href="https://www.star-history.com/?repos=urzeye%2Fophel&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=urzeye/ophel&type=date&theme=dark&legend=top-left&sealed_token=L12UxrFEo1SBUqeBQbV64q92fjec3vXmv4I75q8YYn5m5Qi7NDHcFH0qOKtoxTvtVoKVT0lL6IXf-97iHb7OPFxZyLdeZsX6DZjDr9hgxp9cmsD-Pe2uCg" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=urzeye/ophel&type=date&legend=top-left&sealed_token=L12UxrFEo1SBUqeBQbV64q92fjec3vXmv4I75q8YYn5m5Qi7NDHcFH0qOKtoxTvtVoKVT0lL6IXf-97iHb7OPFxZyLdeZsX6DZjDr9hgxp9cmsD-Pe2uCg" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=urzeye/ophel&type=date&legend=top-left&sealed_token=L12UxrFEo1SBUqeBQbV64q92fjec3vXmv4I75q8YYn5m5Qi7NDHcFH0qOKtoxTvtVoKVT0lL6IXf-97iHb7OPFxZyLdeZsX6DZjDr9hgxp9cmsD-Pe2uCg" />
+ </picture>
+</a>
