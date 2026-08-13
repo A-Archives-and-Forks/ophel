@@ -157,10 +157,10 @@ describe("registry publish workflow signing contract", () => {
     expect(workflow).not.toContain("pnpm registry:build:signed -- --revision")
   })
 
-  it("publishes pre-merge revisions without outrunning squashed main", async () => {
+  it("keeps registry revisions monotonic against the published registry-dist", async () => {
     const workflow = await readFile(REGISTRY_WORKFLOW_PATH, "utf8")
 
-    expect(workflow).toContain('branches: ["main", "feat/site-adapter-pluginization"]')
+    expect(workflow).toContain('branches: ["main"]')
     expect(workflow).toContain("process.stdout.write(String(index.registryRevision + 1))")
     expect(workflow).toContain("REVISION=1")
     expect(workflow).toContain("revision-override:")
