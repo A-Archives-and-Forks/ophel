@@ -3,6 +3,8 @@
 /**
  * 发布后核验油猴自托管资产：逐个拉取 commit 锁定的 jsDelivr URL，
  * 与本地构建产物逐字节比对 SHA-256，确保 CDN 上的内容就是本次构建产物。
+ * manifest.json 自身不参与比对：发布流程的 pin 步骤会把本地 manifest 的
+ * requireUrls 改写成 commit 锁定地址，而远端保存的是改写前的版本，两者必然不同。
  * jsDelivr 对新 commit 有传播窗口，拉取失败（网络错误/非 200）按退避重试；
  * 内容摘要不一致属于发布错误，立即失败不重试。
  *
@@ -39,7 +41,6 @@ const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"))
 const relativePaths = [
   ...Object.values(manifest.resources ?? {}).map(({ relativePath }) => relativePath),
   ...Object.values(manifest.requires ?? {}).map(({ relativePath }) => relativePath),
-  "userscript-assets/manifest.json",
 ].filter(Boolean)
 
 if (relativePaths.length === 0) {
