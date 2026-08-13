@@ -2,7 +2,7 @@ name: "📦 Publish SitePack Registry"
 
 on:
   push:
-    branches: ["main", "feat/site-adapter-pluginization"]
+    branches: ["main"]
     paths:
       - "registry/**"
       - "src/adapters/declarative/**"
