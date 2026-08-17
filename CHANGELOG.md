@@ -28,7 +28,6 @@ versioning follows [Semantic Versioning](https://semver.org/).
 - **Site pack forward-compatible fields** — The registry PR validator now tolerates schema-declared fields at any nesting level when base code has not yet learned them, so a new selector or config sub-field can ship in the same PR as the pack that uses it instead of splitting into two separate PRs. (#800)
 - **Hidden conversations recovery** — Fixed issue where some conversations stayed invisible in the conversation list even after re-syncing (their folder had been removed earlier); upgrading now automatically moves such conversations back to the inbox.
 - **Site pack prompt insertion** — Fixed issue where inserting a multi-line prompt into a site's rich text input box (such as LongCat AI) showed an "Insert failed" toast even though the text had been inserted correctly.
-- **LongCat AI site pack installation** — Fixed issue where installing the LongCat AI pack on app version 1.2.0 failed validation because the pack relies on outline navigation support added in 1.2.1; the pack now correctly requires 1.2.1 or later.
 
 ---
 
