@@ -9,13 +9,17 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### 🚀 New Features
+
+- **StepFun support** — The online adapter library now includes StepFun (chat.stepfun.com); installing the pack enables outlines with user queries, basic export, generation detection and stop, chat width, Zen Mode, new chat, and prompt insertion on conversations and shared pages. (#839, #792, #352)
+
 ### 🐛 Bug Fixes
 
 - **ChatGPT prompt insertion on Firefox** — Fixed issue where inserting a multi-line prompt into ChatGPT in Firefox lost all line breaks; inserted prompts now keep their original line structure. (#811, #838)
 
 ---
 
-## [1.2.1] - 2026-08-17
+## [1.2.1][1.2.1] - 2026-08-17
 
 ### 🚀 New Features
 
