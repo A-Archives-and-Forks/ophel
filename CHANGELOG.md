@@ -17,24 +17,21 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ### ✨ Improvements
 
-- **Site pack outline exclusion** — Site Packs can now declare containers to exclude from outline extraction, so reasoning or thinking sections no longer pollute the outline with draft headings. (#800)
 - **Site packs auto update check** — Opening Settings -> Site Packs -> "Get & Updates" now automatically checks for adapter updates once, so first-time users see the online library right away instead of an empty list. (#821)
+- **Site pack outline exclusion** — Site Packs can now declare containers to exclude from outline extraction, so reasoning or thinking sections no longer pollute the outline with draft headings. (#800)
 
 ### 🐛 Bug Fixes
 
-- **Site pack forward-compatible fields** — The registry PR validator now tolerates schema-declared fields at any nesting level when base code has not yet learned them, so a new selector or config sub-field can ship in the same PR as the pack that uses it instead of splitting into two separate PRs. (#800)
-- **Userscript adapter library updates** — Fixed issue where the userscript version kept showing an outdated online adapter library (for up to a week) because the browser cached the CDN response; update checks now always fetch the latest index.
-- **Claude page width** — Fixed issue where the page width setting no longer widened conversations after Claude updated its layout.
+- **Claude new layout adaptation** — Adapted to Claude.ai's new DOM structure: updated sidebar conversation list, send button, generation detection, Zen Mode, and panel avoidance selectors, and fixed issue where pinning and then unpinning a conversation showed its title twice in the conversation manager. （#834 @urzeye, #820 @crazyn2）
 - **ChatGPT page redesign adaptation** — Fixed issues caused by ChatGPT's page redesign: conversations could be scanned but not added to the conversation list, the "ChatGPT can make mistakes" disclaimer stayed visible in Clean Mode, and double-clicking LaTeX formulas reported missing source; sidebar chat links and formula sources are now read from the redesigned structure.
+- **Userscript adapter library updates** — Fixed issue where the userscript version kept showing an outdated online adapter library (for up to a week) because the browser cached the CDN response; update checks now always fetch the latest index.
+- **Site pack forward-compatible fields** — The registry PR validator now tolerates schema-declared fields at any nesting level when base code has not yet learned them, so a new selector or config sub-field can ship in the same PR as the pack that uses it instead of splitting into two separate PRs. (#800)
 - **Hidden conversations recovery** — Fixed issue where some conversations stayed invisible in the conversation list even after re-syncing (their folder had been removed earlier); upgrading now automatically moves such conversations back to the inbox.
 - **Site pack prompt insertion** — Fixed issue where inserting a multi-line prompt into a site's rich text input box (such as LongCat AI) showed an "Insert failed" toast even though the text had been inserted correctly.
-- **Claude new layout adaptation** — Adapted to Claude.ai's new DOM structure: updated sidebar conversation list, send button, generation detection, Zen Mode, and panel avoidance selectors, and fixed issue where pinning and then unpinning a conversation showed its title twice in the conversation manager.
-- **Site pack reading position restore** — Fixed issue where reading position restore could still run on adapter-pack sites that do not support reading history, interrupting in-page navigation such as outline jumps on LongCat AI.
-- **LongCat AI outline navigation** — Fixed issue where clicking outline titles right after a page refresh did not jump, or snapped back to the bottom, until the page was scrolled by hand; the site keeps auto-pinning the conversation to the bottom until it sees real user scrolling, so outline jumps now release that pinning.
 
 ---
 
-## [1.2.0] - 2026-08-13
+## [1.2.0][1.2.0] - 2026-08-13
 
 ### 🚀 New Features
 
@@ -44,7 +41,7 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [1.1.8] - 2026-07-28
+## [1.1.8][1.1.8] - 2026-07-28
 
 ### 🚀 New Features
 
