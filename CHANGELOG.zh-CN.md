@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.2.1] - 2026-08-17
+
 ### 🚀 新增功能
 
 - **OpenCode 分享支持** — 在线适配库新增 OpenCode 分享（opncd.ai），安装适配包后即可在 OpenCode 分享对话页面使用大纲（含用户提问识别）和基础导出功能。(#800)
@@ -1389,6 +1393,7 @@
 
 ---
 
+[1.2.1]: https://github.com/urzeye/ophel/releases/tag/v1.2.1
 [1.2.0]: https://github.com/urzeye/ophel/releases/tag/v1.2.0
 [1.1.8]: https://github.com/urzeye/ophel/releases/tag/v1.1.8
 [1.1.7]: https://github.com/urzeye/ophel/releases/tag/v1.1.7

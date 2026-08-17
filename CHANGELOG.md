@@ -9,6 +9,10 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.2.1] - 2026-08-17
+
 ### 🚀 New Features
 
 - **OpenCode Share support** — The online adapter library now includes OpenCode Share (opncd.ai); installing the pack enables outlines with user query detection and basic export for shared OpenCode conversations. (#800)
@@ -1390,6 +1394,7 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.2.1]: https://github.com/urzeye/ophel/releases/tag/v1.2.1
 [1.2.0]: https://github.com/urzeye/ophel/releases/tag/v1.2.0
 [1.1.8]: https://github.com/urzeye/ophel/releases/tag/v1.1.8
 [1.1.7]: https://github.com/urzeye/ophel/releases/tag/v1.1.7
