@@ -23,6 +23,7 @@ versioning follows [Semantic Versioning](https://semver.org/).
 - **ChatGLM theme switching** — Adapted to ChatGLM's new theme popover structure, fixing light/dark/system theme switching that failed after the site moved the options into a hidden popover the old two-step menu navigation couldn't reach.
 - **ChatGPT prompt insertion on Firefox** — Fixed issue where inserting a multi-line prompt into ChatGPT in Firefox lost all line breaks; inserted prompts now keep their original line structure. (#811, #838)
 - **AI Studio theme toggle** — Fixed issue where toggling light/dark theme on AI Studio no longer changed the site theme and the stored preference was never updated; the page theme now follows the panel toggle again. (#844)
+- **DeepSeek Harness steering messages** — Fixed issue where steering instructions sent while a response was generating were missing from the outline and exports on DeepSeek Harness; these messages are now recognized as user queries.
 
 ---
 
