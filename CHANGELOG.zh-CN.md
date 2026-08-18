@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.2.2] - 2026-08-18
+
 ### 🚀 新增功能
 
 - **阶跃星辰 AI 支持** — 在线适配库新增阶跃AI（chat.stepfun.com），安装适配包后即可在对话页和分享页使用大纲（含用户提问）、基础导出、生成检测与停止、对话宽度、禅模式、新对话和提示词插入功能。(#839, #792, #352)
@@ -1410,6 +1414,7 @@
 
 ---
 
+[1.2.2]: https://github.com/urzeye/ophel/releases/tag/v1.2.2
 [1.2.1]: https://github.com/urzeye/ophel/releases/tag/v1.2.1
 [1.2.0]: https://github.com/urzeye/ophel/releases/tag/v1.2.0
 [1.1.8]: https://github.com/urzeye/ophel/releases/tag/v1.1.8

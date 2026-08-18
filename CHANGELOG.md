@@ -9,6 +9,10 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.2.2] - 2026-08-18
+
 ### 🚀 New Features
 
 - **StepFun support** — The online adapter library now includes StepFun (chat.stepfun.com); installing the pack enables outlines with user queries, basic export, generation detection and stop, chat width, Zen Mode, new chat, and prompt insertion on conversations and shared pages. (#839, #792, #352)
@@ -1411,6 +1415,7 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.2.2]: https://github.com/urzeye/ophel/releases/tag/v1.2.2
 [1.2.1]: https://github.com/urzeye/ophel/releases/tag/v1.2.1
 [1.2.0]: https://github.com/urzeye/ophel/releases/tag/v1.2.0
 [1.1.8]: https://github.com/urzeye/ophel/releases/tag/v1.1.8
