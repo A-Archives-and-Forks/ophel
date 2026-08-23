@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.2.4] - 2026-08-23
+
 ### 🚀 新增功能
 
 - **交互式导出弹窗** — 导出按钮与会话列表的导出入口现在统一打开导出选项弹窗，可选择导出格式（Markdown / HTML / JSON / TXT / 复制 Markdown）、切换思维链与对话序号、自定义 Markdown 分割线、打包 ZIP 或跳转分段导出；设置新增“导出前显示选项弹窗”开关，关闭后恢复一键直出。(#841)
@@ -1443,6 +1447,7 @@
 
 ---
 
+[1.2.4]: https://github.com/urzeye/ophel/releases/tag/v1.2.4
 [1.2.3]: https://github.com/urzeye/ophel/releases/tag/v1.2.3
 [1.2.2]: https://github.com/urzeye/ophel/releases/tag/v1.2.2
 [1.2.1]: https://github.com/urzeye/ophel/releases/tag/v1.2.1

@@ -9,6 +9,10 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.2.4] - 2026-08-23
+
 ### 🚀 New Features
 
 - **Interactive export dialog** — The export button and the conversation list export menu now open a unified options dialog: pick the format (Markdown / HTML / JSON / TXT / Copy Markdown), toggle thought inclusion and turn numbering, customize the Markdown divider, package as ZIP, or jump to segmented export; a new "Show Export Options Dialog" setting restores one-click export when turned off. (#841)
@@ -1444,6 +1448,7 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.2.4]: https://github.com/urzeye/ophel/releases/tag/v1.2.4
 [1.2.3]: https://github.com/urzeye/ophel/releases/tag/v1.2.3
 [1.2.2]: https://github.com/urzeye/ophel/releases/tag/v1.2.2
 [1.2.1]: https://github.com/urzeye/ophel/releases/tag/v1.2.1
