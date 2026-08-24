@@ -15,13 +15,9 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ### 🐛 Bug Fixes
 
-- **ChatGPT export missing turns** — ChatGPT's redesign keeps off-screen turns as placeholder shells without the markers export relied on, so exporting a long conversation silently skipped unmounted turns without ever scrolling to load them; export now recognizes the placeholder shells, scrolls each turn into view, and collects the full conversation again. (#872)
-- **Incomplete user questions in ChatGPT outline** — ChatGPT redesigned its in-page prompt rail, so after a page refresh the outline tab could no longer read the full list of user questions from it; the outline now recognizes the updated rail again and restores complete user question extraction. (#871)
-- **Spurious console errors on page load** — Fixed an issue where every page load logged "Failed to load cached patch" errors for Claude, Gemini, and Gemini Enterprise regardless of the site being visited; cached config patches for these three sites can now apply again instead of always being rejected. (#870)
+- **Adapt to ChatGPT's new DOM structure** — Adapted to ChatGPT's redesigned prompt rail and off-screen placeholder turns, fixing missing user questions in the outline after refresh and restoring complete turn collection during long conversation export. (#871, #872)
+- **Long conversation and asset export reliability** — Virtual-scroll exports for ChatGPT, Doubao, DeepSeek, and AI Studio now wait for rows to mount, verify turn continuity, and fill missing segments to prevent skipped, duplicated, or unordered messages; incomplete exports now show clear notices, and stuck image downloads in ZIP export gracefully degrade to external links without stalling. (#865)
 - **Doubao new input box adaptation** — Prompt insertion, queued send, generation stop detection, and model lock now work with Doubao's redesigned TipTap input box and the updated send/stop/model-switch controls. (#867)
-- **Virtual-scroll long conversation export** — ChatGPT, Doubao, DeepSeek, and AI Studio exports now wait for virtualized rows to finish mounting before reading them, verify turn/row number continuity, and retry missing segments, so long conversations no longer export with silently missing, duplicated, or reordered messages; repeated exports of the same Doubao conversation now produce consistent results.(#865)
-- **Incomplete export warning** — When message collection detects missing turns/rows or history loading hits its time budget, a notice is now shown after export instead of silently producing an incomplete file. (#865)
-- **Asset download timeout in ZIP export** — Image downloads now time out after 30 seconds and degrade to external references recorded in the manifest, so a single stuck asset no longer hangs the whole export. (#865)
 
 ---
 
