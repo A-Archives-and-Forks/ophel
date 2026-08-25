@@ -56,7 +56,6 @@ import { isLikelyMobileDevice } from "~utils/device"
 
 import { ConfirmDialog, FolderSelectDialog, TagManagerDialog } from "./ConversationDialogs"
 import { DisclaimerModal } from "./DisclaimerModal"
-import { ElementPickerOverlay } from "./ElementPickerOverlay"
 import { LoadingOverlay } from "./LoadingOverlay"
 import { MainPanel } from "./MainPanel"
 import { QueueOverlay } from "./QueueOverlay"
@@ -66,7 +65,6 @@ import { SelectedPromptBar } from "./SelectedPromptBar"
 import { ExportDialog } from "./ExportDialog"
 import { SegmentedExportDialog } from "./SegmentedExportDialog"
 import { SettingsModal } from "./SettingsModal"
-import { SiteAdapterWizard } from "./SiteAdapterWizard"
 import { GlobalSearchOverlay } from "./global-search/GlobalSearchOverlay"
 import { GlobalSearchResultItemView } from "./global-search/GlobalSearchResultItemView"
 import {
@@ -3199,12 +3197,7 @@ export const App: React.FC<AppProps> = ({ adapter: propAdapter }) => {
   )
 
   if (!adapter || !promptManager || !conversationManager || !outlineManager) {
-    return (
-      <div className="gh-root">
-        <ElementPickerOverlay />
-        <SiteAdapterWizard />
-      </div>
-    )
+    return null
   }
 
   const edgeTriggerMode = settings?.panel?.edgeTriggerMode ?? DEFAULT_SETTINGS.panel.edgeTriggerMode
@@ -3218,7 +3211,6 @@ export const App: React.FC<AppProps> = ({ adapter: propAdapter }) => {
 
   return (
     <div className={`gh-root ${isPassThrough ? "gh-pass-through" : ""}`}>
-      <ElementPickerOverlay />
       {shouldRenderEdgeHoverZone && edgeSnapState && (
         <div
           aria-hidden="true"
