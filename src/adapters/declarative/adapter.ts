@@ -339,15 +339,23 @@ export class DeclarativeAdapter extends SiteAdapter {
   }
 
   private selectAllEditorContent(editor: HTMLElement): boolean {
-    const selection = editor.ownerDocument.getSelection()
-    if (!selection) return false
-
     try {
-      selection.selectAllChildren(editor)
-      return true
+      editor.ownerDocument.execCommand("selectAll", false, undefined)
     } catch {
-      return false
+      // ignore
     }
+
+    const selection = editor.ownerDocument.getSelection()
+    if (selection) {
+      try {
+        selection.selectAllChildren(editor)
+        return true
+      } catch {
+        // ignore
+      }
+    }
+
+    return true
   }
 
   private replaceContentEditableContent(
@@ -357,19 +365,106 @@ export class DeclarativeAdapter extends SiteAdapter {
   ): boolean {
     editor.focus()
 
-    if (this.selectAllEditorContent(editor)) {
+    if (content === "") {
+      // 优先走浏览器原生编辑管线：select-all + execCommand("delete") 会触发
+      // 可信 beforeinput/input，对自有模型驱动的编辑器（如 Notion AI）等同真实
+      // 键盘删除。合成事件必须放在其后兜底，否则编辑器会按自身选区模型部分处理
+      // 合成事件，而强写 textContent 又会被模型重渲染还原，表现为清空无效。
+      this.selectAllEditorContent(editor)
+
+      try {
+        editor.ownerDocument.execCommand("delete", false, undefined)
+      } catch {
+        // Unsupported execCommand attempt continues to synthetic events.
+      }
+
+      if (this.isEditorUpdateValid(editor, "", requireSubmitButton)) return true
+
+      this.selectAllEditorContent(editor)
+
+      try {
+        editor.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            key: "Backspace",
+            code: "Backspace",
+            keyCode: 8,
+            which: 8,
+            bubbles: true,
+            composed: true,
+          }),
+        )
+      } catch {
+        // Unsupported keydown construction continues.
+      }
+
       try {
         editor.dispatchEvent(
           new InputEvent("beforeinput", {
             bubbles: true,
             cancelable: true,
             composed: true,
-            data: content,
-            inputType: "insertText",
+            inputType: "deleteContentBackward",
           }),
         )
       } catch {
-        // Unsupported beforeinput construction continues to the execCommand attempt.
+        // Unsupported beforeinput construction continues to execCommand.
+      }
+
+      try {
+        editor.ownerDocument.execCommand("delete", false, undefined)
+      } catch {
+        // Unsupported execCommand attempt continues.
+      }
+
+      try {
+        editor.dispatchEvent(
+          new InputEvent("input", {
+            bubbles: true,
+            composed: true,
+            inputType: "deleteContentBackward",
+          }),
+        )
+      } catch {
+        // Unsupported input construction continues.
+      }
+
+      try {
+        editor.dispatchEvent(
+          new KeyboardEvent("keyup", {
+            key: "Backspace",
+            code: "Backspace",
+            keyCode: 8,
+            which: 8,
+            bubbles: true,
+            composed: true,
+          }),
+        )
+      } catch {
+        // Unsupported keyup construction continues.
+      }
+
+      if (editor.textContent && editor.textContent.length > 0) {
+        try {
+          editor.textContent = ""
+        } catch {
+          // ignore
+        }
+      }
+
+      editor.dispatchEvent(new Event("input", { bubbles: true, composed: true }))
+      editor.dispatchEvent(new Event("change", { bubbles: true }))
+
+      return this.isEditorUpdateValid(editor, "", requireSubmitButton)
+    }
+
+    // 与清空同理：先用原生 select-all + insertText 完成“替换”，可信事件才能让
+    // 框架编辑器更新其内部模型；合成 beforeinput 只作兜底，提前派发会被框架按
+    // 自身选区处理成“追加”而非“替换”（Notion AI 上表现为旧内容残留）。
+    if (this.selectAllEditorContent(editor)) {
+      try {
+        editor.ownerDocument.execCommand("insertText", false, content)
+      } catch {
+        // Unsupported execCommand attempt continues to the synthetic event.
       }
       if (this.isEditorUpdateValid(editor, content, requireSubmitButton)) return true
     }
@@ -377,9 +472,17 @@ export class DeclarativeAdapter extends SiteAdapter {
     if (!this.selectAllEditorContent(editor)) return false
 
     try {
-      editor.ownerDocument.execCommand("insertText", false, content)
+      editor.dispatchEvent(
+        new InputEvent("beforeinput", {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          data: content,
+          inputType: "insertText",
+        }),
+      )
     } catch {
-      return false
+      // Unsupported beforeinput construction; validation below reports failure.
     }
 
     return this.isEditorUpdateValid(editor, content, requireSubmitButton)
