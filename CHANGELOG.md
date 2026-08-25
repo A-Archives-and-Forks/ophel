@@ -9,6 +9,10 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.2.5] - 2026-08-25
+
 ### 🚀 New Features
 
 - **Notion AI support** — The online adapter library now includes Notion AI (app.notion.com); installing the pack enables outlines with user queries, basic export, chat width, Zen Mode, new chat, and prompt insertion on conversations and shared pages.(#873)
@@ -1464,6 +1468,7 @@ This is the first official release of Ophel, providing comprehensive enhancement
 
 ---
 
+[1.2.5]: https://github.com/urzeye/ophel/releases/tag/v1.2.5
 [1.2.4]: https://github.com/urzeye/ophel/releases/tag/v1.2.4
 [1.2.3]: https://github.com/urzeye/ophel/releases/tag/v1.2.3
 [1.2.2]: https://github.com/urzeye/ophel/releases/tag/v1.2.2

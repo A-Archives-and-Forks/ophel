@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.2.5] - 2026-08-25
+
 ### 🚀 新增功能
 
 - **Notion AI 支持** — 在线适配库新增 Notion AI（app.notion.com），安装适配包后即可在对话页和分享页使用大纲（含用户提问）、基础导出、对话宽度、禅模式、新对话和提示词插入功能。(#873)
@@ -1463,6 +1467,7 @@
 
 ---
 
+[1.2.5]: https://github.com/urzeye/ophel/releases/tag/v1.2.5
 [1.2.4]: https://github.com/urzeye/ophel/releases/tag/v1.2.4
 [1.2.3]: https://github.com/urzeye/ophel/releases/tag/v1.2.3
 [1.2.2]: https://github.com/urzeye/ophel/releases/tag/v1.2.2
