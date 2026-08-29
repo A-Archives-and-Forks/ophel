@@ -2017,6 +2017,15 @@ export const App: React.FC<AppProps> = ({ adapter: propAdapter }) => {
       }
 
       if (item.category === "conversations" && item.conversationId) {
+        // 站外会话没有当前站点的适配器上下文，直接新标签打开会话链接
+        if (item.offsiteSite) {
+          if (item.conversationUrl) {
+            platform.openTab(item.conversationUrl)
+          } else {
+            showToast(t("noConversationToLocate"))
+          }
+          return
+        }
         adapter?.navigateToConversation(item.conversationId, item.conversationUrl)
       }
     },
@@ -3214,6 +3223,11 @@ export const App: React.FC<AppProps> = ({ adapter: propAdapter }) => {
     [getLocalizedText],
   )
 
+  const offsiteConversationLabel = getLocalizedText({
+    key: "globalSearchOffsiteConversation",
+    fallback: "External",
+  })
+
   const renderSearchResultItem = (item: GlobalSearchResultItem, index: number) => (
     <GlobalSearchResultItemView
       key={item.id}
@@ -3224,6 +3238,7 @@ export const App: React.FC<AppProps> = ({ adapter: propAdapter }) => {
       highlightTokens={settingsSearchHighlightTokens}
       outlineRoleLabels={outlineRoleLabels}
       matchReasonLabels={resolvedGlobalSearchMatchReasonLabels}
+      offsiteConversationLabel={offsiteConversationLabel}
       onMouseMove={() => {
         setSettingsSearchNavigationMode("pointer")
 
